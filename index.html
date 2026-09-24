@@ -75,7 +75,16 @@
       font-size: 22px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
       position: relative;
-      cursor: default;
+      cursor: pointer;
+      transition: transform 0.1s ease, background 0.2s;
+      border: none;
+      outline: none;
+      color: inherit;
+    }
+
+    .icon-btn:hover {
+      background: #fff7e0;
+      transform: scale(1.05);
     }
 
     .icon-btn.notification::after {
@@ -96,11 +105,79 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
+    /* ================= QUICK LINKS BAR ================= */
+    .quick-links {
+      width: 96%;
+      max-width: 1650px;
+      margin: 20px auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 22px;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      color: white;
+      background: #0c315f;
+      box-shadow: 0 5px 15px rgba(12, 49, 95, .22);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s;
+      border: 2px solid transparent;
+      letter-spacing: 0.2px;
+    }
+
+    .link-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(12, 49, 95, .3);
+      background: #0a2649;
+    }
+
+    .link-btn:active {
+      transform: translateY(0);
+    }
+
+    .link-btn .link-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .link-btn.marking {
+      background: linear-gradient(135deg, #0c315f, #1a4a80);
+    }
+
+    .link-btn.datesheet {
+      background: linear-gradient(135deg, #0f6b4c, #16996b);
+    }
+
+    .link-btn.rechecking {
+      background: linear-gradient(135deg, #8a3b0c, #b85414);
+    }
+
+    .link-btn.marking:hover {
+      background: linear-gradient(135deg, #0a2649, #153d6b);
+    }
+
+    .link-btn.datesheet:hover {
+      background: linear-gradient(135deg, #0b5239, #0e7d57);
+    }
+
+    .link-btn.rechecking:hover {
+      background: linear-gradient(135deg, #6f2f09, #96430f);
+    }
+
     /* ================= MAIN ================= */
     .container {
       width: 96%;
       max-width: 1650px;
-      margin: 25px auto;
+      margin: 20px auto 25px;
     }
 
     .dashboard {
@@ -353,6 +430,33 @@
       align-items: center;
       justify-content: space-between;
       font-size: 15px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .group-title:hover {
+      filter: brightness(0.97);
+    }
+
+    /* Chevron / arrow indicator */
+    .group-title .arrow {
+      font-size: 18px;
+      font-weight: 400;
+      transition: transform 0.3s ease;
+      display: inline-block;
+      line-height: 1;
+      color: #234b78;
+    }
+
+    /* Rotated arrow when collapsed */
+    .class-group.collapsed .group-title .arrow {
+      transform: rotate(-90deg);
+    }
+
+    /* Class list – hidden when collapsed */
+    .class-group.collapsed .class-list {
+      display: none;
     }
 
     .primary-title {
@@ -365,6 +469,7 @@
 
     .class-list {
       padding: 12px 14px;
+      transition: display 0.2s;
     }
 
     .class-list-grid {
@@ -400,17 +505,16 @@
       cursor: pointer;
       flex-shrink: 0;
       margin: 0;
-      pointer-events: none; /* Let the .class-item handle clicks, but keep native toggle via label */
+      pointer-events: none;
     }
 
-    /* Make the label cover the whole item */
     .class-item label {
       cursor: pointer;
       flex: 1;
       line-height: 1.4;
       font-weight: 500;
       padding: 2px 0;
-      pointer-events: none; /* clicks go to parent .class-item */
+      pointer-events: none;
     }
 
     /* ================= EMBEDDED FORM ================= */
@@ -470,6 +574,39 @@
       font-size: 14px;
     }
 
+    /* ================= NOTIFICATION TOAST ================= */
+    .notification-toast {
+      position: fixed;
+      top: 120px;
+      right: 30px;
+      background: #092f61;
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 1000;
+      transform: translateY(-10px);
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+      border-left: 5px solid #ffc928;
+    }
+
+    .notification-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .notification-toast .toast-icon {
+      font-size: 24px;
+    }
+
     /* ================= RESPONSIVE ================= */
     @media (max-width: 1250px) {
       .dashboard {
@@ -515,6 +652,15 @@
       .class-list-grid {
         grid-template-columns: 1fr 1fr;
       }
+      .quick-links {
+        gap: 10px;
+      }
+      .link-btn {
+        flex: 1 1 calc(50% - 10px);
+        justify-content: center;
+        padding: 12px 16px;
+        font-size: 14px;
+      }
     }
 
     @media (max-width: 550px) {
@@ -540,6 +686,18 @@
       .class-item {
         padding: 12px 10px;
       }
+      .notification-toast {
+        right: 15px;
+        left: 15px;
+        top: 100px;
+      }
+      .quick-links {
+        flex-direction: column;
+      }
+      .link-btn {
+        flex: 1 1 100%;
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -557,12 +715,24 @@
 
   <div class="header-icons">
     <!-- Notification button with "no notifications" badge -->
-    <div class="icon-btn notification" title="No notifications">
+    <button class="icon-btn notification" id="notificationBtn" title="Notifications">
       🔔
-    </div>
-    <!-- Person icon removed as requested -->
+    </button>
   </div>
 </header>
+
+<!-- ================= QUICK LINKS ================= -->
+<div class="quick-links">
+  <a class="link-btn marking" href="https://drive.google.com/file/d/1maaB1cSQYjc5JLZ2FHcYg6Ex6zI8xAbX/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+    <span class="link-icon">📋</span> View Marking Scheme
+  </a>
+  <a class="link-btn datesheet" href="https://drive.google.com/file/d/1-7_WNGpnKpnHfSbfv1ayxW6wuFaP2ZBT/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+    <span class="link-icon">📅</span> View Date Sheet
+  </a>
+  <a class="link-btn rechecking" href="https://drive.google.com/file/d/1zAmAQSvZDYF2tVRfEPb_teUQXZsp_W5N/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+    <span class="link-icon">🔁</span> View Rechecking Duty List
+  </a>
+</div>
 
 <!-- ================= MAIN ================= -->
 <div class="container">
@@ -636,10 +806,10 @@
       <div class="class-scroll-area">
 
         <!-- Kindergarten / Pre-Primary -->
-        <div class="class-group">
+        <div class="class-group" data-group="kindergarten">
           <div class="group-title" style="background:#ffe9c7;">
             <span>🧸 &nbsp; Kindergarten</span>
-            <span>⌃</span>
+            <span class="arrow">⌃</span>
           </div>
           <div class="class-list class-list-grid">
             <div class="class-item" data-checkbox="nursery">
@@ -658,10 +828,10 @@
         </div>
 
         <!-- Primary -->
-        <div class="class-group">
+        <div class="class-group" data-group="primary">
           <div class="group-title primary-title">
             <span>🎓 &nbsp; Primary</span>
-            <span>⌃</span>
+            <span class="arrow">⌃</span>
           </div>
           <div class="class-list class-list-grid">
             <div class="class-item" data-checkbox="class1"><input type="checkbox" class="classCheck" id="class1"><label for="class1">Class 1</label></div>
@@ -673,10 +843,10 @@
         </div>
 
         <!-- Junior -->
-        <div class="class-group">
+        <div class="class-group" data-group="junior">
           <div class="group-title" style="background:#e6f2e6;">
             <span>📘 &nbsp; Junior</span>
-            <span>⌃</span>
+            <span class="arrow">⌃</span>
           </div>
           <div class="class-list class-list-grid">
             <div class="class-item" data-checkbox="class6"><input type="checkbox" class="classCheck" id="class6"><label for="class6">Class 6</label></div>
@@ -686,10 +856,10 @@
         </div>
 
         <!-- Secondary -->
-        <div class="class-group">
+        <div class="class-group" data-group="secondary">
           <div class="group-title secondary-title">
             <span>📚 &nbsp; Secondary</span>
-            <span>⌃</span>
+            <span class="arrow">⌃</span>
           </div>
           <div class="class-list class-list-grid">
             <div class="class-item" data-checkbox="class9"><input type="checkbox" class="classCheck" id="class9"><label for="class9">Class 9</label></div>
@@ -698,10 +868,10 @@
         </div>
 
         <!-- Senior Secondary -->
-        <div class="class-group">
+        <div class="class-group" data-group="senior">
           <div class="group-title" style="background:#f3e8ff;">
             <span>🎓 &nbsp; Senior Secondary</span>
-            <span>⌃</span>
+            <span class="arrow">⌃</span>
           </div>
           <div class="class-list class-list-grid">
             <div class="class-item" data-checkbox="class11arts"><input type="checkbox" class="classCheck" id="class11arts"><label for="class11arts">Class 11 Arts</label></div>
@@ -746,6 +916,12 @@
 <footer class="footer">
   © 2026 Check Question Paper
 </footer>
+
+<!-- ================= NOTIFICATION TOAST ================= -->
+<div class="notification-toast" id="notificationToast">
+  <span class="toast-icon">🔕</span>
+  <span>No notifications</span>
+</div>
 
 <script>
   /* =========================================
@@ -849,22 +1025,48 @@
     });
   }
 
-  /* ---------- Make the whole .class-item clickable without double-toggling ---------- */
+  /* ---------- Make the whole .class-item clickable ---------- */
   document.querySelectorAll(".class-item").forEach(item => {
     item.addEventListener("click", (e) => {
-      // If the click originated from the label or input, ignore (label handles it)
       if (e.target.tagName === "LABEL" || e.target.tagName === "INPUT") {
         return;
       }
-      // Otherwise, toggle the checkbox inside
       const checkbox = item.querySelector('input[type="checkbox"]');
       if (checkbox) {
         checkbox.checked = !checkbox.checked;
-        // Trigger change event manually so updateProgress and saveProgress run
         const changeEvent = new Event('change', { bubbles: true });
         checkbox.dispatchEvent(changeEvent);
       }
     });
+  });
+
+  /* =========================================
+     DROPDOWN (COLLAPSIBLE CLASS GROUPS)
+  ========================================= */
+  document.querySelectorAll('.group-title').forEach(title => {
+    title.addEventListener('click', function(e) {
+      const group = this.closest('.class-group');
+      if (group) {
+        group.classList.toggle('collapsed');
+      }
+    });
+  });
+
+  /* =========================================
+     NOTIFICATION TOAST — "No notifications"
+  ========================================= */
+  const notificationBtn = document.getElementById('notificationBtn');
+  const toast = document.getElementById('notificationToast');
+
+  let toastTimer = null;
+
+  notificationBtn.addEventListener('click', function() {
+    if (toastTimer) clearTimeout(toastTimer);
+    toast.classList.add('show');
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+      toastTimer = null;
+    }, 2500);
   });
 
   /* ---------- Initialize ---------- */
