@@ -118,7 +118,7 @@
       box-shadow: 0 5px 25px rgba(23, 57, 96, .08);
     }
 
-    /* ================= PROGRESS CARD (informative) ================= */
+    /* ================= PROGRESS CARD ================= */
     .progress-card {
       padding: 25px;
       min-height: 720px;
@@ -212,7 +212,7 @@
       opacity: 0.8;
     }
 
-    /* Progress info rows - more informative */
+    /* Progress info rows */
     .progress-info {
       margin-top: 8px;
     }
@@ -373,38 +373,44 @@
       gap: 4px 12px;
     }
 
-    /* Clickable class items */
+    /* Clickable class items — larger hit area */
     .class-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 6px 8px;
+      gap: 12px;
+      padding: 10px 12px;
       font-size: 15px;
       color: #173e6b;
-      border-radius: 10px;
-      transition: background 0.1s;
+      border-radius: 12px;
+      transition: background 0.15s, box-shadow 0.15s;
       cursor: pointer;
       user-select: none;
+      border: 1px solid transparent;
     }
 
     .class-item:hover {
       background: #f0f6ff;
+      border-color: #c5d9f0;
     }
 
     .class-item input {
-      width: 19px;
-      height: 19px;
+      width: 20px;
+      height: 20px;
       accent-color: #ffb900;
       cursor: pointer;
       flex-shrink: 0;
       margin: 0;
+      pointer-events: none; /* Let the .class-item handle clicks, but keep native toggle via label */
     }
 
+    /* Make the label cover the whole item */
     .class-item label {
       cursor: pointer;
       flex: 1;
-      line-height: 1.3;
+      line-height: 1.4;
       font-weight: 500;
+      padding: 2px 0;
+      pointer-events: none; /* clicks go to parent .class-item */
     }
 
     /* ================= EMBEDDED FORM ================= */
@@ -531,6 +537,9 @@
         height: 18px;
         font-size: 11px;
       }
+      .class-item {
+        padding: 12px 10px;
+      }
     }
   </style>
 </head>
@@ -633,15 +642,15 @@
             <span>⌃</span>
           </div>
           <div class="class-list class-list-grid">
-            <div class="class-item">
+            <div class="class-item" data-checkbox="nursery">
               <input type="checkbox" class="classCheck" id="nursery">
               <label for="nursery">Nursery</label>
             </div>
-            <div class="class-item">
+            <div class="class-item" data-checkbox="lkg">
               <input type="checkbox" class="classCheck" id="lkg">
               <label for="lkg">LKG</label>
             </div>
-            <div class="class-item">
+            <div class="class-item" data-checkbox="ukg">
               <input type="checkbox" class="classCheck" id="ukg">
               <label for="ukg">UKG</label>
             </div>
@@ -655,11 +664,11 @@
             <span>⌃</span>
           </div>
           <div class="class-list class-list-grid">
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class1"><label for="class1">Class 1</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class2"><label for="class2">Class 2</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class3"><label for="class3">Class 3</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class4"><label for="class4">Class 4</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class5"><label for="class5">Class 5</label></div>
+            <div class="class-item" data-checkbox="class1"><input type="checkbox" class="classCheck" id="class1"><label for="class1">Class 1</label></div>
+            <div class="class-item" data-checkbox="class2"><input type="checkbox" class="classCheck" id="class2"><label for="class2">Class 2</label></div>
+            <div class="class-item" data-checkbox="class3"><input type="checkbox" class="classCheck" id="class3"><label for="class3">Class 3</label></div>
+            <div class="class-item" data-checkbox="class4"><input type="checkbox" class="classCheck" id="class4"><label for="class4">Class 4</label></div>
+            <div class="class-item" data-checkbox="class5"><input type="checkbox" class="classCheck" id="class5"><label for="class5">Class 5</label></div>
           </div>
         </div>
 
@@ -670,9 +679,9 @@
             <span>⌃</span>
           </div>
           <div class="class-list class-list-grid">
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class6"><label for="class6">Class 6</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class7"><label for="class7">Class 7</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class8"><label for="class8">Class 8</label></div>
+            <div class="class-item" data-checkbox="class6"><input type="checkbox" class="classCheck" id="class6"><label for="class6">Class 6</label></div>
+            <div class="class-item" data-checkbox="class7"><input type="checkbox" class="classCheck" id="class7"><label for="class7">Class 7</label></div>
+            <div class="class-item" data-checkbox="class8"><input type="checkbox" class="classCheck" id="class8"><label for="class8">Class 8</label></div>
           </div>
         </div>
 
@@ -683,8 +692,8 @@
             <span>⌃</span>
           </div>
           <div class="class-list class-list-grid">
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class9"><label for="class9">Class 9</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class10"><label for="class10">Class 10</label></div>
+            <div class="class-item" data-checkbox="class9"><input type="checkbox" class="classCheck" id="class9"><label for="class9">Class 9</label></div>
+            <div class="class-item" data-checkbox="class10"><input type="checkbox" class="classCheck" id="class10"><label for="class10">Class 10</label></div>
           </div>
         </div>
 
@@ -695,14 +704,14 @@
             <span>⌃</span>
           </div>
           <div class="class-list class-list-grid">
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class11arts"><label for="class11arts">Class 11 Arts</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class12arts"><label for="class12arts">Class 12 Arts</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class11commerce"><label for="class11commerce">Class 11 Commerce</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class12commerce"><label for="class12commerce">Class 12 Commerce</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class11science"><label for="class11science">Class 11 Science</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class12science"><label for="class12science">Class 12 Science</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class11common"><label for="class11common">Class 11 Common Subject</label></div>
-            <div class="class-item"><input type="checkbox" class="classCheck" id="class12common"><label for="class12common">Class 12 Common Subject</label></div>
+            <div class="class-item" data-checkbox="class11arts"><input type="checkbox" class="classCheck" id="class11arts"><label for="class11arts">Class 11 Arts</label></div>
+            <div class="class-item" data-checkbox="class12arts"><input type="checkbox" class="classCheck" id="class12arts"><label for="class12arts">Class 12 Arts</label></div>
+            <div class="class-item" data-checkbox="class11commerce"><input type="checkbox" class="classCheck" id="class11commerce"><label for="class11commerce">Class 11 Commerce</label></div>
+            <div class="class-item" data-checkbox="class12commerce"><input type="checkbox" class="classCheck" id="class12commerce"><label for="class12commerce">Class 12 Commerce</label></div>
+            <div class="class-item" data-checkbox="class11science"><input type="checkbox" class="classCheck" id="class11science"><label for="class11science">Class 11 Science</label></div>
+            <div class="class-item" data-checkbox="class12science"><input type="checkbox" class="classCheck" id="class12science"><label for="class12science">Class 12 Science</label></div>
+            <div class="class-item" data-checkbox="class11common"><input type="checkbox" class="classCheck" id="class11common"><label for="class11common">Class 11 Common Subject</label></div>
+            <div class="class-item" data-checkbox="class12common"><input type="checkbox" class="classCheck" id="class12common"><label for="class12common">Class 12 Common Subject</label></div>
           </div>
         </div>
 
@@ -745,7 +754,7 @@
   const checkboxes = document.querySelectorAll(".classCheck");
   const total = checkboxes.length;
 
-  // Additional detail elements
+  // Detail elements
   const completedDetail = document.getElementById("completedDetail");
   const remainingDetail = document.getElementById("remainingDetail");
   const completedValueEl = document.getElementById("completedValue");
@@ -753,11 +762,11 @@
   const progressNumberEl = document.getElementById("progressNumber");
   const progressCircleSvg = document.getElementById("progressCircleSvg");
 
-  // Set circle circumference
+  // Circle setup
   const radius = progressCircleSvg.r.baseVal.value;
   const circumference = 2 * Math.PI * radius;
   progressCircleSvg.style.strokeDasharray = circumference;
-  progressCircleSvg.style.strokeDashoffset = circumference; // start empty
+  progressCircleSvg.style.strokeDashoffset = circumference;
 
   /* ---------- Update Progress ---------- */
   function updateProgress() {
@@ -770,21 +779,18 @@
     const remaining = 100 - percentage;
     const remainingCount = total - completed;
 
-    // Update text
     progressNumberEl.innerText = percentage + "%";
     completedValueEl.innerText = percentage + "%";
     remainingValueEl.innerText = remaining + "%";
 
-    // Update detail text
     completedDetail.innerText = `${completed} of ${total} classes`;
     remainingDetail.innerText = `${remainingCount} class${remainingCount !== 1 ? 'es' : ''} left`;
 
-    // Update SVG progress
     const offset = circumference - (percentage / 100) * circumference;
     progressCircleSvg.style.strokeDashoffset = offset;
   }
 
-  /* ---------- Save & Load Progress ---------- */
+  /* ---------- Save & Load ---------- */
   function saveProgress() {
     const values = Array.from(checkboxes).map(box => box.checked);
     localStorage.setItem("classProgress_v2", JSON.stringify(values));
@@ -807,14 +813,7 @@
     updateProgress();
   }
 
-  /* ---------- Add event listeners to checkboxes AND labels (via parent) ---------- */
-  // The class-item itself is clickable but we avoid double-toggling by using label + input association.
-  // Actually, clicking on the label already toggles the checkbox if "for" is set, but since input is inside the label's parent,
-  // we need to ensure no double toggling. We'll just rely on the native checkbox + label "for" attribute.
-  // But we also want the whole .class-item area to be clickable. We can add a click handler that prevents double toggling when clicking directly on label.
-  // Better: add listener to .class-item but only toggle if the click target is NOT the input and NOT the label (because label already triggers input via 'for')
-  // Actually simpler: We'll just keep the native behaviour. But we'll add change listeners on all checkboxes to update + save.
-
+  /* ---------- Listen to checkbox changes ---------- */
   checkboxes.forEach(checkbox => {
     checkbox.addEventListener("change", () => {
       updateProgress();
@@ -822,9 +821,8 @@
     });
   });
 
-  /* ---------- Interactive Progress Reset (click on circle) ---------- */
-  document.getElementById("progressContainer").addEventListener("click", (e) => {
-    // Avoid triggering when clicking on inner elements? It's fine, we confirm.
+  /* ---------- Reset on circle click ---------- */
+  document.getElementById("progressContainer").addEventListener("click", () => {
     if (confirm("Reset all selected classes? This will clear your progress.")) {
       checkboxes.forEach(box => {
         box.checked = false;
@@ -834,7 +832,7 @@
     }
   });
 
-  /* ---------- Search Classes ---------- */
+  /* ---------- Search ---------- */
   function searchClasses() {
     const search = document.getElementById("classSearch").value.toLowerCase();
     const items = document.querySelectorAll(".class-item");
@@ -851,23 +849,18 @@
     });
   }
 
-  /* ---------- Make label click work naturally, but also whole .class-item clickable without double toggle? ---------- */
-  // Since we used <label for="id">, clicking on label toggles checkbox, and clicking on the .class-item area outside label/input does nothing.
-  // We want the whole .class-item area to toggle the checkbox. We'll add a click handler that toggles if the click target is not the input and not the label.
-  // Actually if we click on the label, the browser toggles the checkbox, then our handler would toggle again -> double toggle. So we avoid that.
-  // Better: Remove "for" attribute from labels and handle everything via .class-item click? But then we lose accessibility.
-  // We'll keep "for" and also add a click listener on the .class-item that toggles the checkbox only if the target is not the label and not the input.
+  /* ---------- Make the whole .class-item clickable without double-toggling ---------- */
   document.querySelectorAll(".class-item").forEach(item => {
     item.addEventListener("click", (e) => {
-      // If the click is on the label or input, let the default behavior handle it (label toggles input)
+      // If the click originated from the label or input, ignore (label handles it)
       if (e.target.tagName === "LABEL" || e.target.tagName === "INPUT") {
-        return; // don't interfere
+        return;
       }
-      // Otherwise, find the checkbox inside and toggle it
+      // Otherwise, toggle the checkbox inside
       const checkbox = item.querySelector('input[type="checkbox"]');
       if (checkbox) {
         checkbox.checked = !checkbox.checked;
-        // Trigger change event manually
+        // Trigger change event manually so updateProgress and saveProgress run
         const changeEvent = new Event('change', { bubbles: true });
         checkbox.dispatchEvent(changeEvent);
       }
@@ -877,15 +870,10 @@
   /* ---------- Initialize ---------- */
   loadProgress();
 
-  // Also update detail counts on load
-  // Already called via updateProgress inside loadProgress.
-  // Ensure total display initial
   window.addEventListener('load', function() {
-    // Recalculate in case any checkbox is pre-checked
     updateProgress();
   });
 
-  // Expose searchClasses to global (already inline onkeyup)
   window.searchClasses = searchClasses;
 </script>
 </body>
