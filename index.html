@@ -1,1099 +1,892 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Check Question Paper</title>
-
-<style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-    font-family:Arial, Helvetica, sans-serif;
-    background:#f4f8fc;
-    color:#102f5c;
-}
-
-/* ================= HEADER ================= */
-
-.header{
-    height:105px;
-    background:linear-gradient(110deg,#ffc928,#ffe67c,#fff1b8);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 38px;
-    box-shadow:0 3px 15px rgba(0,0,0,.08);
-}
-
-.brand{
-    display:flex;
-    align-items:center;
-    gap:18px;
-}
-
-.logo{
-    width:65px;
-    height:65px;
-    background:white;
-    border-radius:16px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:35px;
-    box-shadow:0 5px 15px rgba(0,0,0,.12);
-}
-
-.brand h1{
-    font-size:34px;
-    color:#092f61;
-    letter-spacing:-.5px;
-}
-
-.brand p{
-    font-size:17px;
-    margin-top:5px;
-    color:#234b78;
-}
-
-.header-icons{
-    display:flex;
-    align-items:center;
-    gap:18px;
-}
-
-.icon-btn{
-    width:48px;
-    height:48px;
-    border-radius:50%;
-    background:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:22px;
-    box-shadow:0 4px 15px rgba(0,0,0,.1);
-}
-
-
-/* ================= MAIN ================= */
-
-.container{
-    width:96%;
-    max-width:1650px;
-    margin:25px auto;
-}
-
-.dashboard{
-    display:grid;
-    grid-template-columns:300px 450px 1fr;
-    gap:20px;
-    align-items:start;
-}
-
-
-/* ================= COMMON CARD ================= */
-
-.card{
-    background:white;
-    border-radius:20px;
-    border:1px solid #e4ebf4;
-    box-shadow:0 5px 25px rgba(23,57,96,.08);
-}
-
-
-/* ================= PROGRESS ================= */
-
-.progress-card{
-    padding:25px;
-    min-height:720px;
-}
-
-.card-title{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    margin-bottom:8px;
-}
-
-.title-icon{
-    width:45px;
-    height:45px;
-    border-radius:50%;
-    background:#fff1bd;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:23px;
-}
-
-.card-title h2{
-    font-size:22px;
-}
-
-.subtitle{
-    color:#71829a;
-    font-size:14px;
-    margin-left:57px;
-}
-
-
-/* CIRCLE */
-
-.progress-circle{
-    width:210px;
-    height:210px;
-    border-radius:50%;
-    margin:45px auto 30px;
-
-    background:
-        conic-gradient(
-            #ffbd12 var(--progress),
-            #dce8f5 var(--progress)
-        );
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    position:relative;
-}
-
-.progress-circle::after{
-    content:"";
-    position:absolute;
-    width:165px;
-    height:165px;
-    background:white;
-    border-radius:50%;
-}
-
-.progress-content{
-    position:relative;
-    z-index:2;
-    text-align:center;
-}
-
-.progress-number{
-    font-size:38px;
-    font-weight:bold;
-    color:#0c315f;
-}
-
-.progress-label{
-    font-size:15px;
-    color:#315477;
-    margin-top:3px;
-}
-
-
-/* PROGRESS INFO */
-
-.progress-info{
-    margin-top:25px;
-}
-
-.progress-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:17px 14px;
-    border-bottom:1px solid #edf1f6;
-}
-
-.progress-row:last-child{
-    border-bottom:none;
-}
-
-.progress-left{
-    display:flex;
-    align-items:center;
-    gap:12px;
-}
-
-.small-icon{
-    width:35px;
-    height:35px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-.green{
-    background:#d9f8e9;
-    color:#08a866;
-}
-
-.blue{
-    background:#e3efff;
-    color:#1670dc;
-}
-
-.progress-value{
-    font-weight:bold;
-    font-size:18px;
-}
-
-
-/* ================= CLASS CARD ================= */
-
-.class-card{
-    padding:25px;
-    min-height:720px;
-}
-
-.class-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:20px;
-}
-
-.class-title{
-    display:flex;
-    align-items:center;
-    gap:12px;
-}
-
-.class-title-icon{
-    width:45px;
-    height:45px;
-    border-radius:50%;
-    background:#e7f0ff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:23px;
-}
-
-.class-title h2{
-    font-size:22px;
-}
-
-.search{
-    width:190px;
-    border:none;
-    outline:none;
-    background:#f1f6fb;
-    border-radius:25px;
-    padding:12px 16px 12px 40px;
-    font-size:14px;
-    color:#315477;
-
-    background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23315477' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16' y1='16' x2='21' y2='21'/%3E%3C/svg%3E");
-
-    background-repeat:no-repeat;
-    background-position:14px center;
-}
-
-
-/* CLASS GROUP */
-
-.class-group{
-    border-radius:15px;
-    overflow:hidden;
-    border:1px solid #e2eaf4;
-    margin-bottom:18px;
-}
-
-.group-title{
-    padding:13px 16px;
-    font-weight:bold;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-}
-
-.primary-title{
-    background:#fff0b7;
-}
-
-.secondary-title{
-    background:#e3f0ff;
-}
-
-.class-list{
-    padding:12px 15px;
-    max-height:420px;
-    overflow-y:auto;
-}
-
-.class-item{
-    display:flex;
-    align-items:center;
-    gap:11px;
-    padding:8px 4px;
-    font-size:15px;
-    color:#173e6b;
-}
-
-.class-item input{
-    width:19px;
-    height:19px;
-    accent-color:#ffb900;
-    cursor:pointer;
-}
-
-.class-item label{
-    cursor:pointer;
-}
-
-.class-item:hover{
-    background:#f7faff;
-    border-radius:7px;
-}
-
-
-/* SECONDARY TWO COLUMNS */
-
-.secondary-list{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-}
-
-
-/* ================= FORM CARD ================= */
-
-.form-card{
-    padding:18px;
-    height:720px;
-    overflow:hidden;
-}
-
-.form-header{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:8px 10px 16px;
-}
-
-.form-icon{
-    width:44px;
-    height:44px;
-    border-radius:50%;
-    background:#fff1bc;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:23px;
-}
-
-.form-header h2{
-    font-size:22px;
-}
-
-.form-wrapper{
-    width:100%;
-    height:630px;
-    overflow:auto;
-    border-radius:14px;
-    background:#f7f9fc;
-    border:1px solid #e2e8f0;
-}
-
-.form-wrapper iframe{
-    width:100%;
-    min-width:640px;
-    height:1665px;
-    border:0;
-    display:block;
-}
-
-
-/* ================= BOTTOM ================= */
-
-.bottom-message{
-    margin-top:20px;
-    background:#fff8dc;
-    border:1px solid #ffe38b;
-    border-radius:14px;
-    padding:16px 20px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    color:#5c4b13;
-}
-
-
-/* ================= FOOTER ================= */
-
-.footer{
-    margin-top:30px;
-    background:#092f61;
-    color:white;
-    padding:20px;
-    text-align:center;
-    font-size:14px;
-}
-
-
-/* ================= RESPONSIVE ================= */
-
-@media(max-width:1250px){
-
-    .dashboard{
-        grid-template-columns:280px 1fr;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check Question Paper • Class Selection</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    .form-card{
-        grid-column:1 / -1;
+    body {
+      font-family: 'Segoe UI', Roboto, Arial, Helvetica, sans-serif;
+      background: #f4f8fc;
+      color: #102f5c;
     }
 
-}
-
-@media(max-width:850px){
-
-    .header{
-        height:auto;
-        padding:18px 20px;
+    /* ================= HEADER ================= */
+    .header {
+      height: 105px;
+      background: linear-gradient(110deg, #ffc928, #ffe67c, #fff1b8);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 38px;
+      box-shadow: 0 3px 15px rgba(0, 0, 0, .08);
     }
 
-    .brand h1{
-        font-size:25px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
     }
 
-    .brand p{
-        font-size:14px;
+    .logo {
+      width: 65px;
+      height: 65px;
+      background: white;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 35px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, .12);
     }
 
-    .logo{
-        width:52px;
-        height:52px;
-        font-size:28px;
+    .brand h1 {
+      font-size: 34px;
+      color: #092f61;
+      letter-spacing: -.5px;
     }
 
-    .dashboard{
-        grid-template-columns:1fr;
+    .brand p {
+      font-size: 17px;
+      margin-top: 5px;
+      color: #234b78;
     }
 
-    .progress-card,
-    .class-card,
-    .form-card{
-        min-height:auto;
+    .header-icons {
+      display: flex;
+      align-items: center;
+      gap: 18px;
     }
 
-    .form-card{
-        height:700px;
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
+      position: relative;
+      cursor: default;
     }
 
-    .form-wrapper{
-        height:600px;
+    .icon-btn.notification::after {
+      content: "0";
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: #ff4d4f;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-}
-
-@media(max-width:550px){
-
-    .header-icons{
-        display:none;
+    /* ================= MAIN ================= */
+    .container {
+      width: 96%;
+      max-width: 1650px;
+      margin: 25px auto;
     }
 
-    .container{
-        width:94%;
+    .dashboard {
+      display: grid;
+      grid-template-columns: 300px 450px 1fr;
+      gap: 20px;
+      align-items: start;
     }
 
-    .class-header{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:15px;
+    /* ================= COMMON CARD ================= */
+    .card {
+      background: white;
+      border-radius: 20px;
+      border: 1px solid #e4ebf4;
+      box-shadow: 0 5px 25px rgba(23, 57, 96, .08);
     }
 
-    .search{
-        width:100%;
+    /* ================= PROGRESS CARD (informative) ================= */
+    .progress-card {
+      padding: 25px;
+      min-height: 720px;
+      display: flex;
+      flex-direction: column;
     }
 
-    .secondary-list{
-        grid-template-columns:1fr;
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
     }
 
-    .form-wrapper iframe{
-        min-width:600px;
+    .title-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #fff1bd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
     }
 
-}
+    .card-title h2 {
+      font-size: 22px;
+    }
 
-</style>
+    .subtitle {
+      color: #71829a;
+      font-size: 14px;
+      margin-left: 57px;
+    }
+
+    /* Interactive SVG Progress Circle */
+    .progress-circle-container {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      margin: 25px auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .progress-circle-container:hover {
+      transform: scale(1.02);
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.8s ease;
+      stroke-linecap: round;
+    }
+
+    .progress-content {
+      position: absolute;
+      text-align: center;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .progress-number {
+      font-size: 42px;
+      font-weight: 700;
+      color: #0c315f;
+      line-height: 1.2;
+    }
+
+    .progress-label {
+      font-size: 15px;
+      color: #315477;
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    .progress-hint {
+      text-align: center;
+      font-size: 12px;
+      color: #71829a;
+      margin-top: -10px;
+      margin-bottom: 18px;
+      opacity: 0.8;
+    }
+
+    /* Progress info rows - more informative */
+    .progress-info {
+      margin-top: 8px;
+    }
+
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 14px;
+      border-bottom: 1px solid #edf1f6;
+    }
+
+    .progress-row:last-child {
+      border-bottom: none;
+    }
+
+    .progress-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .small-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .green {
+      background: #d9f8e9;
+      color: #08a866;
+    }
+
+    .blue {
+      background: #e3efff;
+      color: #1670dc;
+    }
+
+    .progress-value {
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .progress-detail {
+      font-size: 13px;
+      color: #5f7a99;
+      margin-top: 2px;
+      font-weight: 400;
+    }
+
+    .bottom-message {
+      margin-top: auto;
+      background: #fff8dc;
+      border: 1px solid #ffe38b;
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #5c4b13;
+      font-size: 14px;
+    }
+
+    /* ================= CLASS CARD ================= */
+    .class-card {
+      padding: 22px 20px;
+      min-height: 720px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .class-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .class-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .class-title-icon {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #e7f0ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+    }
+
+    .class-title h2 {
+      font-size: 22px;
+    }
+
+    .search {
+      width: 190px;
+      border: none;
+      outline: none;
+      background: #f1f6fb;
+      border-radius: 25px;
+      padding: 12px 16px 12px 40px;
+      font-size: 14px;
+      color: #315477;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23315477' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='16' y1='16' x2='21' y2='21'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 14px center;
+    }
+
+    /* Class groups - scrollable */
+    .class-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 4px;
+      margin-bottom: 4px;
+    }
+
+    .class-group {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #e2eaf4;
+      margin-bottom: 18px;
+      background: white;
+    }
+
+    .group-title {
+      padding: 13px 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 15px;
+    }
+
+    .primary-title {
+      background: #fff0b7;
+    }
+
+    .secondary-title {
+      background: #e3f0ff;
+    }
+
+    .class-list {
+      padding: 12px 14px;
+    }
+
+    .class-list-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 12px;
+    }
+
+    /* Clickable class items */
+    .class-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 8px;
+      font-size: 15px;
+      color: #173e6b;
+      border-radius: 10px;
+      transition: background 0.1s;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .class-item:hover {
+      background: #f0f6ff;
+    }
+
+    .class-item input {
+      width: 19px;
+      height: 19px;
+      accent-color: #ffb900;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin: 0;
+    }
+
+    .class-item label {
+      cursor: pointer;
+      flex: 1;
+      line-height: 1.3;
+      font-weight: 500;
+    }
+
+    /* ================= EMBEDDED FORM ================= */
+    .form-card {
+      padding: 18px;
+      height: 720px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px 16px;
+    }
+
+    .form-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #fff1bc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 23px;
+    }
+
+    .form-header h2 {
+      font-size: 22px;
+    }
+
+    .form-wrapper {
+      flex-grow: 1;
+      width: 100%;
+      overflow: auto;
+      border-radius: 14px;
+      background: #f7f9fc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .form-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    /* ================= FOOTER ================= */
+    .footer {
+      margin-top: 30px;
+      background: #092f61;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 1250px) {
+      .dashboard {
+        grid-template-columns: 280px 1fr;
+      }
+      .form-card {
+        grid-column: 1 / -1;
+        height: auto;
+        min-height: 600px;
+      }
+    }
+
+    @media (max-width: 850px) {
+      .header {
+        height: auto;
+        padding: 18px 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .brand h1 {
+        font-size: 25px;
+      }
+      .brand p {
+        font-size: 14px;
+      }
+      .logo {
+        width: 52px;
+        height: 52px;
+        font-size: 28px;
+      }
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      .progress-card,
+      .class-card,
+      .form-card {
+        min-height: auto;
+        height: auto;
+      }
+      .form-card {
+        height: 700px;
+      }
+      .class-list-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 550px) {
+      .container {
+        width: 94%;
+      }
+      .class-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .search {
+        width: 100%;
+      }
+      .class-list-grid {
+        grid-template-columns: 1fr;
+      }
+      .icon-btn.notification::after {
+        width: 18px;
+        height: 18px;
+        font-size: 11px;
+      }
+    }
+  </style>
 </head>
-
-
 <body>
 
-
 <!-- ================= HEADER ================= -->
-
 <header class="header">
-
-    <div class="brand">
-
-        <div class="logo">
-            📄
-        </div>
-
-        <div>
-            <h1>Check Question Paper</h1>
-
-            <p>
-                Upload &nbsp; • &nbsp; Check &nbsp; • &nbsp; Get Results
-            </p>
-        </div>
-
+  <div class="brand">
+    <div class="logo">📄</div>
+    <div>
+      <h1>Check Question Paper</h1>
+      <p>Upload &nbsp; • &nbsp; Check &nbsp; • &nbsp; Get Results</p>
     </div>
+  </div>
 
-
-    <div class="header-icons">
-
-        <div class="icon-btn">
-            🔔
-        </div>
-
-        <div class="icon-btn">
-            👤
-        </div>
-
+  <div class="header-icons">
+    <!-- Notification button with "no notifications" badge -->
+    <div class="icon-btn notification" title="No notifications">
+      🔔
     </div>
-
+    <!-- Person icon removed as requested -->
+  </div>
 </header>
 
-
-
 <!-- ================= MAIN ================= -->
-
 <div class="container">
+  <div class="dashboard">
 
-<div class="dashboard">
-
-
-<!-- ================= PROGRESS ================= -->
-
-<section class="card progress-card">
-
-    <div class="card-title">
-
-        <div class="title-icon">
-            🎯
-        </div>
-
+    <!-- ================= PROGRESS CARD ================= -->
+    <section class="card progress-card">
+      <div class="card-title">
+        <div class="title-icon">🎯</div>
         <h2>Work Completion</h2>
+      </div>
+      <p class="subtitle">Track your progress</p>
 
-    </div>
-
-    <p class="subtitle">
-        Track your progress
-    </p>
-
-
-    <div
-        class="progress-circle"
-        id="progressCircle"
-        style="--progress:0%;">
-
+      <!-- Interactive SVG Progress Chart -->
+      <div class="progress-circle-container" id="progressContainer" title="Click to reset progress">
+        <svg class="progress-ring" width="220" height="220">
+          <circle class="progress-ring__circle-bg" stroke="#dce8f5" stroke-width="15" fill="transparent" r="95" cx="110" cy="110" />
+          <circle class="progress-ring__circle" stroke="#ffbd12" stroke-width="15" fill="transparent" r="95" cx="110" cy="110" id="progressCircleSvg" />
+        </svg>
         <div class="progress-content">
-
-            <div
-                class="progress-number"
-                id="progressNumber">
-                0%
-            </div>
-
-            <div class="progress-label">
-                Completed
-            </div>
-
+          <div class="progress-number" id="progressNumber">0%</div>
+          <div class="progress-label">Completed</div>
         </div>
+      </div>
+      <div class="progress-hint">👆 Click circle to reset all</div>
 
-    </div>
-
-
-    <div class="progress-info">
-
+      <!-- More informative progress info -->
+      <div class="progress-info">
         <div class="progress-row">
-
-            <div class="progress-left">
-
-                <div class="small-icon green">
-                    ✓
-                </div>
-
-                <span>
-                    Completed
-                </span>
-
-            </div>
-
-            <div
-                class="progress-value"
-                id="completedValue">
-                0%
-            </div>
-
-        </div>
-
-
-        <div class="progress-row">
-
-            <div class="progress-left">
-
-                <div class="small-icon blue">
-                    ◷
-                </div>
-
-                <span>
-                    Remaining
-                </span>
-
-            </div>
-
-            <div
-                class="progress-value"
-                id="remainingValue">
-                100%
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="bottom-message">
-
-        <span style="font-size:24px;">✓</span>
-
-        <span>
-            Select the required class to update your progress.
-        </span>
-
-    </div>
-
-</section>
-
-
-
-<!-- ================= CLASS SELECTION ================= -->
-
-<section class="card class-card">
-
-    <div class="class-header">
-
-        <div class="class-title">
-
-            <div class="class-title-icon">
-                👥
-            </div>
-
+          <div class="progress-left">
+            <div class="small-icon green">✓</div>
             <div>
-                <h2>Select Class</h2>
+              <div>Completed</div>
+              <div class="progress-detail" id="completedDetail">0 of 26 classes</div>
             </div>
-
+          </div>
+          <div class="progress-value" id="completedValue">0%</div>
         </div>
 
+        <div class="progress-row">
+          <div class="progress-left">
+            <div class="small-icon blue">◷</div>
+            <div>
+              <div>Remaining</div>
+              <div class="progress-detail" id="remainingDetail">26 classes left</div>
+            </div>
+          </div>
+          <div class="progress-value" id="remainingValue">100%</div>
+        </div>
+      </div>
 
-        <input
-            type="text"
-            id="classSearch"
-            class="search"
-            placeholder="Search class..."
-            onkeyup="searchClasses()">
+      <div class="bottom-message">
+        <span style="font-size:24px;">✓</span>
+        <span>Select the required classes to update your progress.</span>
+      </div>
+    </section>
 
-    </div>
+    <!-- ================= CLASS SELECTION ================= -->
+    <section class="card class-card">
+      <div class="class-header">
+        <div class="class-title">
+          <div class="class-title-icon">👥</div>
+          <div>
+            <h2>Select Class</h2>
+          </div>
+        </div>
+        <input type="text" id="classSearch" class="search" placeholder="Search class..." onkeyup="searchClasses()">
+      </div>
 
+      <!-- Scrollable area for class groups -->
+      <div class="class-scroll-area">
 
-
-    <!-- PRIMARY -->
-
-    <div class="class-group">
-
-        <div class="group-title primary-title">
-
-            <span>
-                🎓 &nbsp; Primary Classes
-            </span>
-
-            <span>
-               ⌃
-            </span>
-
+        <!-- Kindergarten / Pre-Primary -->
+        <div class="class-group">
+          <div class="group-title" style="background:#ffe9c7;">
+            <span>🧸 &nbsp; Kindergarten</span>
+            <span>⌃</span>
+          </div>
+          <div class="class-list class-list-grid">
+            <div class="class-item">
+              <input type="checkbox" class="classCheck" id="nursery">
+              <label for="nursery">Nursery</label>
+            </div>
+            <div class="class-item">
+              <input type="checkbox" class="classCheck" id="lkg">
+              <label for="lkg">LKG</label>
+            </div>
+            <div class="class-item">
+              <input type="checkbox" class="classCheck" id="ukg">
+              <label for="ukg">UKG</label>
+            </div>
+          </div>
         </div>
 
-
-        <div class="class-list">
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 1</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 2</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 3</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 4</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 5</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 6</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 7</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 8</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 9</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 10</label>
-            </div>
-
+        <!-- Primary -->
+        <div class="class-group">
+          <div class="group-title primary-title">
+            <span>🎓 &nbsp; Primary</span>
+            <span>⌃</span>
+          </div>
+          <div class="class-list class-list-grid">
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class1"><label for="class1">Class 1</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class2"><label for="class2">Class 2</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class3"><label for="class3">Class 3</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class4"><label for="class4">Class 4</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class5"><label for="class5">Class 5</label></div>
+          </div>
         </div>
 
-    </div>
-
-
-
-    <!-- SECONDARY -->
-
-    <div class="class-group">
-
-        <div class="group-title secondary-title">
-
-            <span>
-                📚 &nbsp; Secondary Classes
-            </span>
-
-            <span>
-               ⌃
-            </span>
-
+        <!-- Junior -->
+        <div class="class-group">
+          <div class="group-title" style="background:#e6f2e6;">
+            <span>📘 &nbsp; Junior</span>
+            <span>⌃</span>
+          </div>
+          <div class="class-list class-list-grid">
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class6"><label for="class6">Class 6</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class7"><label for="class7">Class 7</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class8"><label for="class8">Class 8</label></div>
+          </div>
         </div>
 
-
-        <div class="class-list secondary-list">
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 11 Common Subjects</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 12 Common Subjects</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 11 Arts</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 12 Arts</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 11 Commerce</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 12 Commerce</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 11 PCM</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 12 PCM</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 11 PCB</label>
-            </div>
-
-            <div class="class-item">
-                <input type="checkbox" class="classCheck">
-                <label>Class 12 PCB</label>
-            </div>
-
+        <!-- Secondary -->
+        <div class="class-group">
+          <div class="group-title secondary-title">
+            <span>📚 &nbsp; Secondary</span>
+            <span>⌃</span>
+          </div>
+          <div class="class-list class-list-grid">
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class9"><label for="class9">Class 9</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class10"><label for="class10">Class 10</label></div>
+          </div>
         </div>
 
-    </div>
-
-</section>
-
-
-
-<!-- ================= EMBEDDED FORM ================= -->
-
-<section class="card form-card">
-
-    <div class="form-header">
-
-        <div class="form-icon">
-            📝
+        <!-- Senior Secondary -->
+        <div class="class-group">
+          <div class="group-title" style="background:#f3e8ff;">
+            <span>🎓 &nbsp; Senior Secondary</span>
+            <span>⌃</span>
+          </div>
+          <div class="class-list class-list-grid">
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class11arts"><label for="class11arts">Class 11 Arts</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class12arts"><label for="class12arts">Class 12 Arts</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class11commerce"><label for="class11commerce">Class 11 Commerce</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class12commerce"><label for="class12commerce">Class 12 Commerce</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class11science"><label for="class11science">Class 11 Science</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class12science"><label for="class12science">Class 12 Science</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class11common"><label for="class11common">Class 11 Common Subject</label></div>
+            <div class="class-item"><input type="checkbox" class="classCheck" id="class12common"><label for="class12common">Class 12 Common Subject</label></div>
+          </div>
         </div>
 
+      </div> <!-- end scroll area -->
+    </section>
+
+    <!-- ================= EMBEDDED FORM ================= -->
+    <section class="card form-card">
+      <div class="form-header">
+        <div class="form-icon">📝</div>
         <div>
-            <h2>Check Question Paper</h2>
+          <h2>Check Question Paper</h2>
         </div>
-
-    </div>
-
-
-    <div class="form-wrapper">
-
+      </div>
+      <div class="form-wrapper">
         <iframe
-            src="https://docs.google.com/forms/d/e/1FAIpQLScvXMrAvk7DZSH_20el2nU_KQDeRde13MeHjzxKwMNmsBhTMQ/viewform?embedded=true"
-            width="640"
-            height="1665"
-            frameborder="0"
-            marginheight="0"
-            marginwidth="0">
-
-            Loading…
-
+          src="https://docs.google.com/forms/d/e/1FAIpQLScvXMrAvk7DZSH_20el2nU_KQDeRde13MeHjzxKwMNmsBhTMQ/viewform?embedded=true"
+          width="100%"
+          height="100%"
+          frameborder="0"
+          marginheight="0"
+          marginwidth="0">
+          Loading…
         </iframe>
+      </div>
+    </section>
 
-    </div>
-
-</section>
-
-
+  </div>
 </div>
-
-</div>
-
-
 
 <!-- ================= FOOTER ================= -->
-
 <footer class="footer">
-
-    © 2026 Check Question Paper
-
+  © 2026 Check Question Paper
 </footer>
 
-
-
 <script>
+  /* =========================================
+     CLASS CHECKBOX PROGRESS
+  ========================================= */
+  const checkboxes = document.querySelectorAll(".classCheck");
+  const total = checkboxes.length;
 
-/* =========================================
-   CLASS CHECKBOX PROGRESS
-========================================= */
+  // Additional detail elements
+  const completedDetail = document.getElementById("completedDetail");
+  const remainingDetail = document.getElementById("remainingDetail");
+  const completedValueEl = document.getElementById("completedValue");
+  const remainingValueEl = document.getElementById("remainingValue");
+  const progressNumberEl = document.getElementById("progressNumber");
+  const progressCircleSvg = document.getElementById("progressCircleSvg");
 
-const checkboxes =
-    document.querySelectorAll(".classCheck");
+  // Set circle circumference
+  const radius = progressCircleSvg.r.baseVal.value;
+  const circumference = 2 * Math.PI * radius;
+  progressCircleSvg.style.strokeDasharray = circumference;
+  progressCircleSvg.style.strokeDashoffset = circumference; // start empty
 
-const total =
-    checkboxes.length;
-
-
-checkboxes.forEach((checkbox, index) => {
-
-    checkbox.addEventListener("change", () => {
-
-        updateProgress();
-
-        saveProgress();
-
-    });
-
-});
-
-
-function updateProgress(){
-
+  /* ---------- Update Progress ---------- */
+  function updateProgress() {
     let completed = 0;
-
-
     checkboxes.forEach(box => {
-
-        if(box.checked){
-            completed++;
-        }
-
+      if (box.checked) completed++;
     });
 
+    const percentage = Math.round((completed / total) * 100);
+    const remaining = 100 - percentage;
+    const remainingCount = total - completed;
 
-    let percentage =
-        Math.round((completed / total) * 100);
+    // Update text
+    progressNumberEl.innerText = percentage + "%";
+    completedValueEl.innerText = percentage + "%";
+    remainingValueEl.innerText = remaining + "%";
 
+    // Update detail text
+    completedDetail.innerText = `${completed} of ${total} classes`;
+    remainingDetail.innerText = `${remainingCount} class${remainingCount !== 1 ? 'es' : ''} left`;
 
-    let remaining =
-        100 - percentage;
+    // Update SVG progress
+    const offset = circumference - (percentage / 100) * circumference;
+    progressCircleSvg.style.strokeDashoffset = offset;
+  }
 
+  /* ---------- Save & Load Progress ---------- */
+  function saveProgress() {
+    const values = Array.from(checkboxes).map(box => box.checked);
+    localStorage.setItem("classProgress_v2", JSON.stringify(values));
+  }
 
-    /* Circle */
-
-    document
-        .getElementById("progressCircle")
-        .style.setProperty(
-            "--progress",
-            percentage + "%"
-        );
-
-
-    /* Percentage */
-
-    document
-        .getElementById("progressNumber")
-        .innerText =
-        percentage + "%";
-
-
-    /* Completed */
-
-    document
-        .getElementById("completedValue")
-        .innerText =
-        percentage + "%";
-
-
-    /* Remaining */
-
-    document
-        .getElementById("remainingValue")
-        .innerText =
-        remaining + "%";
-
-}
-
-
-
-/* =========================================
-   SAVE PROGRESS
-========================================= */
-
-function saveProgress(){
-
-    const values =
-        Array.from(checkboxes)
-        .map(box => box.checked);
-
-
-    localStorage.setItem(
-        "classProgress",
-        JSON.stringify(values)
-    );
-
-}
-
-
-
-/* =========================================
-   LOAD PROGRESS
-========================================= */
-
-function loadProgress(){
-
-    const saved =
-        localStorage.getItem("classProgress");
-
-
-    if(saved){
-
-        const values =
-            JSON.parse(saved);
-
-
-        values.forEach((value,index)=>{
-
-            if(checkboxes[index]){
-                checkboxes[index].checked =
-                    value;
-            }
-
+  function loadProgress() {
+    const saved = localStorage.getItem("classProgress_v2");
+    if (saved) {
+      try {
+        const values = JSON.parse(saved);
+        values.forEach((value, index) => {
+          if (checkboxes[index]) {
+            checkboxes[index].checked = value;
+          }
         });
-
+      } catch (e) {
+        console.warn("Failed to load progress");
+      }
     }
-
-
     updateProgress();
+  }
 
-}
+  /* ---------- Add event listeners to checkboxes AND labels (via parent) ---------- */
+  // The class-item itself is clickable but we avoid double-toggling by using label + input association.
+  // Actually, clicking on the label already toggles the checkbox if "for" is set, but since input is inside the label's parent,
+  // we need to ensure no double toggling. We'll just rely on the native checkbox + label "for" attribute.
+  // But we also want the whole .class-item area to be clickable. We can add a click handler that prevents double toggling when clicking directly on label.
+  // Better: add listener to .class-item but only toggle if the click target is NOT the input and NOT the label (because label already triggers input via 'for')
+  // Actually simpler: We'll just keep the native behaviour. But we'll add change listeners on all checkboxes to update + save.
 
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener("change", () => {
+      updateProgress();
+      saveProgress();
+    });
+  });
 
-loadProgress();
+  /* ---------- Interactive Progress Reset (click on circle) ---------- */
+  document.getElementById("progressContainer").addEventListener("click", (e) => {
+    // Avoid triggering when clicking on inner elements? It's fine, we confirm.
+    if (confirm("Reset all selected classes? This will clear your progress.")) {
+      checkboxes.forEach(box => {
+        box.checked = false;
+      });
+      updateProgress();
+      saveProgress();
+    }
+  });
 
-
-
-/* =========================================
-   SEARCH CLASS
-========================================= */
-
-function searchClasses(){
-
-    const search =
-        document
-        .getElementById("classSearch")
-        .value
-        .toLowerCase();
-
-
-    const items =
-        document.querySelectorAll(".class-item");
-
+  /* ---------- Search Classes ---------- */
+  function searchClasses() {
+    const search = document.getElementById("classSearch").value.toLowerCase();
+    const items = document.querySelectorAll(".class-item");
 
     items.forEach(item => {
-
-        const text =
-            item
-            .querySelector("label")
-            .innerText
-            .toLowerCase();
-
-
-        if(text.includes(search)){
-
-            item.style.display =
-                "flex";
-
-        }else{
-
-            item.style.display =
-                "none";
-
-        }
-
+      const label = item.querySelector("label");
+      if (!label) return;
+      const text = label.innerText.toLowerCase();
+      if (text.includes(search)) {
+        item.style.display = "flex";
+      } else {
+        item.style.display = "none";
+      }
     });
+  }
 
-}
+  /* ---------- Make label click work naturally, but also whole .class-item clickable without double toggle? ---------- */
+  // Since we used <label for="id">, clicking on label toggles checkbox, and clicking on the .class-item area outside label/input does nothing.
+  // We want the whole .class-item area to toggle the checkbox. We'll add a click handler that toggles if the click target is not the input and not the label.
+  // Actually if we click on the label, the browser toggles the checkbox, then our handler would toggle again -> double toggle. So we avoid that.
+  // Better: Remove "for" attribute from labels and handle everything via .class-item click? But then we lose accessibility.
+  // We'll keep "for" and also add a click listener on the .class-item that toggles the checkbox only if the target is not the label and not the input.
+  document.querySelectorAll(".class-item").forEach(item => {
+    item.addEventListener("click", (e) => {
+      // If the click is on the label or input, let the default behavior handle it (label toggles input)
+      if (e.target.tagName === "LABEL" || e.target.tagName === "INPUT") {
+        return; // don't interfere
+      }
+      // Otherwise, find the checkbox inside and toggle it
+      const checkbox = item.querySelector('input[type="checkbox"]');
+      if (checkbox) {
+        checkbox.checked = !checkbox.checked;
+        // Trigger change event manually
+        const changeEvent = new Event('change', { bubbles: true });
+        checkbox.dispatchEvent(changeEvent);
+      }
+    });
+  });
 
+  /* ---------- Initialize ---------- */
+  loadProgress();
+
+  // Also update detail counts on load
+  // Already called via updateProgress inside loadProgress.
+  // Ensure total display initial
+  window.addEventListener('load', function() {
+    // Recalculate in case any checkbox is pre-checked
+    updateProgress();
+  });
+
+  // Expose searchClasses to global (already inline onkeyup)
+  window.searchClasses = searchClasses;
 </script>
-
 </body>
 </html>
