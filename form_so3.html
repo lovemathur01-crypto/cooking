@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UDISE Student Details Update Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+            color: #000;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* ================= HEADER STYLES ================= */
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-code {
+            font-size: 16px;
+            text-decoration: underline;
+            margin-bottom: 15px;
+            font-weight: normal;
+        }
+
+        .form-header h1 {
+            font-size: 18px;
+            margin: 0 0 5px 0;
+            font-weight: bold;
+        }
+
+        .form-header p {
+            font-size: 14px;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .submitted-section {
+            margin-bottom: 30px;
+        }
+
+        .submitted-title {
+            font-weight: bold;
+            text-decoration: underline;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: baseline;
+            width: 48%; 
+        }
+        
+        .info-row.three-cols .info-item {
+            width: 32%;
+        }
+
+        .info-item label {
+            font-weight: bold;
+            white-space: nowrap;
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        .info-item input {
+            flex: 1;
+            border: none;
+            border-bottom: 1px solid black;
+            outline: none;
+            font-size: 14px;
+            padding: 2px 5px;
+            background: transparent;
+            font-family: inherit;
+        }
+
+        /* ================= MAIN FORM STYLES ================= */
+        .student-info-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+
+        .student-info-header .header-item {
+            display: flex;
+            align-items: baseline;
+            width: 32%;
+        }
+
+        .student-info-header .header-item label {
+            white-space: nowrap;
+            margin-right: 5px;
+        }
+
+        .student-info-header .header-item input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid black;
+            outline: none;
+            font-size: 14px;
+            padding: 2px;
+        }
+
+        h2.section-title {
+            text-transform: uppercase;
+            text-decoration: underline;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .form-grid {
+            display: flex;
+            gap: 20px;
+        }
+
+        .box {
+            flex: 1;
+            border: 1px solid #000;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .box-header {
+            text-align: center;
+            font-style: italic;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            white-space: nowrap;
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            flex: 1;
+            border: none;
+            border-bottom: 1px solid black;
+            outline: none;
+            font-size: 14px;
+            padding: 2px 5px;
+            background: transparent;
+        }
+
+        /* ================= FOOTER STYLES ================= */
+        .footer-section {
+            margin-top: 40px;
+            page-break-inside: avoid;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .custom-checkbox {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #000;
+            display: inline-block;
+        }
+
+        .undertaking-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .undertaking-box .custom-checkbox {
+            margin-top: 2px;
+        }
+
+        .bold-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .signature-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+
+        .sig-block {
+            width: 45%;
+        }
+
+        .sig-row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 15px;
+        }
+
+        .sig-row label {
+            font-weight: bold;
+            white-space: nowrap;
+            margin-right: 5px;
+        }
+
+        .sig-row input {
+            flex: 1;
+            border: none;
+            border-bottom: 1px solid black;
+            outline: none;
+            font-size: 14px;
+            padding: 2px 5px;
+            background: transparent;
+        }
+
+        .sig-label {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .sig-blank {
+            display: inline-block;
+            width: 150px;
+            border-bottom: 1px solid black;
+            height: 1em;
+        }
+
+        .footer-meta {
+            text-align: right;
+            font-size: 12px;
+            font-style: italic;
+            margin-top: 40px;
+        }
+
+        /* ================= BUTTON & PRINT STYLES ================= */
+        .btn-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .print-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .print-btn:hover {
+            background-color: #0056b3;
+        }
+
+        input:focus {
+            background-color: #f0f8ff;
+        }
+
+        @media print {
+            body {
+                background: white;
+                margin: 0;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+                width: 100%;
+                max-width: 100%;
+                padding: 0;
+            }
+            .btn-container {
+                display: none; 
+            }
+            input {
+                border-bottom: 1px solid black !important; 
+            }
+            /* Ensures checkboxes print correctly as empty squares */
+            .custom-checkbox {
+                border: 1px solid black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- ================= HEADER SECTION ================= -->
+    <div class="form-header">
+        <div class="form-code">FORM SO3/UDISE</div>
+        <h1>Format to update details of Active Student</h1>
+        <p>(To be filled by the Current School of the Student & Submitted to Block/District Education Officer or Equivalent)</p>
+    </div>
+
+    <div class="submitted-section">
+        <div class="submitted-title">SUBMITTED BY</div>
+        
+        <div class="info-row">
+            <div class="info-item">
+                <label>UDISE Code:</label>
+                <input type="text" value="05050301406">
+            </div>
+            <div class="info-item">
+                <label>Academic Year:</label>
+                <input type="text" value="2026-27">
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-item">
+                <label>State:</label>
+                <input type="text" value="UTTARAKHAND">
+            </div>
+            <div class="info-item">
+                <label>School Name:</label>
+                <input type="text" value="HIMALAYAN INTERNATIONAL SCHOOL" style="width: 100%;">
+            </div>
+        </div>
+
+        <div class="info-row three-cols">
+            <div class="info-item" style="visibility: hidden;"></div>
+            <div class="info-item">
+                <label>District:</label>
+                <input type="text" value="DEHRADUN">
+            </div>
+            <div class="info-item">
+                <label>Block:</label>
+                <input type="text" value="VIKASNAGAR">
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= STUDENT INFO SECTION ================= -->
+    <div class="student-info-header">
+        <div class="header-item">
+            <label>Student's PEN:</label>
+            <input type="text">
+        </div>
+        <div class="header-item">
+            <label>Name:</label>
+            <input type="text">
+        </div>
+        <div class="header-item">
+            <label>Mobile Number:</label>
+            <input type="text">
+        </div>
+    </div>
+
+    <h2 class="section-title">DEMOGRAPHIC DETAILS UPDATE</h2>
+
+    <!-- ================= FORM GRID SECTION ================= -->
+    <div class="form-grid">
+        <div class="box">
+            <div class="box-header">Existing Details in UDISE Plus</div>
+            <div class="input-group"><label>Name:</label><input type="text"></div>
+            <div class="input-group"><label>Date of Birth:</label><input type="text"></div>
+            <div class="input-group"><label>Gender:</label><input type="text"></div>
+            <div class="input-group"><label>AADHAAR Number:</label><input type="text"></div>
+            <div class="input-group"><label>Name as per AADHAAR:</label><input type="text"></div>
+            <div class="input-group"><label>Class & Section:</label><input type="text"></div>
+            <div class="input-group"><label>Mother's Name:</label><input type="text"></div>
+            <div class="input-group"><label>Father's Name:</label><input type="text"></div>
+        </div>
+
+        <div class="box">
+            <div class="box-header">Details to be Updated in UDISE Plus</div>
+            <div class="input-group"><label>Name:</label><input type="text"></div>
+            <div class="input-group"><label>Date of Birth:</label><input type="text"></div>
+            <div class="input-group"><label>Gender:</label><input type="text"></div>
+            <div class="input-group"><label>AADHAAR Number:</label><input type="text"></div>
+            <div class="input-group"><label>Name as per AADHAAR:</label><input type="text"></div>
+            <div class="input-group"><label>Class & Section:</label><input type="text"></div>
+            <div class="input-group"><label>Mother's Name:</label><input type="text"></div>
+            <div class="input-group"><label>Father's Name:</label><input type="text"></div>
+        </div>
+    </div>
+
+    <!-- ================= FOOTER SECTION ================= -->
+    <div class="footer-section">
+        
+        <div class="checkbox-row">
+            <strong>Document Attached:</strong>
+            <div class="checkbox-item">
+                <div class="custom-checkbox"></div>
+                <span>Copy of School Register</span>
+            </div>
+            <div class="checkbox-item">
+                <div class="custom-checkbox"></div>
+                <span>Copy of Birth Certificate</span>
+            </div>
+        </div>
+
+        <div class="bold-title">Undertaking by School</div>
+        <div class="undertaking-box">
+            <div class="custom-checkbox"></div>
+            <div>I hereby declare that the information filled and documents provided are correct to the best of my knowledge and belief.</div>
+        </div>
+
+        <div class="bold-title">Undertaking by Block/ District level Officer</div>
+        <div class="undertaking-box">
+            <div class="custom-checkbox"></div>
+            <div>I hereby confirm that a copy of required documents for the above-mentioned changes is kept in the office file for record.</div>
+        </div>
+
+        <div class="signature-grid">
+            <!-- Left Signature Block -->
+            <div class="sig-block">
+                <div class="sig-label">Head of the School</div>
+                <div class="sig-row">
+                    <label>Name:</label>
+                    <input type="text" value="Sunil Dutt">
+                </div>
+                <div class="sig-row">
+                    <label>Designation:</label>
+                    <input type="text" value="Principal">
+                </div>
+                <div class="sig-row">
+                    <label>Signature:</label>
+                    <div style="flex: 1;"></div>
+                </div>
+                <div class="sig-row" style="margin-top: 20px;">
+                    <label>Seal:</label>
+                    <div style="flex: 1;"></div>
+                </div>
+            </div>
+
+            <!-- Right Signature Block -->
+            <div class="sig-block">
+                <div class="sig-label">State/District/Block Education Officer or Equivalent</div>
+                <div class="sig-row">
+                    <label>Name:</label>
+                    <input type="text">
+                </div>
+                <div class="sig-row">
+                    <label>Designation:</label>
+                    <input type="text">
+                </div>
+                <div class="sig-row">
+                    <label>Signature:</label>
+                    <div style="flex: 1;"></div>
+                </div>
+                <div class="sig-row" style="margin-top: 20px;">
+                    <label>Seal:</label>
+                    <div style="flex: 1;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-meta">
+            v.02_09.10.2025
+        </div>
+    </div>
+
+    <!-- ================= PRINT BUTTON ================= -->
+    <div class="btn-container">
+        <button class="print-btn" onclick="window.print()">🖨️ Save as PDF / Print</button>
+    </div>
+</div>
+
+</body>
+</html>
