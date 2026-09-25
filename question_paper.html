@@ -1,0 +1,3306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Question Paper Maker</title>
+
+<!-- DOCX LIBRARY -->
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+
+<style>
+
+/* =========================================================
+   GLOBAL
+========================================================= */
+
+*{
+    box-sizing:border-box;
+}
+
+html,
+body{
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f3f6fa;
+    color:#202124;
+}
+
+
+/* =========================================================
+   TOP HEADER
+========================================================= */
+
+.main-header{
+    background:#17365d;
+    color:#fff;
+    padding:18px 28px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.main-header h1{
+    margin:0;
+    font-size:23px;
+}
+
+.main-header span{
+    font-size:13px;
+    opacity:.9;
+}
+
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.container{
+    width:100%;
+    max-width:1300px;
+    margin:20px auto;
+    padding:0 18px;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.card{
+    background:#fff;
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:18px;
+
+    box-shadow:
+        0 2px 12px rgba(0,0,0,.07);
+}
+
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.grid{
+    display:grid;
+    grid-template-columns:
+        repeat(4,1fr);
+    gap:14px;
+}
+
+label{
+    display:block;
+    margin-bottom:6px;
+
+    font-size:12px;
+    font-weight:bold;
+    color:#555;
+}
+
+input,
+select{
+    width:100%;
+    padding:10px 11px;
+
+    border:1px solid #ccd3dd;
+    border-radius:7px;
+
+    background:#fff;
+    color:#222;
+
+    font-size:14px;
+}
+
+input:focus,
+select:focus{
+    outline:none;
+    border-color:#1769aa;
+    box-shadow:
+        0 0 0 2px rgba(23,105,170,.1);
+}
+
+
+/* =========================================================
+   EDITOR
+========================================================= */
+
+.editor-wrap{
+    border:1px solid #ccd3dd;
+    border-radius:8px;
+    overflow:hidden;
+}
+
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.toolbar{
+    background:#f7f9fb;
+
+    border-bottom:
+        1px solid #dce2e9;
+
+    padding:8px;
+
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:wrap;
+}
+
+.toolbar button,
+.toolbar select{
+    width:auto;
+
+    padding:7px 10px;
+
+    border:
+        1px solid #ccd3dd;
+
+    border-radius:5px;
+
+    background:#fff;
+
+    cursor:pointer;
+
+    font-size:13px;
+}
+
+.toolbar button:hover{
+    background:#eaf1f8;
+}
+
+.toolbar select{
+    min-width:105px;
+}
+
+
+/* =========================================================
+   EDITOR AREA
+========================================================= */
+
+#editor{
+    min-height:550px;
+
+    padding:20px;
+
+    outline:none;
+
+    background:#fff;
+
+    font-family:
+        "Times New Roman",
+        serif;
+
+    font-size:14px;
+
+    line-height:1.5;
+}
+
+#editor:focus{
+    box-shadow:
+        inset 0 0 0 1px #1769aa;
+}
+
+#editor img{
+    max-width:100%;
+    height:auto;
+
+    display:block;
+
+    margin:10px 0;
+}
+
+#editor table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+#editor th,
+#editor td{
+    border:1px solid #222;
+    padding:5px;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+/* KEYBOARD SHORTCUT LABELS */
+.shortcut{
+    display:inline-block;
+    margin-left:8px;
+    padding:3px 7px;
+    border:1px solid currentColor;
+    border-radius:5px;
+    font-size:11px;
+    line-height:1.1;
+    font-weight:700;
+    opacity:.75;
+    white-space:nowrap;
+}
+
+.actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+
+    margin-top:15px;
+}
+
+.btn{
+    border:0;
+
+    padding:11px 17px;
+
+    border-radius:7px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    font-size:13px;
+}
+
+.btn-primary{
+    background:#1769aa;
+    color:#fff;
+}
+
+.btn-dark{
+    background:#17365d;
+    color:#fff;
+}
+
+.btn-light{
+    background:#edf2f7;
+    color:#17365d;
+
+    border:
+        1px solid #ccd3dd;
+}
+
+.btn:hover{
+    opacity:.9;
+}
+
+.btn:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status{
+    display:none;
+
+    margin-top:12px;
+
+    padding:10px 14px;
+
+    border-radius:7px;
+
+    font-size:13px;
+}
+
+.status.success{
+    display:block;
+
+    background:#e8f7ed;
+    color:#176b36;
+}
+
+.status.error{
+    display:block;
+
+    background:#fdeaea;
+    color:#a12222;
+}
+
+
+/* =========================================================
+   PREVIEW AREA
+========================================================= */
+
+.preview-area{
+    background:#dedede;
+
+    padding:30px;
+
+    overflow:auto;
+}
+
+
+/* =========================================================
+   A4 PAPER
+========================================================= */
+
+.paper{
+    width:794px;
+    min-height:1123px;
+
+    margin:0 auto;
+
+    background:#fff;
+
+    padding:
+        35px
+        42px
+        35px
+        42px;
+
+    box-shadow:
+        0 2px 12px rgba(0,0,0,.15);
+
+    font-family:
+        "Times New Roman",
+        serif;
+
+    position:relative;
+}
+
+
+/* =========================================================
+   PAPER HEADER
+========================================================= */
+
+.paper-header{
+    text-align:center;
+    font-family:Cambria, "Times New Roman", serif;
+}
+
+
+/* SCHOOL NAME = 20 PT */
+
+.school-name{
+    font-size:20pt;
+    font-weight:bold;
+
+    line-height:1.15;
+
+    margin-bottom:3px;
+}
+
+
+/* HALF YEARLY = 18 PT */
+
+.exam-title{
+    font-size:18pt;
+    font-weight:bold;
+
+    line-height:1.2;
+
+    margin-top:6px;
+}
+
+
+/* OTHER DETAILS = 16 PT */
+
+.details-row{
+    display:grid;
+
+    grid-template-columns:
+        1fr 1fr 1fr;
+
+    font-size:16pt;
+
+    font-weight:bold;
+
+    margin-top:9px;
+
+    padding:
+        6px 0;
+
+    border-top:
+        1px solid #222;
+
+    border-bottom:
+        1px solid #222;
+}
+
+.details-row.second{
+    border-top:0;
+    margin-top:0;
+}
+
+.student-info-row{
+    display:grid;
+    grid-template-columns:1.5fr 1fr 1.5fr;
+    font-size:14pt;
+    font-weight:bold;
+    margin-top:10px;
+    padding:5px 0 3px 0;
+    text-align:left;
+}
+
+
+/* AFFILIATION */
+
+.affiliation{
+    font-size:10pt;
+    font-weight:bold;
+    margin-top:2px;
+}
+
+.address{
+    font-size:9pt;
+    margin-top:2px;
+}
+
+
+/* =========================================================
+   PAPER CONTENT
+========================================================= */
+
+.paper-content{
+    margin-top:16px;
+
+    font-size:14pt;
+
+    line-height:1.5;
+}
+
+.paper-content p{
+    margin-top:4px;
+    margin-bottom:5px;
+}
+
+.paper-content h1{
+    font-size:20pt;
+}
+
+.paper-content h2{
+    font-size:18pt;
+}
+
+.paper-content h3{
+    font-size:16pt;
+}
+
+.paper-content img{
+    max-width:100%;
+    height:auto;
+}
+
+.paper-content table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.paper-content th,
+.paper-content td{
+    border:1px solid #222;
+    padding:5px;
+}
+
+
+/* =========================================================
+   PREVIEW FOOTER
+========================================================= */
+
+.paper-footer{
+    text-align:center;
+
+    font-size:9pt;
+
+    margin-top:30px;
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+@media print{
+
+    body{
+        background:#fff;
+    }
+
+    .no-print{
+        display:none !important;
+    }
+
+    .preview-area{
+        padding:0;
+        background:#fff;
+    }
+
+    .paper{
+        width:100%;
+        min-height:auto;
+
+        margin:0;
+
+        box-shadow:none;
+    }
+
+    @page{
+        size:A4;
+        margin:0.35in;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+    .grid{
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:600px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .main-header{
+        flex-direction:column;
+        gap:6px;
+        text-align:center;
+    }
+
+    .preview-area{
+        padding:10px;
+    }
+
+    .paper{
+        width:794px;
+        transform-origin:top left;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     MAIN HEADER
+========================================================= -->
+
+<header class="main-header no-print">
+
+    <h1>
+        Question Paper Maker
+    </h1>
+
+    <span>
+        The Himalayan International School
+    </span>
+
+</header>
+
+
+
+<div class="container">
+
+
+<!-- =========================================================
+     PAPER INFORMATION
+========================================================= -->
+
+<div class="card no-print">
+
+    <div class="grid">
+
+
+        <div>
+
+            <label>
+                Class
+            </label>
+
+            <input
+                id="className"
+                value="VI">
+
+        </div>
+
+
+        <div>
+
+            <label>
+                Subject
+            </label>
+
+            <input
+                id="subject"
+                value="Science">
+
+        </div>
+
+
+        <div>
+
+            <label>
+                Examination
+            </label>
+
+            <input
+                id="exam"
+                value="HALF YEARLY EXAMINATION">
+
+        </div>
+
+
+        <div>
+
+            <label>
+                Session
+            </label>
+
+            <input
+                id="session"
+                value="2026-27">
+
+        </div>
+
+
+        <div>
+
+            <label>
+                Set
+            </label>
+
+            <select id="set">
+
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+                <option>D</option>
+
+            </select>
+
+        </div>
+
+
+        <div>
+
+            <label>
+                Maximum Marks
+            </label>
+
+            <input
+                id="marks"
+                value="80">
+
+        </div>
+
+
+        <div>
+
+            <label>
+                Time
+            </label>
+
+            <input
+                id="time"
+                value="3 Hours">
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================================
+     EDITOR
+========================================================= -->
+
+<div class="card no-print">
+
+
+    <h3 style="margin-top:0;">
+        Question Paper Content
+    </h3>
+
+
+    <div class="editor-wrap">
+
+
+        <!-- =================================================
+             TOOLBAR
+        ================================================== -->
+
+        <div class="toolbar">
+
+
+            <!-- BOLD -->
+
+            <button
+                type="button"
+                onclick="editorCommand('bold')">
+
+                <b>B</b>
+
+            </button>
+
+
+            <!-- ITALIC -->
+
+            <button
+                type="button"
+                onclick="editorCommand('italic')">
+
+                <i>I</i>
+
+            </button>
+
+
+            <!-- UNDERLINE -->
+
+            <button
+                type="button"
+                onclick="editorCommand('underline')">
+
+                <u>U</u>
+
+            </button>
+
+
+            <!-- LEFT -->
+
+            <button
+                type="button"
+                onclick="editorCommand('justifyLeft')">
+
+                Left
+
+            </button>
+
+
+            <!-- CENTER -->
+
+            <button
+                type="button"
+                onclick="editorCommand('justifyCenter')">
+
+                Center
+
+            </button>
+
+
+            <!-- RIGHT -->
+
+            <button
+                type="button"
+                onclick="editorCommand('justifyRight')">
+
+                Right
+
+            </button>
+
+
+            <!-- JUSTIFY -->
+
+            <button
+                type="button"
+                onclick="editorCommand('justifyFull')">
+
+                Justify
+
+            </button>
+
+
+            <!-- BULLET -->
+
+            <button
+                type="button"
+                onclick="editorCommand('insertUnorderedList')">
+
+                • List
+
+            </button>
+
+
+            <!-- NUMBER -->
+
+            <button
+                type="button"
+                onclick="editorCommand('insertOrderedList')">
+
+                1. List
+
+            </button>
+
+
+            <!-- HEADING -->
+
+            <button
+                type="button"
+                onclick="makeHeading()">
+
+                Heading
+
+            </button>
+
+
+            <!-- =================================================
+                 FONT SIZE
+            ================================================== -->
+
+            <select
+                id="fontSizeSelector"
+                onchange="changeFontSize(this.value)">
+
+                <option value="">
+                    Font Size
+                </option>
+
+                <option value="10px">
+                    10 px
+                </option>
+
+                <option value="11px">
+                    11 px
+                </option>
+
+                <option value="12px">
+                    12 px
+                </option>
+
+                <option value="13px">
+                    13 px
+                </option>
+
+                <option value="14px">
+                    14 px
+                </option>
+
+                <option value="16px">
+                    16 px
+                </option>
+
+                <option value="18px">
+                    18 px
+                </option>
+
+                <option value="20px">
+                    20 px
+                </option>
+
+                <option value="22px">
+                    22 px
+                </option>
+
+                <option value="24px">
+                    24 px
+                </option>
+
+                <option value="28px">
+                    28 px
+                </option>
+
+                <option value="32px">
+                    32 px
+                </option>
+
+            </select>
+
+
+            <!-- =================================================
+                 LINE SPACING
+            ================================================== -->
+
+            <select
+                id="spacingSelector"
+                onchange="changeLineSpacing(this.value)">
+
+                <option value="">
+                    Line Spacing
+                </option>
+
+                <option value="1">
+                    1.0
+                </option>
+
+                <option value="1.15">
+                    1.15
+                </option>
+
+                <option value="1.3">
+                    1.3
+                </option>
+
+                <option value="1.5">
+                    1.5
+                </option>
+
+                <option value="1.75">
+                    1.75
+                </option>
+
+                <option value="2">
+                    2.0
+                </option>
+
+                <option value="2.5">
+                    2.5
+                </option>
+
+                <option value="3">
+                    3.0
+                </option>
+
+            </select>
+
+
+            <!-- IMAGE -->
+
+            <button
+                type="button"
+                onclick="document.getElementById('imageInput').click()">
+
+                🖼 Image
+
+            </button>
+
+
+            <!-- CLEAR -->
+
+            <button
+                type="button"
+                onclick="clearEditor()">
+
+                Clear
+
+            </button>
+
+
+        </div>
+
+
+
+        <!-- =================================================
+             EDITOR
+        ================================================== -->
+
+        <div
+            id="editor"
+            contenteditable="true"
+        >
+
+            <p>
+
+                <b>
+                    General Instructions:
+                </b>
+
+            </p>
+
+
+            <p>
+
+                1. All questions are compulsory.
+
+            </p>
+
+
+            <p>
+
+                2. Read each question carefully
+                before answering.
+
+            </p>
+
+
+            <p>
+
+                3. Write your answers neatly
+                and clearly.
+
+            </p>
+
+
+            <p>
+                <br>
+            </p>
+
+
+            <p>
+
+                <b>
+                    Section A – Multiple Choice Questions
+                </b>
+
+            </p>
+
+
+            <p>
+
+                Q1. Choose the correct option.
+                (10 × 1 = 10)
+
+            </p>
+
+
+            <p>
+
+                (a) Photosynthesis mainly takes
+                place in the ______.
+
+            </p>
+
+
+            <p>
+
+                (i) Root
+                &nbsp;&nbsp;&nbsp;
+
+                (ii) Stem
+                &nbsp;&nbsp;&nbsp;
+
+                (iii) Leaf
+                &nbsp;&nbsp;&nbsp;
+
+                (iv) Flower
+
+            </p>
+
+
+            <p>
+                <br>
+            </p>
+
+
+            <p>
+
+                <b>
+                    Section B – Short Answer Questions
+                </b>
+
+            </p>
+
+
+            <p>
+
+                Q2. Answer the following questions.
+                (5 × 2 = 10)
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- IMAGE INPUT -->
+
+    <input
+        type="file"
+        id="imageInput"
+        accept="image/*"
+        style="display:none;"
+        onchange="insertImage(event)"
+    >
+
+
+
+    <!-- ACTIONS -->
+
+    <div class="actions">
+
+
+        <button
+            class="btn btn-primary"
+            onclick="updatePreview()">
+
+            👁 Preview Paper <span class="shortcut">Alt + V</span>
+
+        </button>
+
+
+        <button
+            class="btn btn-light"
+            onclick="document.getElementById('imageInput').click()">
+
+            🖼 Add Image <span class="shortcut">Alt + I</span>
+
+        </button>
+
+
+        <button
+            id="docxButton"
+            class="btn btn-primary"
+            onclick="generateDOCX()">
+
+            📄 Generate Word (.docx) <span class="shortcut">Alt + W</span>
+
+        </button>
+
+
+        <button
+            class="btn btn-light"
+            onclick="printNormalPDF()">
+
+            📥 Normal PDF <span class="shortcut">Alt + P</span>
+
+        </button>
+
+
+        <button
+            id="bookletButton"
+            class="btn btn-dark"
+            onclick="generateBookletPDF()">
+
+            📖 Generate Booklet PDF <span class="shortcut">Alt + B</span>
+
+        </button>
+
+
+    </div>
+
+
+
+    <div
+        id="status"
+        class="status">
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================================================
+     PREVIEW
+========================================================= -->
+
+<div class="card">
+
+    <h3 style="margin-top:0;">
+
+        Paper Preview
+
+    </h3>
+
+
+    <div class="preview-area">
+
+
+        <div
+            id="paperPreview"
+            class="paper">
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+/* =========================================================
+   BASIC HELPERS
+========================================================= */
+
+function getValue(id){
+
+    return document
+        .getElementById(id)
+        .value
+        .trim();
+
+}
+
+
+function escapeHTML(text){
+
+    return String(text)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+function safeFileName(text){
+
+    return text
+        .replace(/[\\/:*?"<>|]/g,"_")
+        .replace(/\s+/g,"_");
+
+}
+
+
+/* =========================================================
+   EDITOR COMMAND
+========================================================= */
+
+function editorCommand(command){
+
+    document.execCommand(
+        command,
+        false,
+        null
+    );
+
+    document
+        .getElementById("editor")
+        .focus();
+
+}
+
+
+/* =========================================================
+   FONT SIZE
+========================================================= */
+
+function changeFontSize(size){
+
+    if(!size){
+        return;
+    }
+
+
+    const selection =
+        window.getSelection();
+
+
+    if(
+        !selection ||
+        selection.rangeCount===0
+    ){
+
+        return;
+
+    }
+
+
+    const range =
+        selection.getRangeAt(0);
+
+
+    if(
+        range.collapsed
+    ){
+
+        /*
+        If nothing is selected,
+        change editor default font.
+        */
+
+        document
+            .getElementById("editor")
+            .style.fontSize=size;
+
+        return;
+
+    }
+
+
+    const span =
+        document.createElement("span");
+
+
+    span.style.fontSize=size;
+
+
+    try{
+
+        range.surroundContents(span);
+
+    }
+
+    catch(error){
+
+        document.execCommand(
+            "fontSize",
+            false,
+            "4"
+        );
+
+    }
+
+
+    document
+        .getElementById("editor")
+        .focus();
+
+}
+
+
+/* =========================================================
+   LINE SPACING
+========================================================= */
+
+function changeLineSpacing(value){
+
+    if(!value){
+        return;
+    }
+
+
+    const editor =
+        document.getElementById(
+            "editor"
+        );
+
+
+    const selection =
+        window.getSelection();
+
+
+    /*
+    If text is selected, apply spacing
+    to selected paragraphs.
+    */
+
+    if(
+        selection &&
+        selection.rangeCount>0 &&
+        !selection
+            .getRangeAt(0)
+            .collapsed
+    ){
+
+        const range =
+            selection.getRangeAt(0);
+
+
+        const all =
+            Array.from(
+                editor.querySelectorAll(
+                    "p,div,li,h1,h2,h3,h4"
+                )
+            );
+
+
+        let found=false;
+
+
+        all.forEach(
+            element => {
+
+                try{
+
+                    if(
+                        range.intersectsNode(
+                            element
+                        )
+                    ){
+
+                        element.style.lineHeight =
+                            value;
+
+                        found=true;
+
+                    }
+
+                }
+
+                catch(e){}
+
+            }
+        );
+
+
+        if(found){
+
+            editor.focus();
+
+            return;
+
+        }
+
+    }
+
+
+    /*
+    Otherwise apply spacing
+    to entire editor.
+    */
+
+    editor.style.lineHeight=value;
+
+    editor.focus();
+
+}
+
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+function makeHeading(){
+
+    document.execCommand(
+        "formatBlock",
+        false,
+        "h3"
+    );
+
+}
+
+
+/* =========================================================
+   CLEAR EDITOR
+========================================================= */
+
+function clearEditor(){
+
+    if(
+        confirm(
+            "Are you sure you want to clear the question paper?"
+        )
+    ){
+
+        document
+            .getElementById("editor")
+            .innerHTML="";
+
+        updatePreview();
+
+    }
+
+}
+
+
+/* =========================================================
+   INSERT IMAGE
+========================================================= */
+
+function insertImage(event){
+
+    const file =
+        event.target.files[0];
+
+
+    if(!file){
+        return;
+    }
+
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload=function(e){
+
+        const img =
+            document.createElement("img");
+
+
+        img.src =
+            e.target.result;
+
+
+        img.style.maxWidth="100%";
+
+
+        const editor =
+            document.getElementById(
+                "editor"
+            );
+
+
+        editor.appendChild(img);
+
+
+        updatePreview();
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+
+    event.target.value="";
+
+}
+
+
+/* =========================================================
+   PAPER HTML
+========================================================= */
+
+function getPaperHTML(){
+
+    const school =
+        "THE HIMALAYAN INTERNATIONAL SCHOOL";
+
+
+    const exam =
+        getValue("exam") ||
+        "HALF YEARLY EXAMINATION";
+
+
+    const session =
+        getValue("session");
+
+
+    return `
+
+        <div class="paper-header">
+
+
+            <!-- SCHOOL NAME 20 PT -->
+
+            <div class="school-name">
+
+                ${school}
+
+            </div>
+
+
+            <!-- AFFILIATION -->
+
+            <div class="affiliation">
+
+                Affiliated To CBSE, New Delhi
+                Affiliation No.: 3530579
+
+            </div>
+
+
+            <!-- ADDRESS -->
+
+            <div class="address">
+
+                Near Kotwali, By-pass Road,
+                Vikasnagar, Dehradun,
+                Uttarakhand – 248198
+
+            </div>
+
+
+            <div class="address">
+
+                Contact: 7618197677, 7351852021 |
+                Email:
+                contact@thehimalayaninternationalschool.edu.in
+
+            </div>
+
+
+            <!-- EXAM 18 PT -->
+
+            <div class="exam-title">
+
+                ${escapeHTML(exam)}
+
+                ${
+                    session
+                    ? " " +
+                      escapeHTML(session)
+                    : ""
+                }
+
+            </div>
+
+
+            <!-- DETAILS 16 PT -->
+
+            <div class="details-row">
+
+
+                <div>
+
+                    Class:
+                    ${escapeHTML(
+                        getValue("className")
+                    )}
+
+                </div>
+
+
+                <div>
+
+                    Subject:
+                    ${escapeHTML(
+                        getValue("subject")
+                    )}
+
+                </div>
+
+
+                <div>
+
+                    Set:
+                    ${escapeHTML(
+                        getValue("set")
+                    )}
+
+                </div>
+
+
+            </div>
+
+
+            <div class="details-row second">
+
+
+                <div>
+
+                    Time:
+                    ${escapeHTML(
+                        getValue("time")
+                    )}
+
+                </div>
+
+
+                <div>
+
+                    Maximum Marks:
+                    ${escapeHTML(
+                        getValue("marks")
+                    )}
+
+                </div>
+
+
+                <div>
+
+                    &nbsp;
+
+                </div>
+
+
+            </div>
+
+
+            <div class="student-info-row">
+
+                <div>Students' Name:</div>
+
+                <div>Section:</div>
+
+                <div>Invigilator's Sign:</div>
+
+            </div>
+
+
+        </div>
+
+
+        <div class="paper-content">
+
+            ${
+                document
+                    .getElementById("editor")
+                    .innerHTML
+            }
+
+        </div>
+
+
+        <div class="paper-footer">
+
+            THE HIMALAYAN INTERNATIONAL SCHOOL
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   PREVIEW
+========================================================= */
+
+function updatePreview(){
+
+    document
+        .getElementById("paperPreview")
+        .innerHTML =
+            getPaperHTML();
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function showStatus(
+    message,
+    type
+){
+
+    const status =
+        document.getElementById(
+            "status"
+        );
+
+
+    status.className =
+        "status " + type;
+
+
+    status.textContent =
+        message;
+
+}
+
+
+/* =========================================================
+   DOWNLOAD BLOB
+========================================================= */
+
+function downloadBlob(
+    blob,
+    filename
+){
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const a =
+        document.createElement("a");
+
+
+    a.href=url;
+
+    a.download=filename;
+
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    document.body.removeChild(a);
+
+
+    setTimeout(
+        function(){
+
+            URL.revokeObjectURL(url);
+
+        },
+        1000
+    );
+
+}
+
+
+/* =========================================================
+   DOCX TEXT RUNS
+========================================================= */
+
+function getDocxRuns(element, inherited={}){
+
+    const runs=[];
+
+    function cssSizeToHalfPoints(value, fallback=22){
+        if(!value) return fallback;
+        const m=String(value).match(/([0-9.]+)px/i);
+        if(m) return Math.max(12, Math.round(parseFloat(m[1]) * 1.5));
+        const pt=String(value).match(/([0-9.]+)pt/i);
+        if(pt) return Math.max(12, Math.round(parseFloat(pt[1]) * 2));
+        return fallback;
+    }
+
+    function walk(node, style){
+        if(node.nodeType===3){
+            const text=node.nodeValue;
+            if(text){
+                runs.push(new docx.TextRun({
+                    text:text,
+                    bold:!!style.bold,
+                    italics:!!style.italic,
+                    underline:style.underline ? {} : undefined,
+                    size:style.size || 22,
+                    font:"Cambria"
+                }));
+            }
+            return;
+        }
+
+        if(node.nodeType!==1) return;
+
+        const cs=window.getComputedStyle(node);
+        const next={
+            bold:style.bold,
+            italic:style.italic,
+            underline:style.underline,
+            size:style.size || 22
+        };
+
+        const tag=node.tagName.toLowerCase();
+        if(tag==='b'||tag==='strong') next.bold=true;
+        if(tag==='i'||tag==='em') next.italic=true;
+        if(tag==='u') next.underline=true;
+        if(cs.fontWeight==='bold'||parseInt(cs.fontWeight,10)>=600) next.bold=true;
+        if(cs.fontStyle==='italic') next.italic=true;
+        if(cs.textDecorationLine && cs.textDecorationLine.includes('underline')) next.underline=true;
+        if(node.style && node.style.fontSize) next.size=cssSizeToHalfPoints(node.style.fontSize,next.size);
+        else if(cs.fontSize) next.size=cssSizeToHalfPoints(cs.fontSize,next.size);
+
+        Array.from(node.childNodes).forEach(child=>walk(child,next));
+    }
+
+    Array.from(element.childNodes).forEach(child=>walk(child,{
+        bold:false, italic:false, underline:false,
+        size: inherited.size || 22
+    }));
+
+    return runs;
+}
+
+function addDocxImage(img, output){
+    try{
+        if(!img.src || !img.src.startsWith('data:image')) return;
+        const base64=img.src.split(',')[1];
+        const binary=atob(base64);
+        const bytes=new Uint8Array(binary.length);
+        for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+
+        const naturalWidth=img.naturalWidth || 700;
+        const naturalHeight=img.naturalHeight || 450;
+        const maxWidth=620;
+        const maxHeight=420;
+        const scale=Math.min(maxWidth/naturalWidth,maxHeight/naturalHeight,1);
+        const width=Math.max(1,Math.round(naturalWidth*scale));
+        const height=Math.max(1,Math.round(naturalHeight*scale));
+
+        output.push(new docx.Paragraph({
+            alignment:docx.AlignmentType.CENTER,
+            keepNext:false,
+            spacing:{before:0,after:120,line:240},
+            children:[new docx.ImageRun({
+                data:bytes,
+                transformation:{width,height}
+            })]
+        }));
+    }catch(error){ console.error(error); }
+}
+
+function docxBordersNone(){
+    return {
+        top:{style:docx.BorderStyle.NONE,size:0,color:"FFFFFF"},
+        bottom:{style:docx.BorderStyle.NONE,size:0,color:"FFFFFF"},
+        left:{style:docx.BorderStyle.NONE,size:0,color:"FFFFFF"},
+        right:{style:docx.BorderStyle.NONE,size:0,color:"FFFFFF"},
+        insideHorizontal:{style:docx.BorderStyle.NONE,size:0,color:"FFFFFF"},
+        insideVertical:{style:docx.BorderStyle.NONE,size:0,color:"FFFFFF"}
+    };
+}
+
+function docxCell(text, width, align=docx.AlignmentType.LEFT, size=32){
+    return new docx.TableCell({
+        width:{size:width,type:docx.WidthType.DXA},
+        margins:{top:30,bottom:30,left:40,right:40},
+        borders:docxBordersNone(),
+        children:[new docx.Paragraph({
+            alignment:align,
+            spacing:{before:0,after:0,line:240},
+            keepNext:true,
+            children:[new docx.TextRun({
+                text:text || "",
+                bold:true,
+                size:size,
+                font:"Cambria"
+            })]
+        })]
+    });
+}
+
+function makeDocxHeaderTables(){
+    const W=10806;
+    const c1=3602, c2=3602, c3=3602;
+    const tables=[];
+
+    tables.push(new docx.Table({
+        width:{size:W,type:docx.WidthType.DXA},
+        layout:docx.TableLayoutType.FIXED,
+        columnWidths:[c1,c2,c3],
+        borders:docxBordersNone(),
+        rows:[new docx.TableRow({
+            cantSplit:true,
+            children:[
+                docxCell("Class: "+getValue("className"),c1,docx.AlignmentType.LEFT,32),
+                docxCell("Subject: "+getValue("subject"),c2,docx.AlignmentType.CENTER,32),
+                docxCell("Set: "+getValue("set"),c3,docx.AlignmentType.RIGHT,32)
+            ]
+        })]
+    }));
+
+    tables.push(new docx.Table({
+        width:{size:W,type:docx.WidthType.DXA},
+        layout:docx.TableLayoutType.FIXED,
+        columnWidths:[c1,c2,c3],
+        borders:docxBordersNone(),
+        rows:[new docx.TableRow({
+            cantSplit:true,
+            children:[
+                docxCell("Time: "+getValue("time"),c1,docx.AlignmentType.LEFT,32),
+                docxCell("Maximum Marks: "+getValue("marks"),c2,docx.AlignmentType.CENTER,32),
+                docxCell("",c3,docx.AlignmentType.RIGHT,32)
+            ]
+        })]
+    }));
+
+    tables.push(new docx.Table({
+        width:{size:W,type:docx.WidthType.DXA},
+        layout:docx.TableLayoutType.FIXED,
+        columnWidths:[c1,c2,c3],
+        borders:docxBordersNone(),
+        rows:[new docx.TableRow({
+            cantSplit:true,
+            children:[
+                docxCell("Students' Name:",c1,docx.AlignmentType.LEFT,28),
+                docxCell("Section:",c2,docx.AlignmentType.CENTER,28),
+                docxCell("Invigilator's Sign:",c3,docx.AlignmentType.RIGHT,28)
+            ]
+        })]
+    }));
+
+    return tables;
+}
+
+function convertEditorToDocx(){
+    const editor=document.getElementById("editor");
+    const output=[];
+
+    function paragraph(element, options={}){
+        const runs=getDocxRuns(element);
+        if(!runs.length) runs.push(new docx.TextRun({text:"",font:"Cambria",size:22}));
+
+        const css=window.getComputedStyle(element);
+        let line=240;
+        const lh=parseFloat(css.lineHeight);
+        const fs=parseFloat(css.fontSize)||14;
+        if(!isNaN(lh) && fs>0) line=Math.max(180,Math.round((lh/fs)*240));
+
+        output.push(new docx.Paragraph({
+            children:runs,
+            alignment:options.alignment || docx.AlignmentType.LEFT,
+            bullet:options.bullet ? {level:0}:undefined,
+            numbering:options.numbering ? {reference:"question-numbering",level:0}:undefined,
+            spacing:{before:0,after:options.after===undefined?100:options.after,line:line},
+            keepLines:true
+        }));
+    }
+
+    Array.from(editor.children).forEach(element=>{
+        const tag=element.tagName.toLowerCase();
+
+        if(tag==="img"){
+            addDocxImage(element,output);
+            return;
+        }
+
+        if(tag==="table"){
+            const rows=[];
+            Array.from(element.rows).forEach(row=>{
+                const cells=[];
+                Array.from(row.cells).forEach(cell=>{
+                    const cellRuns=getDocxRuns(cell);
+                    cells.push(new docx.TableCell({
+                        borders:docxBordersNone(),
+                        margins:{top:60,bottom:60,left:70,right:70},
+                        children:[new docx.Paragraph({
+                            spacing:{before:0,after:0,line:240},
+                            keepLines:true,
+                            children:cellRuns.length?cellRuns:[new docx.TextRun({text:"",font:"Cambria",size:22})]
+                        })]
+                    }));
+                });
+                rows.push(new docx.TableRow({cantSplit:true,children:cells}));
+            });
+            output.push(new docx.Table({
+                rows:rows,
+                width:{size:100,type:docx.WidthType.PERCENTAGE},
+                layout:docx.TableLayoutType.AUTOFIT,
+                borders:{
+                    top:{style:docx.BorderStyle.SINGLE,size:4,color:"808080"},
+                    bottom:{style:docx.BorderStyle.SINGLE,size:4,color:"808080"},
+                    left:{style:docx.BorderStyle.SINGLE,size:4,color:"808080"},
+                    right:{style:docx.BorderStyle.SINGLE,size:4,color:"808080"},
+                    insideHorizontal:{style:docx.BorderStyle.SINGLE,size:4,color:"B0B0B0"},
+                    insideVertical:{style:docx.BorderStyle.SINGLE,size:4,color:"B0B0B0"}
+                }
+            }));
+            return;
+        }
+
+        if(tag==="ul" || tag==="ol"){
+            Array.from(element.children).forEach(li=>paragraph(li,tag==="ul"?{bullet:true}:{numbering:true}));
+            return;
+        }
+
+        if(["h1","h2","h3","h4"].includes(tag)){
+            const runs=getDocxRuns(element,{size:30});
+            runs.forEach(r=>r.bold=true);
+            output.push(new docx.Paragraph({
+                children:runs,
+                spacing:{before:160,after:100,line:260},
+                keepNext:true,
+                keepLines:true
+            }));
+            return;
+        }
+
+        let alignment=docx.AlignmentType.LEFT;
+        const align=element.style.textAlign || window.getComputedStyle(element).textAlign;
+        if(align==="center") alignment=docx.AlignmentType.CENTER;
+        else if(align==="right") alignment=docx.AlignmentType.RIGHT;
+        else if(align==="justify") alignment=docx.AlignmentType.JUSTIFIED;
+
+        paragraph(element,{alignment:alignment});
+    });
+
+    return output;
+}
+
+async function generateDOCX(){
+    const button=document.getElementById("docxButton");
+
+    if(typeof docx==="undefined"){
+        showStatus("DOCX library did not load. Please check your internet connection and refresh the page.","error");
+        return;
+    }
+
+    button.disabled=true;
+    button.innerHTML="Creating Word file...";
+
+    try{
+        const {Document,Packer,Paragraph,TextRun,Footer,PageNumber}=docx;
+        const content=convertEditorToDocx();
+
+        const documentFile=new Document({
+            styles:{
+                default:{
+                    document:{
+                        run:{font:"Cambria",size:22},
+                        paragraph:{spacing:{before:0,after:0,line:240}}
+                    }
+                }
+            },
+            numbering:{
+                config:[{
+                    reference:"question-numbering",
+                    levels:[{
+                        level:0,
+                        format:"decimal",
+                        text:"%1.",
+                        alignment:docx.AlignmentType.LEFT
+                    }]
+                }]
+            },
+            sections:[{
+                properties:{
+                    page:{
+                        size:{width:11906,height:16838},
+                        margin:{top:520,bottom:650,left:550,right:550,header:180,footer:250}
+                    }
+                },
+                footers:{
+                    default:new Footer({
+                        children:[new Paragraph({
+                            alignment:docx.AlignmentType.CENTER,
+                            spacing:{before:0,after:0,line:200},
+                            children:[
+                                new TextRun({text:"THE HIMALAYAN INTERNATIONAL SCHOOL  |  Page ",size:16,font:"Cambria"}),
+                                PageNumber.CURRENT,
+                                new TextRun({text:" of ",size:16,font:"Cambria"}),
+                                PageNumber.TOTAL_PAGES
+                            ]
+                        })]
+                    })
+                },
+                children:[
+                    new Paragraph({
+                        alignment:docx.AlignmentType.CENTER,
+                        keepNext:true,
+                        spacing:{before:0,after:20,line:240},
+                        children:[new TextRun({text:"THE HIMALAYAN INTERNATIONAL SCHOOL",bold:true,size:40,font:"Cambria"})]
+                    }),
+                    new Paragraph({
+                        alignment:docx.AlignmentType.CENTER,
+                        keepNext:true,
+                        spacing:{before:0,after:15,line:220},
+                        children:[new TextRun({text:"Affiliated To CBSE, New Delhi",bold:true,size:18,font:"Cambria"})]
+                    }),
+                    new Paragraph({
+                        alignment:docx.AlignmentType.CENTER,
+                        keepNext:true,
+                        spacing:{before:0,after:10,line:210},
+                        children:[new TextRun({text:"Near Kotwali, By-pass Road, Vikasnagar, Dehradun, Uttarakhand – 248198",size:16,font:"Cambria"})]
+                    }),
+                    new Paragraph({
+                        alignment:docx.AlignmentType.CENTER,
+                        keepNext:true,
+                        spacing:{before:0,after:50,line:210},
+                        children:[new TextRun({text:"Contact: 7618197677, 7351852021 | Email: contact@thehimalayaninternationalschool.edu.in",size:15,font:"Cambria"})]
+                    }),
+                    new Paragraph({
+                        alignment:docx.AlignmentType.CENTER,
+                        keepNext:true,
+                        spacing:{before:0,after:80,line:280},
+                        children:[new TextRun({
+                            text:(getValue("exam")||"HALF YEARLY EXAMINATION")+(getValue("session")?" "+getValue("session"):""),
+                            bold:true,size:36,font:"Cambria"
+                        })]
+                    }),
+                    ...makeDocxHeaderTables(),
+                    new Paragraph({spacing:{before:0,after:80,line:200},children:[new TextRun({text:"",font:"Cambria",size:4})]}),
+                    ...content
+                ]
+            }]
+        });
+
+        const blob=await Packer.toBlob(documentFile);
+        const filename="Class_"+safeFileName(getValue("className"))+"_"+safeFileName(getValue("subject"))+"_"+safeFileName(getValue("exam"))+"_Set_"+safeFileName(getValue("set"))+".docx";
+        downloadBlob(blob,filename);
+        showStatus("Word document generated successfully with fixed Word-compatible formatting.","success");
+    }catch(error){
+        console.error(error);
+        showStatus("DOCX generation failed: "+error.message,"error");
+    }finally{
+        button.disabled=false;
+        button.innerHTML="📄 Generate Word (.docx) <span class=\"shortcut\">Alt + W</span>";
+    }
+}
+
+
+/* =========================================================
+   NORMAL PDF
+========================================================= */
+
+function printNormalPDF(){
+
+    updatePreview();
+
+    setTimeout(
+        function(){
+
+            window.print();
+
+        },
+        200
+    );
+
+}
+
+
+/* =========================================================
+   BOOKLET PAGE HTML
+========================================================= */
+
+function createBookletPage(
+    pageNumber,
+    pageContent,
+    totalPages
+){
+
+    return `
+
+        <div class="booklet-page">
+
+
+            ${
+                pageNumber===1
+                ?
+                `
+
+                <div class="booklet-header">
+
+                    <div class="booklet-school">
+                        THE HIMALAYAN INTERNATIONAL SCHOOL
+                    </div>
+
+                    <div class="booklet-aff">
+                        Affiliated To CBSE, New Delhi
+                    </div>
+
+                    <div class="booklet-address">
+                        Near Kotwali, By-pass Road,
+                        Vikasnagar, Dehradun,
+                        Uttarakhand – 248198
+                    </div>
+
+                    <div class="booklet-address">
+                        Contact: 7618197677, 7351852021 |
+                        Email:
+                        contact@thehimalayaninternationalschool.edu.in
+                    </div>
+
+                    <div class="booklet-exam">
+
+                        ${
+                            escapeHTML(
+                                getValue("exam") ||
+                                "HALF YEARLY EXAMINATION"
+                            )
+                        }
+
+                        ${
+                            getValue("session")
+                            ?
+                            " "+
+                            escapeHTML(
+                                getValue("session")
+                            )
+                            :
+                            ""
+                        }
+
+                    </div>
+
+                    <div class="booklet-details">
+
+                        <div>
+                            Class:
+                            ${escapeHTML(
+                                getValue("className")
+                            )}
+                        </div>
+
+                        <div>
+                            Subject:
+                            ${escapeHTML(
+                                getValue("subject")
+                            )}
+                        </div>
+
+                        <div>
+                            Set:
+                            ${escapeHTML(
+                                getValue("set")
+                            )}
+                        </div>
+
+                    </div>
+
+                    <div class="booklet-details second">
+
+                        <div>
+                            Time:
+                            ${escapeHTML(
+                                getValue("time")
+                            )}
+                        </div>
+
+                        <div>
+                            Maximum Marks:
+                            ${escapeHTML(
+                                getValue("marks")
+                            )}
+                        </div>
+
+                        <div></div>
+
+                    </div>
+
+                    <div class="booklet-student-info">
+                        <div>Students' Name:</div>
+                        <div>Section:</div>
+                        <div>Invigilator's Sign:</div>
+                    </div>
+
+                </div>
+
+                `
+                :
+                ""
+            }
+
+
+            <div class="booklet-content">
+
+                ${pageContent}
+
+            </div>
+
+
+            <div class="booklet-footer">
+
+                Page
+                ${pageNumber}
+                of
+                ${totalPages}
+
+            </div>
+
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   BOOKLET PDF
+========================================================= */
+
+function generateBookletPDF(){
+
+    const button =
+        document.getElementById(
+            "bookletButton"
+        );
+
+
+    button.disabled=true;
+
+    button.textContent=
+        "Creating Booklet...";
+
+
+    try{
+
+        const editor =
+            document.getElementById(
+                "editor"
+            );
+
+
+        const blocks =
+            Array.from(
+                editor.children
+            );
+
+
+        if(
+            blocks.length===0
+        ){
+
+            alert(
+                "Please enter some questions first."
+            );
+
+            button.disabled=false;
+
+            button.textContent=
+                "📖 Generate Booklet PDF";
+
+            return;
+
+        }
+
+
+        /*
+        ====================================================
+        TEMPORARY A4 PAGE
+        ====================================================
+        */
+
+        const tempPage =
+            document.createElement(
+                "div"
+            );
+
+
+        tempPage.style.position=
+            "fixed";
+
+        tempPage.style.left=
+            "-10000px";
+
+        tempPage.style.top="0";
+
+        tempPage.style.width="794px";
+
+        tempPage.style.height="1123px";
+
+        tempPage.style.padding=
+            "35px 42px";
+
+        tempPage.style.background=
+            "#fff";
+
+        tempPage.style.fontFamily=
+            '"Times New Roman", serif';
+
+        tempPage.style.fontSize=
+            "14pt";
+
+        tempPage.style.lineHeight=
+            getComputedStyle(
+                editor
+            ).lineHeight;
+
+
+        document.body.appendChild(
+            tempPage
+        );
+
+
+        /*
+        ====================================================
+        PAGE CONTENT LIMIT
+        ====================================================
+        */
+
+        const pageHeight =
+            1020;
+
+
+        const pages=[];
+
+
+        let current =
+            document.createElement(
+                "div"
+            );
+
+
+        current.style.width=
+            "100%";
+
+
+        current.style.fontFamily=
+            '"Times New Roman", serif';
+
+
+        current.style.fontSize=
+            "14pt";
+
+
+        current.style.lineHeight=
+            getComputedStyle(
+                editor
+            ).lineHeight;
+
+
+        function getCurrentHeight(){
+
+            tempPage.innerHTML="";
+
+            tempPage.appendChild(
+                current
+            );
+
+            return current.scrollHeight;
+
+        }
+
+
+        blocks.forEach(
+            block => {
+
+                const clone =
+                    block.cloneNode(true);
+
+
+                const test =
+                    current.cloneNode(true);
+
+
+                test.appendChild(
+                    clone
+                );
+
+
+                tempPage.innerHTML="";
+
+                tempPage.appendChild(
+                    test
+                );
+
+
+                if(
+                    test.scrollHeight >
+                    pageHeight &&
+                    current.children.length>0
+                ){
+
+                    pages.push(
+                        current.innerHTML
+                    );
+
+
+                    current =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    current.style.width=
+                        "100%";
+
+                    current.style.fontFamily=
+                        '"Times New Roman", serif';
+
+                    current.style.fontSize=
+                        "14pt";
+
+                    current.style.lineHeight=
+                        getComputedStyle(
+                            editor
+                        ).lineHeight;
+
+
+                    current.appendChild(
+                        block.cloneNode(true)
+                    );
+
+                }
+
+                else{
+
+                    current.appendChild(
+                        clone
+                    );
+
+                }
+
+            }
+        );
+
+
+        if(
+            current.children.length
+        ){
+
+            pages.push(
+                current.innerHTML
+            );
+
+        }
+
+
+        document.body.removeChild(
+            tempPage
+        );
+
+
+        /*
+        ====================================================
+        BOOKLET MUST BE MULTIPLE OF 4
+        ====================================================
+        */
+
+        while(
+            pages.length % 4 !== 0
+        ){
+
+            pages.push("");
+
+        }
+
+
+        /*
+        At least 4 pages
+        */
+
+        if(
+            pages.length<4
+        ){
+
+            while(
+                pages.length<4
+            ){
+
+                pages.push("");
+
+            }
+
+        }
+
+
+        const totalPages =
+            pages.length;
+
+
+        /*
+        ====================================================
+        BOOKLET WINDOW
+        ====================================================
+        */
+
+        const win =
+            window.open(
+                "",
+                "_blank",
+                "width=1200,height=900"
+            );
+
+
+        if(!win){
+
+            alert(
+                "Please allow pop-ups in your browser."
+            );
+
+            button.disabled=false;
+
+            button.textContent=
+                "📖 Generate Booklet PDF";
+
+            return;
+
+        }
+
+
+        let html=`
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>
+${escapeHTML(
+    getValue("subject")
+)} Booklet PDF
+</title>
+
+<style>
+
+
+/* =====================================================
+   PAGE SETUP
+===================================================== */
+
+@page{
+
+    size:A4 landscape;
+
+    margin:0;
+
+}
+
+
+*{
+    box-sizing:border-box;
+}
+
+
+html,
+body{
+
+    margin:0;
+    padding:0;
+
+}
+
+
+body{
+
+    background:#777;
+
+    font-family:
+        "Times New Roman",
+        serif;
+
+}
+
+
+/* =====================================================
+   LANDSCAPE A4 SHEET
+===================================================== */
+
+.sheet{
+
+    width:297mm;
+
+    height:210mm;
+
+    background:white;
+
+    display:flex;
+
+    page-break-after:always;
+
+    position:relative;
+
+}
+
+
+/* =====================================================
+   BOOKLET PAGE = A5
+===================================================== */
+
+.booklet-page{
+
+    width:148.5mm;
+
+    height:210mm;
+
+    padding:
+        8mm
+        10mm
+        11mm
+        10mm;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+
+/* =====================================================
+   SCHOOL HEADER
+===================================================== */
+
+.booklet-school{
+
+    font-size:20pt;
+
+    font-weight:bold;
+
+    text-align:center;
+
+    line-height:1.05;
+
+}
+
+
+.booklet-aff{
+
+    text-align:center;
+
+    font-size:8pt;
+
+    font-weight:bold;
+
+}
+
+
+.booklet-address{
+
+    text-align:center;
+
+    font-size:7pt;
+
+}
+
+
+.booklet-exam{
+
+    text-align:center;
+
+    font-size:18pt;
+
+    font-weight:bold;
+
+    margin-top:3px;
+
+}
+
+
+.booklet-details{
+
+    display:grid;
+
+    grid-template-columns:
+        1fr 1fr 1fr;
+
+    font-size:16pt;
+
+    font-weight:bold;
+
+    margin-top:4px;
+
+    padding:3px 0;
+
+    border-top:
+        1px solid #222;
+
+    border-bottom:
+        1px solid #222;
+
+}
+
+
+.booklet-details.second{
+
+    border-top:0;
+
+    margin-top:0;
+
+}
+
+.booklet-student-info{
+    display:grid;
+    grid-template-columns:1.5fr 1fr 1.5fr;
+    font-size:14pt;
+    font-weight:bold;
+    margin-top:4px;
+    padding:2px 0;
+}
+
+
+/* =====================================================
+   CONTENT
+===================================================== */
+
+.booklet-content{
+
+    margin-top:6px;
+
+    font-size:14pt;
+
+    line-height:1.35;
+
+}
+
+
+.booklet-content p{
+
+    margin-top:2px;
+
+    margin-bottom:4px;
+
+}
+
+
+.booklet-content h1{
+
+    font-size:20pt;
+
+}
+
+
+.booklet-content h2{
+
+    font-size:18pt;
+
+}
+
+
+.booklet-content h3{
+
+    font-size:16pt;
+
+}
+
+
+.booklet-content img{
+
+    max-width:100%;
+
+    max-height:70mm;
+
+    height:auto;
+
+}
+
+
+.booklet-content table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+
+.booklet-content td,
+.booklet-content th{
+
+    border:1px solid #222;
+
+    padding:3px;
+
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.booklet-footer{
+
+    position:absolute;
+
+    left:0;
+
+    bottom:3mm;
+
+    width:100%;
+
+    text-align:center;
+
+    font-size:8pt;
+
+}
+
+
+/* =====================================================
+   CENTER FOLD
+===================================================== */
+
+.fold{
+
+    position:absolute;
+
+    left:50%;
+
+    top:0;
+
+    bottom:0;
+
+    border-left:
+        1px dashed #aaa;
+
+}
+
+
+/* =====================================================
+   PRINT
+===================================================== */
+
+@media print{
+
+    body{
+
+        background:white;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+`;
+
+
+        /*
+        ====================================================
+        BOOKLET IMPOSITION
+
+        8 pages:
+
+        FRONT  8 | 1
+        BACK   2 | 7
+        FRONT  6 | 3
+        BACK   4 | 5
+        ====================================================
+        */
+
+
+        let low=1;
+
+        let high=totalPages;
+
+
+        while(
+            low < high
+        ){
+
+            /*
+            FRONT
+            */
+
+            html += `
+
+                <div class="sheet">
+
+                    ${
+                        createBookletPage(
+                            high,
+                            pages[high-1],
+                            totalPages
+                        )
+                    }
+
+                    ${
+                        createBookletPage(
+                            low,
+                            pages[low-1],
+                            totalPages
+                        )
+                    }
+
+                    <div class="fold"></div>
+
+                </div>
+
+            `;
+
+
+            high--;
+            low++;
+
+
+            /*
+            BACK
+            */
+
+            if(
+                low <= high
+            ){
+
+                html += `
+
+                    <div class="sheet">
+
+                        ${
+                            createBookletPage(
+                                low,
+                                pages[low-1],
+                                totalPages
+                            )
+                        }
+
+                        ${
+                            createBookletPage(
+                                high,
+                                pages[high-1],
+                                totalPages
+                            )
+                        }
+
+                        <div class="fold"></div>
+
+                    </div>
+
+                `;
+
+
+                low++;
+                high--;
+
+            }
+
+        }
+
+
+        html += `
+
+</body>
+
+</html>
+
+`;
+
+
+        win.document.open();
+
+        win.document.write(
+            html
+        );
+
+        win.document.close();
+
+
+        /*
+        ====================================================
+        OPEN PRINT DIALOG
+        ====================================================
+        */
+
+        setTimeout(
+            function(){
+
+                win.focus();
+
+                win.print();
+
+
+                button.disabled=false;
+
+                button.textContent=
+                    "📖 Generate Booklet PDF";
+
+
+            },
+            1000
+        );
+
+
+    }
+
+    catch(error){
+
+        console.error(
+            error
+        );
+
+
+        showStatus(
+            "Booklet generation failed: "+
+            error.message,
+            "error"
+        );
+
+
+        button.disabled=false;
+
+        button.textContent=
+            "📖 Generate Booklet PDF";
+
+    }
+
+}
+
+
+/* =========================================================
+   KEYBOARD SHORTCUTS
+========================================================= */
+
+document.addEventListener("keydown", function(event){
+
+    if(!event.altKey) return;
+
+    const key = event.key.toLowerCase();
+
+    // Ignore browser/OS shortcuts that are not intended for this app.
+    if(key === "w"){
+        event.preventDefault();
+        generateDOCX();
+    }
+
+    else if(key === "p"){
+        event.preventDefault();
+        printNormalPDF();
+    }
+
+    else if(key === "b"){
+        event.preventDefault();
+        generateBookletPDF();
+    }
+
+    else if(key === "v"){
+        event.preventDefault();
+        updatePreview();
+        const preview = document.getElementById("paperPreview");
+        if(preview){
+            preview.scrollIntoView({
+                behavior:"smooth",
+                block:"start"
+            });
+        }
+    }
+
+    else if(key === "i"){
+        event.preventDefault();
+        const imageInput = document.getElementById("imageInput");
+        if(imageInput) imageInput.click();
+    }
+
+});
+
+
+/* =========================================================
+   LIVE PREVIEW
+========================================================= */
+
+const fields=[
+
+    "className",
+    "subject",
+    "exam",
+    "session",
+    "set",
+    "marks",
+    "time"
+
+];
+
+
+fields.forEach(
+    id => {
+
+        document
+            .getElementById(id)
+            .addEventListener(
+                "input",
+                updatePreview
+            );
+
+
+        document
+            .getElementById(id)
+            .addEventListener(
+                "change",
+                updatePreview
+            );
+
+    }
+);
+
+
+/* =========================================================
+   UPDATE PREVIEW WHILE TYPING
+========================================================= */
+
+document
+    .getElementById("editor")
+    .addEventListener(
+        "input",
+        updatePreview
+    );
+
+
+/* =========================================================
+   INITIAL PREVIEW
+========================================================= */
+
+updatePreview();
+
+
+/* =========================================================
+   CHECK DOCX LIBRARY
+========================================================= */
+
+setTimeout(
+    function(){
+
+        if(
+            typeof docx==="undefined"
+        ){
+
+            showStatus(
+
+                "DOCX library could not be loaded. Check your internet connection and reload the page.",
+
+                "error"
+
+            );
+
+        }
+
+    },
+    2000
+);
+
+</script>
+
+
+</body>
+</html>
