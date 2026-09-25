@@ -410,18 +410,20 @@ select:focus{
     vertical-align:middle;
 }
 
-.paper-details-table td{
-    width:20%;
-}
+.paper-details-table td:nth-child(1){ width:25%; }
+.paper-details-table td:nth-child(2){ width:24%; }
+.paper-details-table td:nth-child(3){ width:15%; }
+.paper-details-table td:nth-child(4){ width:20%; }
+.paper-details-table td:nth-child(5){ width:16%; }
 
 .paper-student-table{
     margin-top:8px;
 }
 
-.paper-student-table td:nth-child(1){ width:30%; }
-.paper-student-table td:nth-child(2){ width:22%; }
-.paper-student-table td:nth-child(3){ width:18%; }
-.paper-student-table td:nth-child(4){ width:30%; }
+.paper-student-table td:nth-child(1){ width:25%; }
+.paper-student-table td:nth-child(2){ width:24%; }
+.paper-student-table td:nth-child(3){ width:15%; }
+.paper-student-table td:nth-child(4){ width:36%; }
 
 .paper-student-table td{
     height:34px;
@@ -1790,24 +1792,19 @@ function getPaperHTML(){
             <table class="paper-details-table">
                 <tr>
                     <td>
-                        Class:
-                        ${escapeHTML(getValue("className"))}
+                        Subject: ${escapeHTML(getValue("subject"))}
                     </td>
                     <td>
-                        Subject:
-                        ${escapeHTML(getValue("subject"))}
+                        Class: ${escapeHTML(getValue("className"))}
                     </td>
                     <td>
-                        Set:
-                        ${escapeHTML(getValue("set"))}
+                        Set: ${escapeHTML(getValue("set"))}
                     </td>
                     <td>
-                        Time:
-                        ${escapeHTML(getValue("time"))}
+                        Time: ${escapeHTML(getValue("time"))}
                     </td>
                     <td>
-                        M.M.:
-                        ${escapeHTML(getValue("marks"))}
+                        M.M.: ${escapeHTML(getValue("marks"))}
                     </td>
                 </tr>
             </table>
@@ -1815,10 +1812,10 @@ function getPaperHTML(){
             <!-- STUDENT DETAILS TABLE -->
             <table class="paper-student-table">
                 <tr>
-                    <td>Students' Name:</td>
+                    <td>Name:</td>
                     <td>Section:</td>
                     <td>Roll No.</td>
-                    <td>Invigilator's Sign:</td>
+                    <td colspan="2">Invigilator's Sign:</td>
                 </tr>
             </table>
 
@@ -2114,29 +2111,36 @@ function docxGridBorders(){
 function makeDocxHeaderTables(){
     const W=10806;
     const borders=docxGridBorders();
-    const d=Math.floor(W/5);
+
+    // Match the supplied reference table: 25% | 24% | 15% | 20% | 16%
+    const d1=Math.round(W*0.25);
+    const d2=Math.round(W*0.24);
+    const d3=Math.round(W*0.15);
+    const d4=Math.round(W*0.20);
+    const d5=W-d1-d2-d3-d4;
 
     const details = new docx.Table({
         width:{size:W,type:docx.WidthType.DXA},
         layout:docx.TableLayoutType.FIXED,
-        columnWidths:[d,d,d,d,W-(d*4)],
+        columnWidths:[d1,d2,d3,d4,d5],
         borders:borders,
         rows:[new docx.TableRow({
             cantSplit:true,
             children:[
-                docxCell("Class: "+getValue("className"),d,docx.AlignmentType.LEFT,24,borders),
-                docxCell("Subject: "+getValue("subject"),d,docx.AlignmentType.LEFT,24,borders),
-                docxCell("Set: "+getValue("set"),d,docx.AlignmentType.LEFT,24,borders),
-                docxCell("Time: "+getValue("time"),d,docx.AlignmentType.LEFT,24,borders),
-                docxCell("M.M.: "+getValue("marks"),W-(d*4),docx.AlignmentType.LEFT,24,borders)
+                docxCell("Subject: "+getValue("subject"),d1,docx.AlignmentType.LEFT,24,borders),
+                docxCell("Class: "+getValue("className"),d2,docx.AlignmentType.LEFT,24,borders),
+                docxCell("Set: "+getValue("set"),d3,docx.AlignmentType.LEFT,24,borders),
+                docxCell("Time: "+getValue("time"),d4,docx.AlignmentType.LEFT,24,borders),
+                docxCell("M.M.: "+getValue("marks"),d5,docx.AlignmentType.LEFT,24,borders)
             ]
         })]
     });
 
-    const c1=Math.round(W*0.30);
-    const c2=Math.round(W*0.22);
-    const c3=Math.round(W*0.18);
-    const c4=W-c1-c2-c3;
+    // Second row uses the first three columns, with Invigilator's Sign spanning columns 4 and 5.
+    const c1=d1;
+    const c2=d2;
+    const c3=d3;
+    const c4=d4+d5;
 
     const student = new docx.Table({
         width:{size:W,type:docx.WidthType.DXA},
@@ -2146,7 +2150,7 @@ function makeDocxHeaderTables(){
         rows:[new docx.TableRow({
             cantSplit:true,
             children:[
-                docxCell("Students' Name:",c1,docx.AlignmentType.LEFT,24,borders),
+                docxCell("Name:",c1,docx.AlignmentType.LEFT,24,borders),
                 docxCell("Section:",c2,docx.AlignmentType.LEFT,24,borders),
                 docxCell("Roll No.",c3,docx.AlignmentType.LEFT,24,borders),
                 docxCell("Invigilator's Sign:",c4,docx.AlignmentType.LEFT,24,borders)
