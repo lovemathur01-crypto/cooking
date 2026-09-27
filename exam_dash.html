@@ -1040,6 +1040,151 @@ body:before{
   border:0
 }
 
+
+/* =========================================================
+   AUTH SESSION + LOGOUT
+========================================================= */
+.header-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.session-timer{
+  display:none;
+  padding:9px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.11);
+  border:1px solid rgba(255,255,255,.22);
+  color:rgba(255,255,255,.86);
+  font-size:12px;
+  font-weight:700;
+}
+.logout-btn{
+  display:none;
+  border:1px solid rgba(255,255,255,.3);
+  background:rgba(255,75,95,.18);
+  color:#fff;
+  border-radius:10px;
+  padding:9px 13px;
+  font-weight:800;
+  cursor:pointer;
+}
+body.authenticated .logout-btn,
+body.authenticated .session-timer{display:inline-flex}
+body.authenticated .protected:after{
+  content:" 🔓";
+  font-size:14px;
+  opacity:.9;
+}
+
+/* =========================================================
+   SNAKE GAME
+========================================================= */
+.snake-card{
+  margin-top:14px;
+  padding:16px;
+  border:1px solid #dce7f4;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 8px 22px rgba(24,61,100,.08);
+}
+.snake-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+.snake-head h3{color:#173f6d;font-size:16px}
+.snake-head p{color:#71829a;font-size:11px;margin-top:3px}
+.snake-stats{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.snake-stat{
+  padding:7px 10px;
+  border-radius:9px;
+  background:#f6f9fd;
+  border:1px solid #e3ebf4;
+  color:#45617d;
+  font-size:11px;
+  font-weight:800;
+}
+.snake-board-wrap{
+  width:100%;
+  max-width:720px;
+  margin:0 auto;
+  position:relative;
+}
+#snakeCanvas{
+  display:block;
+  width:100%;
+  aspect-ratio:16/9;
+  max-height:420px;
+  background:#071b3d;
+  border:2px solid #183f6b;
+  border-radius:12px;
+  touch-action:none;
+}
+.snake-overlay{
+  position:absolute;
+  inset:2px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  border-radius:10px;
+  background:rgba(3,12,31,.58);
+  backdrop-filter:blur(3px);
+}
+.snake-overlay.hidden{display:none}
+.snake-overlay-card{
+  padding:18px 22px;
+  border-radius:14px;
+  background:rgba(255,255,255,.96);
+  color:#173f6d;
+  box-shadow:0 15px 40px rgba(0,0,0,.25);
+}
+.snake-overlay-card h4{font-size:18px;margin-bottom:5px}
+.snake-overlay-card p{font-size:12px;color:#71829a;margin-bottom:12px}
+.snake-start{
+  border:0;
+  border-radius:10px;
+  padding:10px 16px;
+  background:linear-gradient(135deg,#143e9c,#7d43db);
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+.snake-controls{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  margin:12px auto 0;
+  flex-wrap:wrap;
+}
+.snake-controls button{
+  width:42px;
+  height:36px;
+  border:1px solid #ccd9e8;
+  border-radius:9px;
+  background:#f7faff;
+  color:#173f6d;
+  font-size:16px;
+  font-weight:900;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.snake-controls .empty{visibility:hidden}
+.snake-help{
+  text-align:center;
+  color:#7b8da3;
+  font-size:10px;
+  margin-top:8px;
+}
+
 /* RESPONSIVE */
 
 @media(max-width:1050px){
@@ -1071,6 +1216,18 @@ body:before{
 
 @media(max-width:650px){
 
+  .header-actions{
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .session-timer{
+    font-size:10px;
+    padding:7px 9px;
+  }
+  .logout-btn{
+    font-size:11px;
+    padding:8px 10px;
+  }
   .header{
     padding:18px
   }
@@ -1178,7 +1335,11 @@ body:before{
 
   </div>
 
-  <div class="status">● Main Page</div>
+  <div class="header-actions">
+    <div class="session-timer" id="sessionTimer">🔐 Session: 30:00</div>
+    <div class="status">● Main Page</div>
+    <button class="logout-btn" id="logoutBtn" type="button" onclick="logout()">Logout</button>
+  </div>
 
 </header>
 
@@ -1813,6 +1974,40 @@ body:before{
 
   </div>
 
+
+  <!-- SNAKE GAME -->
+  <section class="snake-card" aria-label="Snake game">
+    <div class="snake-head">
+      <div>
+        <h3>🐍 Snake Game</h3>
+        <p>Play while checking papers. Use Arrow Keys or WASD.</p>
+      </div>
+      <div class="snake-stats">
+        <div class="snake-stat">Score: <span id="snakeScore">0</span></div>
+        <div class="snake-stat">High Score: <span id="snakeHighScore">0</span></div>
+      </div>
+    </div>
+    <div class="snake-board-wrap">
+      <canvas id="snakeCanvas" width="640" height="360" aria-label="Responsive Snake game"></canvas>
+      <div class="snake-overlay" id="snakeOverlay">
+        <div class="snake-overlay-card">
+          <h4 id="snakeOverlayTitle">🐍 Ready?</h4>
+          <p id="snakeOverlayText">Press Start, then use Arrow Keys or WASD.</p>
+          <button class="snake-start" id="snakeStart" type="button">Start Game</button>
+        </div>
+      </div>
+    </div>
+    <div class="snake-controls" aria-label="Snake touch controls">
+      <button class="empty" tabindex="-1" aria-hidden="true">•</button>
+      <button type="button" data-dir="up" aria-label="Up">↑</button>
+      <button class="empty" tabindex="-1" aria-hidden="true">•</button>
+      <button type="button" data-dir="left" aria-label="Left">←</button>
+      <button type="button" data-dir="down" aria-label="Down">↓</button>
+      <button type="button" data-dir="right" aria-label="Right">→</button>
+    </div>
+    <div class="snake-help">Keyboard: Arrow Keys / WASD • High score is saved in this browser</div>
+  </section>
+
 </section>
 
 </main>
@@ -1939,6 +2134,174 @@ const VALID_CREDENTIALS = [
 
 let protectedAction = null;
 
+/* =========================================================
+   SHARED 30-MINUTE INACTIVITY SESSION
+========================================================= */
+const SESSION_KEY = "examinationDashboardSession_v1";
+const SESSION_TIMEOUT = 30 * 60 * 1000;
+let sessionTimer = null;
+
+function getSession(){
+  try{
+    const raw = localStorage.getItem(SESSION_KEY);
+    if(!raw) return null;
+
+    const data = JSON.parse(raw);
+
+    if(
+      !data ||
+      typeof data.userId !== "string" ||
+      !Number.isFinite(data.lastActivity)
+    ){
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+
+    if(Date.now() - data.lastActivity >= SESSION_TIMEOUT){
+      localStorage.removeItem(SESSION_KEY);
+      stopSessionUI();
+      document.body.classList.remove("authenticated");
+      return null;
+    }
+
+    return data;
+  }catch(e){
+    console.error("Session storage error:", e);
+    return null;
+  }
+}
+
+function setSession(userId){
+  localStorage.setItem(SESSION_KEY, JSON.stringify({
+    userId,
+    lastActivity: Date.now()
+  }));
+  startSessionUI();
+}
+
+function touchSession(){
+  const session = getSession();
+  if(!session) return false;
+  session.lastActivity = Date.now();
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  return true;
+}
+
+function clearSession(){
+  localStorage.removeItem(SESSION_KEY);
+  stopSessionUI();
+  document.body.classList.remove("authenticated");
+}
+
+function isAuthenticated(){
+  const session = getSession();
+  if(!session){
+    document.body.classList.remove("authenticated");
+    return false;
+  }
+  document.body.classList.add("authenticated");
+  return true;
+}
+
+function formatSessionTime(ms){
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const min = Math.floor(total / 60);
+  const sec = total % 60;
+  return String(min).padStart(2,"0") + ":" + String(sec).padStart(2,"0");
+}
+
+function startSessionUI(){
+  document.body.classList.add("authenticated");
+  stopSessionUI();
+
+  const tick = () => {
+    const session = getSession();
+    const timer = document.getElementById("sessionTimer");
+
+    if(!session){
+      if(timer) timer.textContent = "🔐 Session expired";
+      goHome();
+      if(window.snakeStop) window.snakeStop();
+      showSessionExpired();
+      return;
+    }
+
+    const remaining = SESSION_TIMEOUT - (Date.now() - session.lastActivity);
+    if(timer) timer.textContent = "🔐 Session: " + formatSessionTime(remaining);
+  };
+
+  tick();
+  sessionTimer = setInterval(tick, 1000);
+}
+
+function stopSessionUI(){
+  if(sessionTimer){
+    clearInterval(sessionTimer);
+    sessionTimer = null;
+  }
+}
+
+function showSessionExpired(){
+  const description = document.getElementById("loginDescription");
+  description.textContent = "Your 30-minute inactive session expired. Please sign in again.";
+}
+
+let lastActivityWrite = 0;
+
+function registerActivity(){
+  const session = getSession();
+  if(!session) return;
+
+  // Avoid writing localStorage on every mouse-move/scroll event.
+  const now = Date.now();
+  if(now - lastActivityWrite < 1000) return;
+
+  lastActivityWrite = now;
+  session.lastActivity = now;
+
+  try{
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  }catch(e){
+    console.error("Unable to update session:", e);
+  }
+}
+
+["click","keydown","mousemove","touchstart","scroll"].forEach(eventName => {
+  document.addEventListener(eventName, registerActivity, {passive:true});
+});
+
+function logout(){
+  clearSession();
+  protectedAction = null;
+  goHome();
+}
+
+function openProtected(action){
+  protectedAction = action;
+
+  /* One successful login unlocks all three protected services. */
+  if(isAuthenticated()){
+    touchSession();
+    handleProtectedAction(action);
+    return;
+  }
+
+  const description = document.getElementById("loginDescription");
+
+  if(action === "generator"){
+    description.textContent = "Login once to unlock the Question Generator, Question Paper Checking, and Class-wise Question Papers.";
+  }else if(action === "checking"){
+    description.textContent = "Login once to unlock Question Paper Checking, the Snake Game, and the other protected services.";
+  }else{
+    description.textContent = "Login once to unlock Class-wise Question Papers, Question Generator, and Question Paper Checking.";
+  }
+
+  document.getElementById("loginError").classList.remove("show");
+  document.getElementById("loginOverlay").classList.add("show");
+  document.getElementById("loginForm").reset();
+
+  setTimeout(() => document.getElementById("loginId").focus(), 80);
+}
 
 /* =========================================================
    CLASS-WISE QUESTION PAPER DRIVE LINK
@@ -1946,65 +2309,6 @@ let protectedAction = null;
 
 const CLASS_PAPERS_URL =
   "https://drive.google.com/open?id=15C430j50ZvskRbR3Ydt0Rfwz2Suq3aAB&usp=sharing";
-
-
-/* =========================================================
-   OPEN LOGIN
-========================================================= */
-
-function openProtected(action){
-
-  protectedAction = action;
-
-  const description =
-    document.getElementById("loginDescription");
-
-
-  if(action === "generator"){
-
-    description.textContent =
-      "Login is required to open the Question Generator.";
-
-  }
-
-  else if(action === "checking"){
-
-    description.textContent =
-      "Login is required to open Question Paper Checking and its tracking dashboard.";
-
-  }
-
-  else if(action === "classpapers"){
-
-    description.textContent =
-      "Login is required to open Class-wise Question Papers.";
-
-  }
-
-
-  document
-    .getElementById("loginError")
-    .classList
-    .remove("show");
-
-
-  document
-    .getElementById("loginOverlay")
-    .classList
-    .add("show");
-
-
-  document
-    .getElementById("loginForm")
-    .reset();
-
-
-  setTimeout(
-    () => document.getElementById("loginId").focus(),
-    80
-  );
-
-}
 
 
 /* =========================================================
@@ -2162,56 +2466,41 @@ document
     }
 
 
+    setSession(id);
+    document.body.classList.add("authenticated");
     closeLogin();
 
-
-    const action = protectedAction;
-
-
-    /* QUESTION GENERATOR */
-
-    if(action === "generator"){
-
-      showPanel(
-        "generatorPanel",
-        "● Question Generator"
-      );
-
-    }
-
-
-    /* QUESTION PAPER CHECKING */
-
-    if(action === "checking"){
-
-      showPanel(
-        "checkingPanel",
-        "● Question Paper Checking"
-      );
-
-      updateTracking();
-
-    }
-
-
-    /* CLASS-WISE QUESTION PAPERS */
-
-    if(action === "classpapers"){
-
-      window.open(
-        CLASS_PAPERS_URL,
-        "_blank",
-        "noopener,noreferrer"
-      );
-
-    }
+    // The same session authorizes all three protected services.
+    const actionToOpen = protectedAction;
+    protectedAction = null;
+    handleProtectedAction(actionToOpen);
 
   });
 
 
+function handleProtectedAction(action){
+  if(!isAuthenticated()) return;
+
+  touchSession();
+
+  if(action === "generator"){
+    showPanel("generatorPanel","● Question Generator");
+  }
+
+  if(action === "checking"){
+    showPanel("checkingPanel","● Question Paper Checking");
+    updateTracking();
+  }
+
+  if(action === "classpapers"){
+    window.open(CLASS_PAPERS_URL,"_blank","noopener,noreferrer");
+  }
+}
+
 /* =========================================================
    CLOSE LOGIN WHEN CLICKING OUTSIDE
 ========================================================= */
+
 
 document
   .getElementById("loginOverlay")
@@ -2625,10 +2914,217 @@ document
 
 
 /* =========================================================
+   SNAKE GAME
+========================================================= */
+const SNAKE_HIGH_SCORE_KEY = "examinationDashboardSnakeHighScore_v1";
+const snakeCanvas = document.getElementById("snakeCanvas");
+const snakeCtx = snakeCanvas.getContext("2d");
+const snakeOverlay = document.getElementById("snakeOverlay");
+const snakeOverlayTitle = document.getElementById("snakeOverlayTitle");
+const snakeOverlayText = document.getElementById("snakeOverlayText");
+const snakeStart = document.getElementById("snakeStart");
+const snakeScoreEl = document.getElementById("snakeScore");
+const snakeHighScoreEl = document.getElementById("snakeHighScore");
+
+const SNAKE_COLS = 32;
+const SNAKE_ROWS = 18;
+let snake = [];
+let snakeFood = {x:12,y:8};
+let snakeDir = {x:1,y:0};
+let snakeNextDir = {x:1,y:0};
+let snakeScore = 0;
+let snakeHighScore = Number(localStorage.getItem(SNAKE_HIGH_SCORE_KEY)) || 0;
+let snakeLoop = null;
+let snakeRunning = false;
+
+snakeHighScoreEl.textContent = snakeHighScore;
+
+function drawSnake(){
+  const w = snakeCanvas.width;
+  const h = snakeCanvas.height;
+  const cellW = w / SNAKE_COLS;
+  const cellH = h / SNAKE_ROWS;
+
+  snakeCtx.clearRect(0,0,w,h);
+  snakeCtx.fillStyle = "#071b3d";
+  snakeCtx.fillRect(0,0,w,h);
+
+  snakeCtx.strokeStyle = "rgba(255,255,255,.045)";
+  snakeCtx.lineWidth = 1;
+  for(let x=1;x<SNAKE_COLS;x++){
+    snakeCtx.beginPath();
+    snakeCtx.moveTo(x*cellW,0);
+    snakeCtx.lineTo(x*cellW,h);
+    snakeCtx.stroke();
+  }
+  for(let y=1;y<SNAKE_ROWS;y++){
+    snakeCtx.beginPath();
+    snakeCtx.moveTo(0,y*cellH);
+    snakeCtx.lineTo(w,y*cellH);
+    snakeCtx.stroke();
+  }
+
+  snakeCtx.fillStyle = "#ffcc33";
+  snakeCtx.beginPath();
+  snakeCtx.arc(
+    (snakeFood.x+.5)*cellW,
+    (snakeFood.y+.5)*cellH,
+    Math.min(cellW,cellH)*.32,
+    0,Math.PI*2
+  );
+  snakeCtx.fill();
+
+  snake.forEach((part,index)=>{
+    snakeCtx.fillStyle = index === 0 ? "#57f5c2" : "#26c99a";
+    snakeCtx.fillRect(
+      part.x*cellW+1,
+      part.y*cellH+1,
+      cellW-2,
+      cellH-2
+    );
+  });
+}
+
+function snakeRandomFood(){
+  const free = [];
+  for(let y=0;y<SNAKE_ROWS;y++){
+    for(let x=0;x<SNAKE_COLS;x++){
+      if(!snake.some(p=>p.x===x && p.y===y)) free.push({x,y});
+    }
+  }
+  snakeFood = free[Math.floor(Math.random()*free.length)] || {x:5,y:5};
+}
+
+function resetSnake(){
+  snake = [
+    {x:10,y:9},
+    {x:9,y:9},
+    {x:8,y:9}
+  ];
+  snakeDir = {x:1,y:0};
+  snakeNextDir = {x:1,y:0};
+  snakeScore = 0;
+  snakeScoreEl.textContent = "0";
+  snakeRandomFood();
+  drawSnake();
+}
+
+function setSnakeDirection(x,y){
+  if(!snakeRunning) return;
+  if(x === -snakeDir.x && y === -snakeDir.y) return;
+  snakeNextDir = {x,y};
+}
+
+function snakeStep(){
+  snakeDir = snakeNextDir;
+  const head = snake[0];
+  const next = {
+    x: head.x + snakeDir.x,
+    y: head.y + snakeDir.y
+  };
+
+  const hitWall =
+    next.x < 0 || next.x >= SNAKE_COLS ||
+    next.y < 0 || next.y >= SNAKE_ROWS;
+
+  const eating = next.x === snakeFood.x && next.y === snakeFood.y;
+  const bodyToCheck = eating ? snake : snake.slice(0,-1);
+  const hitBody = bodyToCheck.some(p=>p.x===next.x && p.y===next.y);
+
+  if(hitWall || hitBody){
+    endSnake();
+    return;
+  }
+
+  snake.unshift(next);
+
+  if(eating){
+    snakeScore++;
+    snakeScoreEl.textContent = snakeScore;
+    if(snakeScore > snakeHighScore){
+      snakeHighScore = snakeScore;
+      localStorage.setItem(SNAKE_HIGH_SCORE_KEY, String(snakeHighScore));
+      snakeHighScoreEl.textContent = snakeHighScore;
+    }
+    snakeRandomFood();
+  }else{
+    snake.pop();
+  }
+
+  drawSnake();
+}
+
+function startSnake(){
+  resetSnake();
+  snakeRunning = true;
+  snakeOverlay.classList.add("hidden");
+  if(snakeLoop) clearInterval(snakeLoop);
+  snakeLoop = setInterval(snakeStep, 115);
+}
+
+function endSnake(){
+  snakeRunning = false;
+  if(snakeLoop) clearInterval(snakeLoop);
+  snakeLoop = null;
+  snakeOverlayTitle.textContent = "Game Over";
+  snakeOverlayText.textContent = "Score: " + snakeScore + " • High Score: " + snakeHighScore;
+  snakeStart.textContent = "Play Again";
+  snakeOverlay.classList.remove("hidden");
+  drawSnake();
+}
+
+function stopSnake(){
+  if(snakeLoop) clearInterval(snakeLoop);
+  snakeLoop = null;
+  snakeRunning = false;
+}
+window.snakeStop = stopSnake;
+
+document.addEventListener("keydown",e=>{
+  if(!snakeRunning) return;
+  const key = e.key.toLowerCase();
+  const dirs = {
+    arrowup:[0,-1], w:[0,-1],
+    arrowdown:[0,1], s:[0,1],
+    arrowleft:[-1,0], a:[-1,0],
+    arrowright:[1,0], d:[1,0]
+  };
+  if(dirs[key]){
+    e.preventDefault();
+    setSnakeDirection(...dirs[key]);
+  }
+});
+
+document.querySelectorAll(".snake-controls button[data-dir]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const d = btn.dataset.dir;
+    const dirs = {
+      up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]
+    };
+    setSnakeDirection(...dirs[d]);
+  });
+});
+
+snakeStart.addEventListener("click",startSnake);
+resetSnake();
+
+/* =========================================================
    INITIALIZE
 ========================================================= */
-
 loadTracking();
+
+/*
+  IMPORTANT:
+  localStorage keeps the login session when this HTML file is closed
+  and opened again, provided the 30-minute inactivity period has not
+  expired.
+*/
+if(isAuthenticated()){
+  startSessionUI();
+}else{
+  document.body.classList.remove("authenticated");
+}
+
 
 </script>
 
