@@ -1,131 +1,605 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HIS Main Dashboard</title>
-</head>
-<body>
-
-  <!-- Your existing index.html content goes above this section -->
-
 <!-- ================= EXAMINATION DASHBOARD ================= -->
 <section class="examination-dashboard-section" id="examination-dashboard">
-  <div class="exam-dashboard-card">
-    <div class="exam-dashboard-icon">📝</div>
 
-    <div class="exam-dashboard-content">
-      <span class="exam-dashboard-badge">STAFF PORTAL</span>
-      <h2>Examination Dashboard</h2>
-      <p>
-        Access the Examination Dashboard for question paper checking,
-        marking schemes, date sheets, results and examination-related work.
-      </p>
+  <!-- Animated background glow -->
+  <div class="exam-bg-glow exam-glow-1"></div>
+  <div class="exam-bg-glow exam-glow-2"></div>
+  <div class="exam-bg-glow exam-glow-3"></div>
+
+  <div class="exam-dashboard-card">
+
+    <!-- Left Icon -->
+    <div class="exam-dashboard-icon-wrap">
+      <div class="exam-dashboard-icon">
+        📝
+      </div>
     </div>
 
+    <!-- Content -->
+    <div class="exam-dashboard-content">
+
+      <span class="exam-dashboard-badge">
+        <span class="badge-dot"></span>
+        STAFF PORTAL
+      </span>
+
+      <h2>
+        Examination Dashboard
+      </h2>
+
+      <p>
+        Access question paper checking, marking schemes, date sheets,
+        results and other examination-related services.
+      </p>
+
+      <div class="exam-dashboard-tags">
+        <span>📋 Marking Schemes</span>
+        <span>📅 Date Sheets</span>
+        <span>📊 Results</span>
+        <span>🔍 Paper Checking</span>
+      </div>
+
+    </div>
+
+    <!-- Button -->
     <a href="exam_dash.html" class="exam-dashboard-btn">
-      Open Examination Dashboard <span>→</span>
+      <span>Open Dashboard</span>
+      <strong>→</strong>
     </a>
+
+    <!-- Shine -->
+    <div class="exam-card-shine"></div>
+
   </div>
 </section>
 
 <style>
-  .examination-dashboard-section {
-    width: 100%;
-    padding: 50px 20px;
+
+/* =========================================================
+   EXAMINATION DASHBOARD — GEN Z GLASSMORPHISM THEME
+   ========================================================= */
+
+.examination-dashboard-section {
+  position: relative;
+  width: 100%;
+  padding: 55px 20px;
+  overflow: hidden;
+}
+
+/* ---------- Animated Glow Background ---------- */
+
+.exam-bg-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(65px);
+  opacity: .35;
+  z-index: 0;
+}
+
+.exam-glow-1 {
+  width: 230px;
+  height: 230px;
+  left: 4%;
+  top: 15%;
+  background: #ff4fd8;
+  animation: examGlow1 10s ease-in-out infinite alternate;
+}
+
+.exam-glow-2 {
+  width: 260px;
+  height: 260px;
+  right: 7%;
+  top: 5%;
+  background: #00eaff;
+  animation: examGlow2 12s ease-in-out infinite alternate;
+}
+
+.exam-glow-3 {
+  width: 240px;
+  height: 240px;
+  right: 35%;
+  bottom: -100px;
+  background: #7655ff;
+  animation: examGlow3 14s ease-in-out infinite alternate;
+}
+
+@keyframes examGlow1 {
+  from {
+    transform: translate(0,0) scale(1);
   }
+
+  to {
+    transform: translate(70px,-25px) scale(1.25);
+  }
+}
+
+@keyframes examGlow2 {
+  from {
+    transform: translate(0,0) scale(1);
+  }
+
+  to {
+    transform: translate(-60px,40px) scale(1.2);
+  }
+}
+
+@keyframes examGlow3 {
+  from {
+    transform: translate(0,0) scale(1);
+  }
+
+  to {
+    transform: translate(-50px,-35px) scale(.85);
+  }
+}
+
+
+/* ---------- Main Glass Card ---------- */
+
+.exam-dashboard-card {
+  position: relative;
+  z-index: 2;
+
+  max-width: 1200px;
+  margin: auto;
+
+  min-height: 185px;
+
+  display: flex;
+  align-items: center;
+  gap: 26px;
+
+  padding: 28px 30px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(19, 44, 145, .82),
+      rgba(71, 37, 157, .72)
+    );
+
+  border: 1px solid rgba(255,255,255,.25);
+
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+
+  box-shadow:
+    0 25px 65px rgba(15,25,100,.30),
+    inset 0 1px rgba(255,255,255,.25);
+
+  overflow: hidden;
+
+  transition:
+    transform .35s ease,
+    box-shadow .35s ease,
+    border-color .35s ease;
+}
+
+
+/* Hover Card */
+
+.exam-dashboard-card:hover {
+  transform: translateY(-6px);
+
+  border-color: rgba(255,255,255,.5);
+
+  box-shadow:
+    0 35px 80px rgba(15,25,100,.40),
+    0 0 45px rgba(76,180,255,.16),
+    inset 0 1px rgba(255,255,255,.35);
+}
+
+
+/* ---------- Card Shine ---------- */
+
+.exam-card-shine {
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  right: -130px;
+  bottom: -160px;
+
+  border-radius: 50%;
+
+  background: rgba(0,234,255,.22);
+
+  filter: blur(4px);
+
+  transition: .5s ease;
+
+  pointer-events: none;
+}
+
+.exam-dashboard-card:hover .exam-card-shine {
+  transform: scale(1.5);
+}
+
+
+/* ---------- Icon ---------- */
+
+.exam-dashboard-icon-wrap {
+  flex: 0 0 78px;
+}
+
+.exam-dashboard-icon {
+  width: 78px;
+  height: 78px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 22px;
+
+  font-size: 38px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #00eaff,
+      #5367ff 55%,
+      #b94cff
+    );
+
+  border: 1px solid rgba(255,255,255,.35);
+
+  box-shadow:
+    0 12px 30px rgba(0,234,255,.28),
+    inset 0 1px rgba(255,255,255,.55);
+
+  animation: iconFloat 4s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+
+  0%,100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+
+}
+
+
+/* ---------- Content ---------- */
+
+.exam-dashboard-content {
+  flex: 1;
+  min-width: 0;
+}
+
+
+/* Badge */
+
+.exam-dashboard-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-bottom: 8px;
+
+  padding: 6px 11px;
+
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.10);
+
+  border: 1px solid rgba(255,255,255,.22);
+
+  color: rgba(255,255,255,.9);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 1.4px;
+
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.18);
+}
+
+
+/* Badge Dot */
+
+.badge-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #39ffd5;
+
+  box-shadow:
+    0 0 10px #39ffd5;
+
+  animation: badgePulse 1.8s infinite;
+}
+
+@keyframes badgePulse {
+
+  0%,100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: .5;
+    transform: scale(.7);
+  }
+
+}
+
+
+/* Heading */
+
+.exam-dashboard-content h2 {
+  margin: 0 0 7px;
+
+  color: #fff;
+
+  font-size: 29px;
+
+  font-weight: 800;
+
+  letter-spacing: -.7px;
+
+  text-shadow:
+    0 0 22px rgba(116,218,255,.25);
+}
+
+
+/* Description */
+
+.exam-dashboard-content p {
+  margin: 0;
+
+  max-width: 700px;
+
+  color: rgba(255,255,255,.72);
+
+  line-height: 1.55;
+
+  font-size: 13px;
+}
+
+
+/* ---------- Small Service Tags ---------- */
+
+.exam-dashboard-tags {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  margin-top: 13px;
+}
+
+.exam-dashboard-tags span {
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.08);
+
+  border: 1px solid rgba(255,255,255,.13);
+
+  color: rgba(255,255,255,.72);
+
+  font-size: 10px;
+
+  transition: .25s ease;
+}
+
+.exam-dashboard-tags span:hover {
+
+  background: rgba(255,255,255,.18);
+
+  color: #fff;
+
+  transform: translateY(-2px);
+}
+
+
+/* ---------- Open Dashboard Button ---------- */
+
+.exam-dashboard-btn {
+
+  position: relative;
+
+  flex-shrink: 0;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 13px;
+
+  min-width: 195px;
+
+  padding: 15px 20px;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #00eaff,
+      #6670ff 55%,
+      #b94cff
+    );
+
+  color: #fff;
+
+  text-decoration: none;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  border: 1px solid rgba(255,255,255,.4);
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.20),
+    0 0 20px rgba(0,234,255,.18),
+    inset 0 1px rgba(255,255,255,.45);
+
+  overflow: hidden;
+
+  transition:
+    transform .3s ease,
+    box-shadow .3s ease;
+}
+
+
+/* Button shine */
+
+.exam-dashboard-btn:before {
+
+  content: "";
+
+  position: absolute;
+
+  width: 70px;
+  height: 150%;
+
+  top: -25%;
+
+  left: -100px;
+
+  background: rgba(255,255,255,.35);
+
+  transform: rotate(25deg);
+
+  transition: .6s ease;
+}
+
+.exam-dashboard-btn:hover:before {
+  left: 120%;
+}
+
+
+/* Button hover */
+
+.exam-dashboard-btn:hover {
+
+  transform: translateY(-4px) scale(1.025);
+
+  box-shadow:
+    0 16px 35px rgba(0,0,0,.28),
+    0 0 30px rgba(0,234,255,.35),
+    inset 0 1px rgba(255,255,255,.6);
+}
+
+
+/* Arrow */
+
+.exam-dashboard-btn strong {
+
+  font-size: 21px;
+
+  line-height: 1;
+
+  transition: transform .25s ease;
+}
+
+.exam-dashboard-btn:hover strong {
+  transform: translateX(5px);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
 
   .exam-dashboard-card {
-    max-width: 1100px;
-    margin: auto;
-    padding: 30px;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    border-radius: 24px;
-    background: linear-gradient(135deg, #092f61, #174f87);
-    color: #fff;
-    box-shadow: 0 15px 40px rgba(9, 47, 97, 0.20);
-  }
-
-  .exam-dashboard-icon {
-    width: 76px;
-    height: 76px;
-    flex: 0 0 76px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 20px;
-    background: #ffc928;
-    font-size: 38px;
-  }
-
-  .exam-dashboard-content {
-    flex: 1;
-  }
-
-  .exam-dashboard-badge {
-    display: inline-block;
-    margin-bottom: 7px;
-    padding: 5px 10px;
-    border-radius: 20px;
-    background: rgba(255,255,255,.14);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    gap: 20px;
+    padding: 25px;
   }
 
   .exam-dashboard-content h2 {
-    margin: 0 0 7px;
-    font-size: 28px;
-  }
-
-  .exam-dashboard-content p {
-    margin: 0;
-    color: rgba(255,255,255,.82);
-    line-height: 1.6;
-    font-size: 14px;
+    font-size: 24px;
   }
 
   .exam-dashboard-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    white-space: nowrap;
-    padding: 14px 20px;
-    border-radius: 12px;
-    background: #ffc928;
-    color: #092f61;
-    text-decoration: none;
-    font-weight: 700;
-    transition: .25s ease;
+    min-width: 170px;
   }
 
-  .exam-dashboard-btn:hover {
-    transform: translateY(-2px);
-    background: #ffe07a;
+}
+
+
+@media (max-width: 750px) {
+
+  .examination-dashboard-section {
+    padding: 35px 15px;
   }
 
-  .exam-dashboard-btn span {
-    font-size: 20px;
+  .exam-dashboard-card {
+
+    flex-direction: column;
+
+    text-align: center;
+
+    padding: 30px 22px;
+
+    border-radius: 25px;
   }
 
-  @media (max-width: 750px) {
-    .exam-dashboard-card {
-      flex-direction: column;
-      text-align: center;
-    }
-
-    .exam-dashboard-btn {
-      width: 100%;
-      justify-content: center;
-    }
+  .exam-dashboard-content p {
+    margin-left: auto;
+    margin-right: auto;
   }
+
+  .exam-dashboard-tags {
+    justify-content: center;
+  }
+
+  .exam-dashboard-btn {
+
+    width: 100%;
+
+    margin-top: 5px;
+  }
+
+}
+
+
+@media (max-width: 450px) {
+
+  .exam-dashboard-content h2 {
+    font-size: 22px;
+  }
+
+  .exam-dashboard-content p {
+    font-size: 12px;
+  }
+
+  .exam-dashboard-icon {
+    width: 68px;
+    height: 68px;
+    font-size: 32px;
+  }
+
+  .exam-dashboard-icon-wrap {
+    flex-basis: 68px;
+  }
+
+  .exam-dashboard-tags span {
+    font-size: 9px;
+  }
+
+}
+
 </style>
+
 <!-- ================= END EXAMINATION DASHBOARD ================= -->
-
-
-  <!-- Your existing index.html content can continue below this section -->
-
-</body>
-</html>
