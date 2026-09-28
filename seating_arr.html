@@ -1,1 +1,4284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>School Seating Arrangement Generator</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f6f9;
+    color:#172033;
+}
+
+header{
+    background:#172554;
+    color:white;
+    padding:20px;
+}
+
+header h1{
+    margin:0 0 6px;
+    font-size:24px;
+}
+
+header p{
+    margin:0;
+    color:#dbeafe;
+    font-size:13px;
+}
+
+nav{
+    background:white;
+    padding:12px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    border-bottom:1px solid #ddd;
+    position:sticky;
+    top:0;
+    z-index:10;
+}
+
+nav button{
+    border:1px solid #d5dbe5;
+    background:white;
+    padding:9px 14px;
+    border-radius:7px;
+    cursor:pointer;
+}
+
+nav button.active,
+button.primary{
+    background:#2563eb;
+    color:white;
+    border-color:#2563eb;
+}
+
+main{
+    max-width:1450px;
+    margin:auto;
+    padding:20px;
+}
+
+.tab{
+    display:none;
+}
+
+.tab.active{
+    display:block;
+}
+
+.card{
+    background:white;
+    border:1px solid #dce2ea;
+    border-radius:12px;
+    padding:18px;
+    margin-bottom:18px;
+    box-shadow:0 3px 15px rgba(0,0,0,.05);
+}
+
+h2,h3{
+    margin-top:0;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:12px;
+}
+
+label{
+    display:block;
+    font-size:12px;
+    font-weight:bold;
+    color:#64748b;
+    margin-bottom:5px;
+}
+
+input,
+select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid #cbd5e1;
+    border-radius:7px;
+    background:white;
+}
+
+button{
+    padding:9px 13px;
+    border:1px solid #d5dbe5;
+    border-radius:7px;
+    background:white;
+    cursor:pointer;
+}
+
+button:hover{
+    filter:brightness(.97);
+}
+
+button.danger{
+    background:#fee2e2;
+    color:#991b1b;
+    border-color:#fecaca;
+}
+
+button.success{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:14px 0;
+}
+
+.tablewrap{
+    overflow:auto;
+    max-height:600px;
+    border:1px solid #dce2ea;
+    border-radius:8px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+}
+
+th,
+td{
+    border-bottom:1px solid #e5e7eb;
+    padding:8px;
+    text-align:left;
+    white-space:nowrap;
+}
+
+th{
+    background:#f8fafc;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.stat{
+    background:white;
+    border:1px solid #dce2ea;
+    border-radius:10px;
+    padding:14px;
+}
+
+.stat b{
+    display:block;
+    font-size:25px;
+    margin-top:5px;
+}
+
+.message{
+    padding:11px;
+    border-radius:8px;
+    margin:10px 0;
+}
+
+.info{
+    background:#dbeafe;
+    color:#1e40af;
+}
+
+.error{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.successmsg{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.warning{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.badge{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.ok{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.bad{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.roomcard{
+    border:1px solid #dce2ea;
+    border-radius:10px;
+    padding:15px;
+    margin-bottom:18px;
+    background:white;
+}
+
+.roomhead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.seats{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(155px,1fr));
+    gap:7px;
+    margin-top:12px;
+}
+
+.seat{
+    border:1px solid #dce2ea;
+    border-radius:7px;
+    padding:9px;
+    background:#fafafa;
+}
+
+.seat strong{
+    display:block;
+    margin:3px 0;
+}
+
+.small{
+    color:#64748b;
+    font-size:11px;
+}
+
+.checkbox{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:8px 0;
+}
+
+.checkbox input{
+    width:auto;
+}
+
+footer{
+    text-align:center;
+    padding:25px;
+    color:#64748b;
+    font-size:12px;
+}
+
+/* PRINT */
+@media print{
+
+    nav,
+    header,
+    footer,
+    .no-print,
+    .settings,
+    .toolbar{
+        display:none !important;
+    }
+
+    body{
+        background:white;
+    }
+
+    main{
+        max-width:none;
+        padding:0;
+    }
+
+    .tab{
+        display:block !important;
+    }
+
+    .card{
+        box-shadow:none;
+        border:0;
+    }
+
+    .roomcard{
+        page-break-inside:avoid;
+    }
+
+    .seats{
+        grid-template-columns:repeat(4,1fr);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>School Seating Arrangement Generator</h1>
+    <p>
+        Examination Seating • Mixed Classes • Roll Number Ranges •
+        Capacity Validation
+    </p>
+</header>
+
+<nav class="no-print">
+
+    <button class="active" data-tab="dashboard">
+        Dashboard
+    </button>
+
+    <button data-tab="classes">
+        Classes
+    </button>
+
+    <button data-tab="rooms">
+        Exam Rooms
+    </button>
+
+    <button data-tab="rules">
+        Seating Rules
+    </button>
+
+    <button data-tab="generate">
+        Generate
+    </button>
+
+    <button data-tab="arrangement">
+        Arrangement
+    </button>
+
+    <button data-tab="validation">
+        Validation
+    </button>
+
+</nav>
+
+
+<main>
+
+<!-- =========================================================
+     DASHBOARD
+========================================================= -->
+
+<section id="dashboard" class="tab active">
+
+<div class="card">
+
+    <h2>Exam Setup</h2>
+
+    <div class="grid">
+
+        <div>
+            <label>Exam Name</label>
+            <input
+                id="examName"
+                value="Half Yearly Examination">
+        </div>
+
+        <div>
+            <label>Academic Session</label>
+            <input
+                id="session"
+                value="2026-27">
+        </div>
+
+        <div>
+            <label>Exam Date</label>
+            <input
+                id="examDate"
+                type="date">
+        </div>
+
+        <div>
+            <label>Exam Time</label>
+            <input
+                id="examTime"
+                value="9:00 AM - 12:00 PM">
+        </div>
+
+    </div>
+
+    <div class="toolbar">
+
+        <button
+            class="primary"
+            onclick="saveSetup()">
+            Save Setup
+        </button>
+
+        <button
+            onclick="loadSample()">
+            Restore Sample Data
+        </button>
+
+        <button
+            class="danger"
+            onclick="clearAll()">
+            Clear All Data
+        </button>
+
+    </div>
+
+</div>
+
+
+<div
+    class="stats"
+    id="dashboardStats">
+</div>
+
+
+<div class="card">
+
+<h3>Important Logic</h3>
+
+<ol>
+
+<li>
+A class's normal classroom capacity is automatically based on
+its total students.
+</li>
+
+<li>
+Example: Class 5-A has 32 students, therefore its normal
+classroom capacity is 32.
+</li>
+
+<li>
+Exam rooms have their own physical capacity.
+</li>
+
+<li>
+Several classes can be mixed in one examination room.
+</li>
+
+<li>
+Students are allocated using continuous roll-number ranges.
+</li>
+
+<li>
+A student cannot be allocated twice.
+</li>
+
+<li>
+A student cannot be skipped.
+</li>
+
+<li>
+An examination room cannot exceed its capacity.
+</li>
+
+</ol>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     CLASS MASTER
+========================================================= -->
+
+<section id="classes" class="tab">
+
+<div class="card">
+
+<h2>Class Master</h2>
+
+<div class="toolbar">
+
+<button
+    class="primary"
+    onclick="addClass()">
+    + Add Class
+</button>
+
+<button
+    onclick="importClasses()">
+    Import CSV
+</button>
+
+<button
+    onclick="exportClasses()">
+    Export CSV
+</button>
+
+<input
+    id="classFile"
+    type="file"
+    accept=".csv,.txt"
+    hidden>
+
+</div>
+
+
+<div class="tablewrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Class</th>
+<th>Section</th>
+<th>Students</th>
+<th>Roll From</th>
+<th>Roll To</th>
+<th>Normal Room</th>
+<th>Room Capacity</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="classTable">
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     EXAM ROOM MASTER
+========================================================= -->
+
+<section id="rooms" class="tab">
+
+<div class="card">
+
+<h2>Exam Room Master</h2>
+
+<div class="toolbar">
+
+<button
+    class="primary"
+    onclick="addRoom()">
+    + Add Exam Room
+</button>
+
+<button
+    onclick="exportRooms()">
+    Export CSV
+</button>
+
+</div>
+
+
+<div class="tablewrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Exam Room</th>
+<th>Capacity</th>
+<th>Available</th>
+<th>Block</th>
+<th>Floor</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="roomTable">
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     RULES
+========================================================= -->
+
+<section id="rules" class="tab">
+
+<div class="card settings">
+
+<h2>Seating Rules</h2>
+
+<div class="grid">
+
+<div>
+
+<label>
+Minimum Classes Per Exam Room
+</label>
+
+<input
+    id="minClasses"
+    type="number"
+    min="1"
+    value="2">
+
+</div>
+
+
+<div>
+
+<label>
+Preferred Classes Per Room
+</label>
+
+<input
+    id="preferredClasses"
+    type="number"
+    min="1"
+    value="4">
+
+</div>
+
+
+<div>
+
+<label>
+Maximum Classes Per Room
+</label>
+
+<input
+    id="maxClasses"
+    type="number"
+    min="1"
+    value="5">
+
+</div>
+
+
+<div>
+
+<label>
+Maximum % of One Class
+</label>
+
+<input
+    id="maxClassPercent"
+    type="number"
+    min="1"
+    max="100"
+    value="60">
+
+</div>
+
+
+<div>
+
+<label>
+Preferred Students From Each Class
+</label>
+
+<input
+    id="targetBlock"
+    type="number"
+    min="1"
+    value="8">
+
+</div>
+
+</div>
+
+
+<div style="margin-top:15px">
+
+<label class="checkbox">
+
+<input
+    id="mixClasses"
+    type="checkbox"
+    checked>
+
+Mix Different Classes
+
+</label>
+
+
+<label class="checkbox">
+
+<input
+    id="continuousRoll"
+    type="checkbox"
+    checked>
+
+Keep Roll Numbers Continuous
+
+</label>
+
+
+<label class="checkbox">
+
+<input
+    id="avoidSame"
+    type="checkbox"
+    checked>
+
+Avoid Same-Class Neighbours
+
+</label>
+
+
+<label class="checkbox">
+
+<input
+    id="fillRooms"
+    type="checkbox"
+    checked>
+
+Prefer Full Rooms
+
+</label>
+
+
+<label class="checkbox">
+
+<input
+    id="allowPartial"
+    type="checkbox"
+    checked>
+
+Allow Partial Class Groups
+
+</label>
+
+</div>
+
+
+<div class="toolbar">
+
+<button
+    class="primary"
+    onclick="saveRules()">
+    Save Rules
+</button>
+
+<button
+    onclick="resetRules()">
+    Reset Rules
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     GENERATE
+========================================================= -->
+
+<section id="generate" class="tab">
+
+<div class="card">
+
+<h2>Generate Seating Arrangement</h2>
+
+<div
+    id="generateMessage"
+    class="message info">
+
+Ready to generate.
+
+</div>
+
+
+<div
+    class="stats"
+    id="preStats">
+</div>
+
+
+<div class="toolbar">
+
+<button
+    class="primary"
+    onclick="generateArrangement()">
+
+Generate Automatically
+
+</button>
+
+
+<button
+    onclick="showTab('arrangement')">
+
+Open Current Arrangement
+
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>Automatic Logic</h3>
+
+<p>
+
+The software first checks whether total available examination
+room capacity is sufficient.
+
+Then it divides each class into continuous roll-number ranges,
+mixes classes inside rooms, respects room capacity, and creates
+a physical seat sequence.
+
+</p>
+
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     ARRANGEMENT
+========================================================= -->
+
+<section id="arrangement" class="tab">
+
+<div class="card no-print">
+
+<h2>
+Room-wise Seating Arrangement
+</h2>
+
+<div class="toolbar">
+
+<button
+    class="primary"
+    onclick="window.print()">
+
+Print / Save PDF
+
+</button>
+
+
+<button
+    onclick="exportArrangementCSV()">
+
+Export CSV
+
+</button>
+
+
+<button
+    onclick="exportJSON()">
+
+Backup JSON
+
+</button>
+
+</div>
+
+</div>
+
+
+<div id="arrangementOutput">
+</div>
+
+</section>
+
+
+<!-- =========================================================
+     VALIDATION
+========================================================= -->
+
+<section id="validation" class="tab">
+
+<div class="card">
+
+<h2>
+Validation Report
+</h2>
+
+<div id="validationOutput">
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<footer>
+
+School Seating Arrangement Generator
+
+</footer>
+
+
+
+<script>
+
+/* =========================================================
+   DATABASE
+========================================================= */
+
+const STORAGE_KEY =
+    "school_seating_arrangement_v2";
+
+
+let db = {
+
+    setup:{
+
+        examName:
+            "Half Yearly Examination",
+
+        session:
+            "2026-27",
+
+        examDate:
+            "",
+
+        examTime:
+            "9:00 AM - 12:00 PM"
+
+    },
+
+    classes:[],
+
+    rooms:[],
+
+    rules:{
+
+        minClasses:2,
+
+        preferredClasses:4,
+
+        maxClasses:5,
+
+        maxClassPercent:60,
+
+        targetBlock:8,
+
+        mixClasses:true,
+
+        continuousRoll:true,
+
+        avoidSame:true,
+
+        fillRooms:true,
+
+        allowPartial:true
+
+    },
+
+    arrangement:[]
+
+};
+
+
+
+/* =========================================================
+   SAMPLE CLASS DATA
+   Based on the supplied seating arrangement
+========================================================= */
+
+const sampleClasses = [
+
+    ["III","A",27,1,27,1],
+
+    ["III","B",25,1,25,2],
+
+    ["IV","A",39,1,39,3],
+
+    ["V","A",32,1,32,4],
+
+    ["V","B",33,1,33,5],
+
+    ["VI","A",23,1,23,6],
+
+    ["VI","B",21,1,21,7],
+
+    ["VII","A",41,1,41,8],
+
+    ["VIII","A",23,1,23,9],
+
+    ["VIII","B",19,1,19,10],
+
+    ["IX","A",35,1,35,11],
+
+    ["X","A",33,1,33,12],
+
+    ["XI","ARTS",10,1,10,13],
+
+    ["XI","COM",14,1,14,14],
+
+    ["XI","PCM",11,1,11,15],
+
+    ["XI","PCB",5,1,5,16],
+
+    ["XII","ARTS",11,1,11,17],
+
+    ["XII","COM",15,1,15,18],
+
+    ["XII","PCM",12,1,12,19],
+
+    ["XII","PCB",6,1,6,20]
+
+];
+
+
+/* =========================================================
+   SAMPLE EXAM ROOMS
+========================================================= */
+
+const sampleRoomCapacities = [
+
+    27,
+    25,
+    39,
+    32,
+    33,
+    23,
+    21,
+    41,
+    23,
+    19,
+    35,
+    33,
+    10,
+    14,
+    11,
+    5,
+    11,
+    15,
+    12,
+    6
+
+];
+
+
+/* =========================================================
+   BASIC FUNCTIONS
+========================================================= */
+
+function uid(){
+
+    return Math.random()
+        .toString(36)
+        .substring(2,10);
+
+}
+
+
+function escapeHTML(value){
+
+    return String(value ?? "")
+        .replace(/[&<>"']/g,function(char){
+
+            const map={
+
+                "&":"&amp;",
+                "<":"&lt;",
+                ">":"&gt;",
+                '"':"&quot;",
+                "'":"&#39;"
+
+            };
+
+            return map[char];
+
+        });
+
+}
+
+
+function saveDatabase(){
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(db)
+    );
+
+}
+
+
+function loadDatabase(){
+
+    try{
+
+        const saved =
+            localStorage.getItem(STORAGE_KEY);
+
+        if(saved){
+
+            const oldData =
+                JSON.parse(saved);
+
+            db = {
+
+                ...db,
+
+                ...oldData,
+
+                rules:{
+
+                    ...db.rules,
+
+                    ...(oldData.rules || {})
+
+                }
+
+            };
+
+        }
+
+    }
+    catch(error){
+
+        console.error(error);
+
+    }
+
+
+    if(!db.classes.length){
+
+        loadSample(false);
+
+    }
+
+
+    renderAll();
+
+}
+
+
+/* =========================================================
+   SAMPLE DATA
+========================================================= */
+
+function loadSample(saveIt=true){
+
+    db.classes =
+        sampleClasses.map(function(item){
+
+            return{
+
+                id:uid(),
+
+                className:item[0],
+
+                section:item[1],
+
+                total:item[2],
+
+                from:item[3],
+
+                to:item[4],
+
+                normalRoom:item[5],
+
+                /*
+                   IMPORTANT:
+                   Normal classroom capacity =
+                   class strength
+                */
+
+                roomCapacity:item[2]
+
+            };
+
+        });
+
+
+    db.rooms =
+        sampleRoomCapacities.map(function(capacity,index){
+
+            return{
+
+                id:uid(),
+
+                name:String(index+1),
+
+                capacity:capacity,
+
+                available:true,
+
+                block:"",
+
+                floor:""
+
+            };
+
+        });
+
+
+    db.arrangement=[];
+
+
+    if(saveIt){
+
+        saveDatabase();
+
+    }
+
+
+    renderAll();
+
+    showTab("dashboard");
+
+}
+
+
+/* =========================================================
+   CLEAR
+========================================================= */
+
+function clearAll(){
+
+    if(!confirm(
+        "Clear all saved data?"
+    )){
+
+        return;
+
+    }
+
+
+    localStorage.removeItem(
+        STORAGE_KEY
+    );
+
+
+    db={
+
+        setup:{
+
+            examName:"",
+
+            session:"",
+
+            examDate:"",
+
+            examTime:""
+
+        },
+
+        classes:[],
+
+        rooms:[],
+
+        rules:{
+
+            minClasses:2,
+
+            preferredClasses:4,
+
+            maxClasses:5,
+
+            maxClassPercent:60,
+
+            targetBlock:8,
+
+            mixClasses:true,
+
+            continuousRoll:true,
+
+            avoidSame:true,
+
+            fillRooms:true,
+
+            allowPartial:true
+
+        },
+
+        arrangement:[]
+
+    };
+
+
+    renderAll();
+
+}
+
+
+/* =========================================================
+   TABS
+========================================================= */
+
+function showTab(tabId){
+
+    document
+        .querySelectorAll(".tab")
+        .forEach(function(tab){
+
+            tab.classList.remove("active");
+
+        });
+
+
+    document
+        .querySelectorAll("nav button")
+        .forEach(function(button){
+
+            button.classList.remove("active");
+
+        });
+
+
+    document
+        .getElementById(tabId)
+        .classList.add("active");
+
+
+    const button =
+        document.querySelector(
+            `nav button[data-tab="${tabId}"]`
+        );
+
+
+    if(button){
+
+        button.classList.add("active");
+
+    }
+
+
+    if(tabId==="dashboard")
+        renderDashboard();
+
+    if(tabId==="generate")
+        renderPreStats();
+
+    if(tabId==="arrangement")
+        renderArrangement();
+
+    if(tabId==="validation")
+        renderValidation();
+
+}
+
+
+document
+    .querySelectorAll("nav button")
+    .forEach(function(button){
+
+        button.addEventListener(
+            "click",
+            function(){
+
+                showTab(
+                    button.dataset.tab
+                );
+
+            }
+        );
+
+    });
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function saveSetup(){
+
+    db.setup={
+
+        examName:
+            document.getElementById(
+                "examName"
+            ).value,
+
+        session:
+            document.getElementById(
+                "session"
+            ).value,
+
+        examDate:
+            document.getElementById(
+                "examDate"
+            ).value,
+
+        examTime:
+            document.getElementById(
+                "examTime"
+            ).value
+
+    };
+
+
+    saveDatabase();
+
+    alert(
+        "Exam setup saved."
+    );
+
+}
+
+
+function renderDashboard(){
+
+    document.getElementById(
+        "examName"
+    ).value =
+        db.setup.examName || "";
+
+
+    document.getElementById(
+        "session"
+    ).value =
+        db.setup.session || "";
+
+
+    document.getElementById(
+        "examDate"
+    ).value =
+        db.setup.examDate || "";
+
+
+    document.getElementById(
+        "examTime"
+    ).value =
+        db.setup.examTime || "";
+
+
+    const students =
+        db.classes.reduce(
+            function(total,item){
+
+                return total +
+                    Number(item.total || 0);
+
+            },
+            0
+        );
+
+
+    const seats =
+        db.rooms
+            .filter(room=>room.available)
+            .reduce(
+                function(total,room){
+
+                    return total +
+                        Number(room.capacity || 0);
+
+                },
+                0
+            );
+
+
+    document.getElementById(
+        "dashboardStats"
+    ).innerHTML =
+
+        stat("Classes",db.classes.length) +
+
+        stat("Students",students) +
+
+        stat(
+            "Exam Rooms",
+            db.rooms.filter(
+                room=>room.available
+            ).length
+        ) +
+
+        stat("Available Seats",seats) +
+
+        stat(
+            "Surplus / Deficit",
+            seats-students
+        );
+
+}
+
+
+/* =========================================================
+   STAT CARD
+========================================================= */
+
+function stat(label,value){
+
+    return `
+
+        <div class="stat">
+
+            ${escapeHTML(label)}
+
+            <b>
+                ${escapeHTML(value)}
+            </b>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   CLASS MASTER
+========================================================= */
+
+function classLabel(classObject){
+
+    return (
+        classObject.className +
+        "-" +
+        classObject.section
+    );
+
+}
+
+
+function renderClasses(){
+
+    const table =
+        document.getElementById(
+            "classTable"
+        );
+
+
+    table.innerHTML =
+        db.classes.map(
+            function(classObject,index){
+
+                return `
+
+<tr>
+
+<td>
+
+<input
+    value="${escapeHTML(
+        classObject.className
+    )}"
+    onchange="
+        updateClass(
+            ${index},
+            'className',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    value="${escapeHTML(
+        classObject.section
+    )}"
+    onchange="
+        updateClass(
+            ${index},
+            'section',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    type="number"
+    min="0"
+    value="${classObject.total}"
+    onchange="
+        updateClass(
+            ${index},
+            'total',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    type="number"
+    value="${classObject.from}"
+    onchange="
+        updateClass(
+            ${index},
+            'from',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    type="number"
+    value="${classObject.to}"
+    onchange="
+        updateClass(
+            ${index},
+            'to',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    value="${escapeHTML(
+        classObject.normalRoom
+    )}"
+    onchange="
+        updateClass(
+            ${index},
+            'normalRoom',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    type="number"
+    value="${classObject.roomCapacity}"
+    onchange="
+        updateClass(
+            ${index},
+            'roomCapacity',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<button
+    class="danger"
+    onclick="
+        deleteClass(${index})
+    ">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+            }
+        )
+        .join("");
+
+}
+
+
+/*
+    IMPORTANT LOGIC
+
+    If total students changes and the room capacity
+    was previously equal to the old total, automatically
+    update normal classroom capacity too.
+*/
+
+function updateClass(index,key,value){
+
+    const item =
+        db.classes[index];
+
+
+    if(key==="className" ||
+       key==="section" ||
+       key==="normalRoom"){
+
+        item[key]=value;
+
+    }
+    else{
+
+        const oldTotal =
+            Number(item.total);
+
+        const oldRoomCapacity =
+            Number(item.roomCapacity);
+
+
+        item[key]=Number(value);
+
+
+        if(
+            key==="total" &&
+            oldRoomCapacity===oldTotal
+        ){
+
+            item.roomCapacity =
+                Number(value);
+
+        }
+
+    }
+
+
+    db.arrangement=[];
+
+    saveDatabase();
+
+    renderClasses();
+
+    renderDashboard();
+
+}
+
+
+/* =========================================================
+   ADD CLASS
+========================================================= */
+
+function addClass(){
+
+    db.classes.push({
+
+        id:uid(),
+
+        className:"New",
+
+        section:"A",
+
+        total:0,
+
+        from:1,
+
+        to:0,
+
+        normalRoom:"",
+
+        roomCapacity:0
+
+    });
+
+
+    saveDatabase();
+
+    renderClasses();
+
+}
+
+
+/* =========================================================
+   DELETE CLASS
+========================================================= */
+
+function deleteClass(index){
+
+    if(
+        !confirm(
+            "Delete this class?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    db.classes.splice(
+        index,
+        1
+    );
+
+
+    db.arrangement=[];
+
+    saveDatabase();
+
+    renderAll();
+
+}
+
+
+/* =========================================================
+   EXPORT CLASSES
+========================================================= */
+
+function exportClasses(){
+
+    let csv =
+        "Class,Section,Students,Roll From,Roll To,Normal Room,Room Capacity\n";
+
+
+    db.classes.forEach(function(item){
+
+        csv += [
+
+            item.className,
+
+            item.section,
+
+            item.total,
+
+            item.from,
+
+            item.to,
+
+            item.normalRoom,
+
+            item.roomCapacity
+
+        ].join(",") + "\n";
+
+    });
+
+
+    downloadFile(
+        "classes.csv",
+        csv
+    );
+
+}
+
+
+/* =========================================================
+   IMPORT CLASSES
+========================================================= */
+
+function importClasses(){
+
+    document
+        .getElementById("classFile")
+        .click();
+
+}
+
+
+document
+    .getElementById("classFile")
+    .addEventListener(
+        "change",
+        function(event){
+
+            const file =
+                event.target.files[0];
+
+            if(!file){
+
+                return;
+
+            }
+
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function(){
+
+                    const lines =
+                        reader.result
+                        .split(/\r?\n/)
+                        .filter(Boolean);
+
+
+                    db.classes =
+                        lines
+                        .slice(1)
+                        .map(function(line){
+
+                            const parts =
+                                line
+                                .split(",")
+                                .map(
+                                    x=>x.trim()
+                                );
+
+
+                            return{
+
+                                id:uid(),
+
+                                className:
+                                    parts[0],
+
+                                section:
+                                    parts[1],
+
+                                total:
+                                    Number(parts[2]),
+
+                                from:
+                                    Number(parts[3]) || 1,
+
+                                to:
+                                    Number(parts[4]) ||
+                                    Number(parts[2]),
+
+                                normalRoom:
+                                    parts[5] || "",
+
+                                roomCapacity:
+                                    Number(parts[6]) ||
+                                    Number(parts[2])
+
+                            };
+
+                        });
+
+
+                    db.arrangement=[];
+
+                    saveDatabase();
+
+                    renderAll();
+
+                };
+
+
+            reader.readAsText(file);
+
+        }
+    );
+
+
+/* =========================================================
+   ROOM MASTER
+========================================================= */
+
+function renderRooms(){
+
+    const table =
+        document.getElementById(
+            "roomTable"
+        );
+
+
+    table.innerHTML =
+        db.rooms.map(
+            function(room,index){
+
+                return `
+
+<tr>
+
+<td>
+
+<input
+    value="${escapeHTML(
+        room.name
+    )}"
+    onchange="
+        updateRoom(
+            ${index},
+            'name',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    type="number"
+    min="0"
+    value="${room.capacity}"
+    onchange="
+        updateRoom(
+            ${index},
+            'capacity',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    type="checkbox"
+    ${room.available ? "checked" : ""}
+    onchange="
+        updateRoom(
+            ${index},
+            'available',
+            this.checked
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    value="${escapeHTML(
+        room.block || ""
+    )}"
+    onchange="
+        updateRoom(
+            ${index},
+            'block',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<input
+    value="${escapeHTML(
+        room.floor || ""
+    )}"
+    onchange="
+        updateRoom(
+            ${index},
+            'floor',
+            this.value
+        )
+    "
+>
+
+</td>
+
+
+<td>
+
+<button
+    class="danger"
+    onclick="
+        deleteRoom(${index})
+    ">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+            }
+        )
+        .join("");
+
+}
+
+
+/* =========================================================
+   UPDATE ROOM
+========================================================= */
+
+function updateRoom(index,key,value){
+
+    db.rooms[index][key]=value;
+
+    db.arrangement=[];
+
+    saveDatabase();
+
+    renderRooms();
+
+    renderDashboard();
+
+}
+
+
+/* =========================================================
+   ADD ROOM
+========================================================= */
+
+function addRoom(){
+
+    db.rooms.push({
+
+        id:uid(),
+
+        name:
+            String(
+                db.rooms.length+1
+            ),
+
+        capacity:30,
+
+        available:true,
+
+        block:"",
+
+        floor:""
+
+    });
+
+
+    saveDatabase();
+
+    renderRooms();
+
+}
+
+
+/* =========================================================
+   DELETE ROOM
+========================================================= */
+
+function deleteRoom(index){
+
+    if(
+        !confirm(
+            "Delete this examination room?"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    db.rooms.splice(
+        index,
+        1
+    );
+
+
+    db.arrangement=[];
+
+    saveDatabase();
+
+    renderAll();
+
+}
+
+
+/* =========================================================
+   EXPORT ROOMS
+========================================================= */
+
+function exportRooms(){
+
+    let csv =
+        "Room,Capacity,Available,Block,Floor\n";
+
+
+    db.rooms.forEach(function(room){
+
+        csv += [
+
+            room.name,
+
+            room.capacity,
+
+            room.available
+                ? "Yes"
+                : "No",
+
+            room.block,
+
+            room.floor
+
+        ].join(",") + "\n";
+
+    });
+
+
+    downloadFile(
+        "exam_rooms.csv",
+        csv
+    );
+
+}
+
+
+/* =========================================================
+   RULES
+========================================================= */
+
+function renderRules(){
+
+    const numberRules=[
+
+        "minClasses",
+
+        "preferredClasses",
+
+        "maxClasses",
+
+        "maxClassPercent",
+
+        "targetBlock"
+
+    ];
+
+
+    numberRules.forEach(function(key){
+
+        document.getElementById(
+            key
+        ).value =
+            db.rules[key];
+
+    });
+
+
+    const booleanRules=[
+
+        "mixClasses",
+
+        "continuousRoll",
+
+        "avoidSame",
+
+        "fillRooms",
+
+        "allowPartial"
+
+    ];
+
+
+    booleanRules.forEach(function(key){
+
+        document.getElementById(
+            key
+        ).checked =
+            db.rules[key];
+
+    });
+
+}
+
+
+/* =========================================================
+   SAVE RULES
+========================================================= */
+
+function saveRules(){
+
+    [
+
+        "minClasses",
+
+        "preferredClasses",
+
+        "maxClasses",
+
+        "maxClassPercent",
+
+        "targetBlock"
+
+    ].forEach(function(key){
+
+        db.rules[key] =
+            Number(
+                document.getElementById(
+                    key
+                ).value
+            );
+
+    });
+
+
+    [
+
+        "mixClasses",
+
+        "continuousRoll",
+
+        "avoidSame",
+
+        "fillRooms",
+
+        "allowPartial"
+
+    ].forEach(function(key){
+
+        db.rules[key] =
+            document.getElementById(
+                key
+            ).checked;
+
+    });
+
+
+    saveDatabase();
+
+    alert(
+        "Seating rules saved."
+    );
+
+}
+
+
+/* =========================================================
+   RESET RULES
+========================================================= */
+
+function resetRules(){
+
+    db.rules={
+
+        minClasses:2,
+
+        preferredClasses:4,
+
+        maxClasses:5,
+
+        maxClassPercent:60,
+
+        targetBlock:8,
+
+        mixClasses:true,
+
+        continuousRoll:true,
+
+        avoidSame:true,
+
+        fillRooms:true,
+
+        allowPartial:true
+
+    };
+
+
+    saveDatabase();
+
+    renderRules();
+
+}
+
+
+/* =========================================================
+   PRE-GENERATION STATISTICS
+========================================================= */
+
+function renderPreStats(){
+
+    const students =
+        totalStudents();
+
+
+    const seats =
+        db.rooms
+        .filter(room=>room.available)
+        .reduce(
+            (sum,room)=>
+                sum +
+                Number(room.capacity),
+            0
+        );
+
+
+    document.getElementById(
+        "preStats"
+    ).innerHTML =
+
+        stat(
+            "Total Students",
+            students
+        ) +
+
+        stat(
+            "Available Seats",
+            seats
+        ) +
+
+        stat(
+            "Surplus / Deficit",
+            seats-students
+        );
+
+}
+
+
+/* =========================================================
+   TOTAL STUDENTS
+========================================================= */
+
+function totalStudents(){
+
+    return db.classes.reduce(
+        function(total,item){
+
+            return total +
+                Number(item.total || 0);
+
+        },
+        0
+    );
+
+}
+
+
+/* =========================================================
+   GENERATE ARRANGEMENT
+========================================================= */
+
+function generateArrangement(){
+
+    saveSetup();
+
+
+    if(
+        !db.classes.length
+    ){
+
+        return showMessage(
+            "generateMessage",
+            "Please add classes first.",
+            "error"
+        );
+
+    }
+
+
+    const availableRooms =
+        db.rooms.filter(
+            room=>room.available
+        );
+
+
+    if(
+        !availableRooms.length
+    ){
+
+        return showMessage(
+            "generateMessage",
+            "Please add available examination rooms.",
+            "error"
+        );
+
+    }
+
+
+    const requiredStudents =
+        totalStudents();
+
+
+    const totalSeats =
+        availableRooms.reduce(
+            (sum,room)=>
+                sum +
+                Number(room.capacity),
+            0
+        );
+
+
+    if(
+        totalSeats <
+        requiredStudents
+    ){
+
+        return showMessage(
+            "generateMessage",
+
+            "Not enough examination seats. " +
+
+            "Required: " +
+            requiredStudents +
+
+            " | Available: " +
+            totalSeats +
+
+            " | Deficit: " +
+            (
+                requiredStudents-totalSeats
+            ),
+
+            "error"
+        );
+
+    }
+
+
+    /*
+        STATE
+
+        Every class gets its own roll pointer.
+
+        Example:
+
+        Class 5-A
+        nextRoll = 1
+
+        After 1-8:
+
+        nextRoll = 9
+
+        Then next room starts:
+
+        9-16
+    */
+
+    const state =
+        db.classes.map(
+            function(item){
+
+                return{
+
+                    classObject:item,
+
+                    remaining:
+                        Number(item.total),
+
+                    nextRoll:
+                        Number(item.from || 1),
+
+                    endRoll:
+                        Number(
+                            item.to ||
+                            item.total
+                        ),
+
+                    allocated:0
+
+                };
+
+            }
+        );
+
+
+    /*
+        Larger exam rooms first.
+    */
+
+    const rooms =
+        availableRooms
+        .slice()
+        .sort(
+            (a,b)=>
+                Number(b.capacity) -
+                Number(a.capacity)
+        );
+
+
+    const result=[];
+
+
+    /*
+        PROCESS EACH ROOM
+    */
+
+    for(
+        const room of rooms
+    ){
+
+        if(
+            state.every(
+                s=>s.remaining<=0
+            )
+        ){
+
+            break;
+
+        }
+
+
+        const capacity =
+            Number(room.capacity);
+
+
+        let used=0;
+
+        const allocations=[];
+
+
+        /*
+            FIRST PHASE
+
+            Try to put different classes
+            into the room.
+
+            Example:
+
+            5-A 1-8
+            6-A 1-8
+            7-A 1-8
+            8-A 1-8
+
+            = 32
+        */
+
+        while(
+
+            used < capacity &&
+
+            allocations.length <
+            Math.max(
+                1,
+                Number(
+                    db.rules.maxClasses
+                )
+            )
+
+        ){
+
+            let candidates =
+                state.filter(
+                    function(s){
+
+                        return (
+
+                            s.remaining > 0 &&
+
+                            !allocations.some(
+                                a=>
+                                    a.classId ===
+                                    s.classObject.id
+                            )
+
+                        );
+
+                    }
+                );
+
+
+            if(
+                !candidates.length
+            ){
+
+                break;
+
+            }
+
+
+            let best=null;
+
+            let bestScore=
+                -Infinity;
+
+
+            for(
+                const candidate
+                of candidates
+            ){
+
+                let take =
+                    Math.min(
+
+                        candidate.remaining,
+
+                        Number(
+                            db.rules.targetBlock
+                        ),
+
+                        capacity-used
+
+                    );
+
+
+                if(
+                    take<=0
+                ){
+
+                    continue;
+
+                }
+
+
+                /*
+                    MAXIMUM CLASS %
+                */
+
+                const maximumAllowed =
+                    Math.floor(
+                        capacity *
+                        Number(
+                            db.rules.maxClassPercent
+                        ) /
+                        100
+                    );
+
+
+                if(
+                    take >
+                    maximumAllowed &&
+                    allocations.length>0
+                ){
+
+                    take =
+                        Math.min(
+                            take,
+                            maximumAllowed
+                        );
+
+                }
+
+
+                if(
+                    take<=0
+                ){
+
+                    continue;
+
+                }
+
+
+                const projected =
+                    used+take;
+
+
+                let score=0;
+
+
+                /*
+                    EXACT ROOM FILL
+                    gets a very high score.
+                */
+
+                if(
+                    projected===capacity
+                ){
+
+                    score += 100000;
+
+                }
+
+
+                /*
+                    Prefer more students.
+                */
+
+                score +=
+                    take*100;
+
+
+                /*
+                    Prefer good utilization.
+                */
+
+                if(
+                    db.rules.fillRooms
+                ){
+
+                    score +=
+                        (
+                            projected /
+                            capacity
+                        ) *
+                        1000;
+
+                }
+
+
+                /*
+                    Preferred number
+                    of classes.
+                */
+
+                if(
+                    allocations.length+1 ===
+                    Number(
+                        db.rules.preferredClasses
+                    )
+                ){
+
+                    score += 3000;
+
+                }
+
+
+                /*
+                    Prefer classes with
+                    more remaining students.
+                */
+
+                score +=
+                    Math.min(
+                        candidate.remaining,
+                        100
+                    );
+
+
+                /*
+                    Mixing classes.
+                */
+
+                if(
+                    db.rules.mixClasses
+                ){
+
+                    score +=
+                        allocations.length *
+                        100;
+
+                }
+
+
+                if(
+                    score >
+                    bestScore
+                ){
+
+                    bestScore=score;
+
+                    best={
+                        candidate,
+                        take
+                    };
+
+                }
+
+            }
+
+
+            if(!best){
+
+                break;
+
+            }
+
+
+            const candidate =
+                best.candidate;
+
+
+            const take =
+                best.take;
+
+
+            const from =
+                candidate.nextRoll;
+
+
+            const to =
+                from +
+                take -
+                1;
+
+
+            allocations.push({
+
+                classId:
+                    candidate.classObject.id,
+
+                className:
+                    candidate.classObject.className,
+
+                section:
+                    candidate.classObject.section,
+
+                from:from,
+
+                to:to,
+
+                count:take
+
+            });
+
+
+            candidate.nextRoll +=
+                take;
+
+
+            candidate.remaining -=
+                take;
+
+
+            candidate.allocated +=
+                take;
+
+
+            used +=
+                take;
+
+        }
+
+
+        /*
+            SECOND PHASE
+
+            Fill remaining seats with
+            another class.
+        */
+
+        if(
+            used<capacity
+        ){
+
+            let remainingSpace =
+                capacity-used;
+
+
+            const candidates =
+                state.filter(
+                    s=>s.remaining>0
+                );
+
+
+            for(
+                const candidate
+                of candidates
+            ){
+
+                if(
+                    allocations.some(
+                        a=>
+                            a.classId ===
+                            candidate.classObject.id
+                    )
+                ){
+
+                    continue;
+
+                }
+
+
+                if(
+                    allocations.length >=
+                    Number(
+                        db.rules.maxClasses
+                    )
+                ){
+
+                    break;
+
+                }
+
+
+                let take =
+                    Math.min(
+                        candidate.remaining,
+                        remainingSpace
+                    );
+
+
+                if(
+                    take<=0
+                ){
+
+                    continue;
+
+                }
+
+
+                allocations.push({
+
+                    classId:
+                        candidate.classObject.id,
+
+                    className:
+                        candidate.classObject.className,
+
+                    section:
+                        candidate.classObject.section,
+
+                    from:
+                        candidate.nextRoll,
+
+                    to:
+                        candidate.nextRoll +
+                        take -
+                        1,
+
+                    count:take
+
+                });
+
+
+                candidate.nextRoll +=
+                    take;
+
+
+                candidate.remaining -=
+                    take;
+
+
+                candidate.allocated +=
+                    take;
+
+
+                used +=
+                    take;
+
+
+                remainingSpace -=
+                    take;
+
+
+                if(
+                    remainingSpace<=0
+                ){
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+
+        /*
+            THIRD PHASE
+
+            If there is still empty space,
+            extend an already selected
+            class where possible.
+        */
+
+        if(
+            used<capacity
+        ){
+
+            for(
+                const allocation
+                of allocations
+            ){
+
+                const candidate =
+                    state.find(
+                        s=>
+                            s.classObject.id ===
+                            allocation.classId
+                    );
+
+
+                if(
+                    !candidate ||
+                    candidate.remaining<=0
+                ){
+
+                    continue;
+
+                }
+
+
+                const take =
+                    Math.min(
+                        candidate.remaining,
+                        capacity-used
+                    );
+
+
+                if(
+                    take>0
+                ){
+
+                    allocation.to +=
+                        take;
+
+                    allocation.count +=
+                        take;
+
+
+                    candidate.nextRoll +=
+                        take;
+
+                    candidate.remaining -=
+                        take;
+
+                    candidate.allocated +=
+                        take;
+
+                    used +=
+                        take;
+
+                }
+
+
+                if(
+                    used===capacity
+                ){
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+
+        if(
+            allocations.length
+        ){
+
+            result.push({
+
+                roomId:
+                    room.id,
+
+                roomName:
+                    room.name,
+
+                capacity:
+                    capacity,
+
+                allocations:
+                    allocations,
+
+                seats:[]
+
+            });
+
+        }
+
+    }
+
+
+    /*
+        CHECK WHETHER EVERY STUDENT
+        WAS ALLOCATED.
+    */
+
+    const unallocated =
+        state.reduce(
+            (sum,s)=>
+                sum+s.remaining,
+            0
+        );
+
+
+    if(
+        unallocated>0
+    ){
+
+        db.arrangement =
+            result;
+
+        saveDatabase();
+
+        renderArrangement();
+
+        renderValidation();
+
+
+        return showMessage(
+
+            "generateMessage",
+
+            unallocated +
+            " student(s) could not be allocated. " +
+            "Increase available examination room capacity " +
+            "or change the seating rules.",
+
+            "error"
+
+        );
+
+    }
+
+
+    /*
+        CREATE PHYSICAL SEAT ORDER
+    */
+
+    result.forEach(
+        function(room){
+
+            const groups =
+                room.allocations.map(
+                    function(allocation){
+
+                        return{
+
+                            id:
+                                allocation.classId,
+
+                            label:
+                                allocation.className +
+                                "-" +
+                                allocation.section,
+
+                            rolls:
+                                Array.from(
+                                    {
+                                        length:
+                                            allocation.count
+                                    },
+                                    function(_,index){
+
+                                        return (
+                                            allocation.from +
+                                            index
+                                        );
+
+                                    }
+                                )
+
+                        };
+
+                    }
+                );
+
+
+            const seats=[];
+
+
+            /*
+                INTERLEAVE DIFFERENT CLASSES
+
+                Example:
+
+                5-A 1
+                6-A 1
+                7-A 1
+                8-A 1
+
+                then
+
+                5-A 2
+                6-A 2
+                7-A 2
+                8-A 2
+            */
+
+            if(
+                db.rules.avoidSame &&
+                groups.length>1
+            ){
+
+                const longest =
+                    Math.max(
+                        ...groups.map(
+                            g=>g.rolls.length
+                        )
+                    );
+
+
+                for(
+                    let i=0;
+                    i<longest;
+                    i++
+                ){
+
+                    groups.forEach(
+                        function(group){
+
+                            if(
+                                group.rolls[i] !==
+                                undefined
+                            ){
+
+                                seats.push({
+
+                                    classId:
+                                        group.id,
+
+                                    label:
+                                        group.label,
+
+                                    roll:
+                                        group.rolls[i]
+
+                                });
+
+                            }
+
+                        }
+                    );
+
+                }
+
+            }
+
+            else{
+
+                room.allocations
+                    .forEach(
+                        function(allocation){
+
+                            for(
+                                let roll=
+                                    allocation.from;
+
+                                roll<=
+                                    allocation.to;
+
+                                roll++
+                            ){
+
+                                seats.push({
+
+                                    classId:
+                                        allocation.classId,
+
+                                    label:
+                                        allocation.className +
+                                        "-" +
+                                        allocation.section,
+
+                                    roll:
+                                        roll
+
+                                });
+
+                            }
+
+                        }
+                    );
+
+            }
+
+
+            room.seats =
+                seats;
+
+        }
+    );
+
+
+    db.arrangement =
+        result;
+
+
+    saveDatabase();
+
+    renderArrangement();
+
+    renderValidation();
+
+
+    showTab(
+        "arrangement"
+    );
+
+
+    showMessage(
+
+        "generateMessage",
+
+        "Arrangement generated successfully. Please check Validation before printing.",
+
+        "successmsg"
+
+    );
+
+}
+
+
+/* =========================================================
+   ARRANGEMENT DISPLAY
+========================================================= */
+
+function renderArrangement(){
+
+    const output =
+        document.getElementById(
+            "arrangementOutput"
+        );
+
+
+    if(
+        !db.arrangement.length
+    ){
+
+        output.innerHTML = `
+
+            <div class="card">
+
+                <div class="message info">
+
+                    No seating arrangement generated yet.
+
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    output.innerHTML =
+        db.arrangement
+        .map(
+            function(room){
+
+                const allocated =
+                    room.allocations.reduce(
+                        (sum,item)=>
+                            sum+item.count,
+                        0
+                    );
+
+
+                return `
+
+<div class="card roomcard">
+
+
+<div class="roomhead">
+
+<h2>
+
+Exam Room
+${escapeHTML(room.roomName)}
+
+</h2>
+
+
+<span class="badge ${
+    allocated <= room.capacity
+        ? "ok"
+        : "bad"
+}">
+
+${allocated}
+/
+${room.capacity}
+
+Seats
+
+</span>
+
+</div>
+
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>
+Class
+</th>
+
+<th>
+Roll From
+</th>
+
+<th>
+Roll To
+</th>
+
+<th>
+Students
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+${
+    room.allocations
+    .map(
+        function(a){
+
+            return `
+
+<tr>
+
+<td>
+
+<b>
+
+${escapeHTML(
+    a.className
+)}
+-
+${escapeHTML(
+    a.section
+)}
+
+</b>
+
+</td>
+
+<td>
+${a.from}
+</td>
+
+<td>
+${a.to}
+</td>
+
+<td>
+${a.count}
+</td>
+
+</tr>
+
+`;
+
+        }
+    )
+    .join("")
+}
+
+</tbody>
+
+</table>
+
+
+<h3 style="margin-top:18px">
+
+Physical Seat Map
+
+</h3>
+
+
+<div class="seats">
+
+${
+    room.seats
+    .map(
+        function(seat,index){
+
+            return `
+
+<div class="seat">
+
+<span class="small">
+
+Seat ${index+1}
+
+</span>
+
+
+<strong>
+
+${escapeHTML(
+    seat.label
+)}
+
+</strong>
+
+
+<span>
+
+Roll No.
+${seat.roll}
+
+</span>
+
+</div>
+
+`;
+
+        }
+    )
+    .join("")
+}
+
+</div>
+
+
+</div>
+
+`;
+
+            }
+        )
+        .join("");
+
+}
+
+
+/* =========================================================
+   VALIDATION
+========================================================= */
+
+function renderValidation(){
+
+    const total =
+        totalStudents();
+
+
+    let allocated=0;
+
+
+    const roomProblems=[];
+
+    const duplicateStudents=[];
+
+    const seen =
+        new Set();
+
+
+    const classAllocation={};
+
+
+    db.arrangement.forEach(
+        function(room){
+
+            const roomTotal =
+                room.allocations.reduce(
+                    (sum,a)=>
+                        sum+a.count,
+                    0
+                );
+
+
+            allocated +=
+                roomTotal;
+
+
+            if(
+                roomTotal >
+                room.capacity
+            ){
+
+                roomProblems.push(
+
+                    room.roomName +
+                    ": " +
+                    roomTotal +
+                    "/" +
+                    room.capacity
+
+                );
+
+            }
+
+
+            room.allocations.forEach(
+                function(a){
+
+                    classAllocation[
+                        a.classId
+                    ] =
+                        (
+                            classAllocation[
+                                a.classId
+                            ] ||
+                            0
+                        ) +
+                        a.count;
+
+
+                    for(
+                        let roll=a.from;
+                        roll<=a.to;
+                        roll++
+                    ){
+
+                        const key =
+                            a.classId +
+                            "|" +
+                            roll;
+
+
+                        if(
+                            seen.has(key)
+                        ){
+
+                            duplicateStudents.push(
+                                key
+                            );
+
+                        }
+
+
+                        seen.add(key);
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    const classProblems=[];
+
+
+    db.classes.forEach(
+        function(classObject){
+
+            const got =
+                classAllocation[
+                    classObject.id
+                ] || 0;
+
+
+            if(
+                got !==
+                Number(classObject.total)
+            ){
+
+                classProblems.push({
+
+                    name:
+                        classLabel(
+                            classObject
+                        ),
+
+                    required:
+                        classObject.total,
+
+                    allocated:
+                        got
+
+                });
+
+            }
+
+        }
+    );
+
+
+    const unallocated =
+        total-allocated;
+
+
+    const valid =
+        allocated===total &&
+        classProblems.length===0 &&
+        duplicateStudents.length===0 &&
+        roomProblems.length===0;
+
+
+    document.getElementById(
+        "validationOutput"
+    ).innerHTML = `
+
+
+<div class="stats">
+
+${stat(
+    "Required Students",
+    total
+)}
+
+
+${stat(
+    "Allocated",
+    allocated
+)}
+
+
+${stat(
+    "Unallocated",
+    unallocated
+)}
+
+
+${stat(
+    "Duplicates",
+    duplicateStudents.length
+)}
+
+
+${stat(
+    "Room Problems",
+    roomProblems.length
+)}
+
+</div>
+
+
+<div class="message ${
+    valid
+        ? "successmsg"
+        : "error"
+}">
+
+${
+    valid
+
+        ?
+
+        "✓ VALID — Every student is allocated exactly once and no examination room exceeds capacity."
+
+        :
+
+        "✗ VALIDATION FAILED — Please check the problems below."
+
+}
+
+</div>
+
+
+${
+    classProblems.length
+
+    ?
+
+    `
+
+<div class="card">
+
+<h3>
+Class Allocation Problems
+</h3>
+
+<ul>
+
+${
+    classProblems
+    .map(
+        p=>
+            `<li>
+                ${escapeHTML(p.name)}
+                :
+                ${p.allocated}
+                /
+                ${p.required}
+            </li>`
+    )
+    .join("")
+}
+
+</ul>
+
+</div>
+
+`
+
+    :
+
+    ""
+
+}
+
+
+${
+    duplicateStudents.length
+
+    ?
+
+    `
+
+<div class="card">
+
+<h3>
+Duplicate Students
+</h3>
+
+<p>
+
+${duplicateStudents
+    .map(escapeHTML)
+    .join(", ")}
+
+</p>
+
+</div>
+
+`
+
+    :
+
+    ""
+
+}
+
+
+${
+    roomProblems.length
+
+    ?
+
+    `
+
+<div class="card">
+
+<h3>
+Room Capacity Problems
+</h3>
+
+<ul>
+
+${
+    roomProblems
+    .map(
+        problem=>
+            `<li>
+                ${escapeHTML(problem)}
+            </li>`
+    )
+    .join("")
+}
+
+</ul>
+
+</div>
+
+`
+
+    :
+
+    ""
+
+}
+
+
+<div class="card">
+
+<h3>
+Class Allocation Summary
+</h3>
+
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>
+Class
+</th>
+
+<th>
+Required
+</th>
+
+<th>
+Allocated
+</th>
+
+<th>
+Status
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+${
+    db.classes
+    .map(
+        function(c){
+
+            const got =
+                classAllocation[
+                    c.id
+                ] || 0;
+
+
+            const complete =
+                got ===
+                Number(c.total);
+
+
+            return `
+
+<tr>
+
+<td>
+
+${escapeHTML(
+    classLabel(c)
+)}
+
+</td>
+
+<td>
+
+${c.total}
+
+</td>
+
+<td>
+
+${got}
+
+</td>
+
+<td>
+
+<span class="badge ${
+    complete
+        ? "ok"
+        : "bad"
+}">
+
+${
+    complete
+        ? "Complete"
+        : "Problem"
+}
+
+</span>
+
+</td>
+
+</tr>
+
+`;
+
+        }
+    )
+    .join("")
+}
+
+</tbody>
+
+</table>
+
+</div>
+
+`;
+
+}
+
+
+/* =========================================================
+   EXPORT ARRANGEMENT
+========================================================= */
+
+function exportArrangementCSV(){
+
+    let csv =
+        "Exam Room,Class,Section,Roll From,Roll To,Students,Seat,Roll No\n";
+
+
+    db.arrangement.forEach(
+        function(room){
+
+            room.seats.forEach(
+                function(seat,index){
+
+                    const allocation =
+                        room.allocations.find(
+                            a=>
+                                a.classId ===
+                                seat.classId
+                        );
+
+
+                    csv += [
+
+                        room.roomName,
+
+                        seat.label
+                            .split("-")
+                            .slice(0,-1)
+                            .join("-"),
+
+                        seat.label
+                            .split("-")
+                            .slice(-1)[0],
+
+                        allocation
+                            ? allocation.from
+                            : "",
+
+                        allocation
+                            ? allocation.to
+                            : "",
+
+                        allocation
+                            ? allocation.count
+                            : "",
+
+                        index+1,
+
+                        seat.roll
+
+                    ].join(",") +
+                    "\n";
+
+                }
+            );
+
+        }
+    );
+
+
+    downloadFile(
+        "seating_arrangement.csv",
+        csv
+    );
+
+}
+
+
+/* =========================================================
+   JSON BACKUP
+========================================================= */
+
+function exportJSON(){
+
+    downloadFile(
+
+        "seating_arrangement_backup.json",
+
+        JSON.stringify(
+            db,
+            null,
+            2
+        )
+
+    );
+
+}
+
+
+/* =========================================================
+   DOWNLOAD
+========================================================= */
+
+function downloadFile(
+    filename,
+    content
+){
+
+    const blob =
+        new Blob(
+            [content],
+            {
+                type:
+                    "text/plain;charset=utf-8"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    link.href=url;
+
+    link.download=filename;
+
+    document.body.appendChild(
+        link
+    );
+
+    link.click();
+
+    document.body.removeChild(
+        link
+    );
+
+
+    setTimeout(
+        function(){
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        },
+        1000
+    );
+
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function showMessage(
+    elementId,
+    text,
+    type
+){
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+
+    element.className =
+        "message " +
+        type;
+
+
+    element.textContent =
+        text;
+
+}
+
+
+/* =========================================================
+   RENDER EVERYTHING
+========================================================= */
+
+function renderAll(){
+
+    renderDashboard();
+
+    renderClasses();
+
+    renderRooms();
+
+    renderRules();
+
+    renderPreStats();
+
+    renderArrangement();
+
+    renderValidation();
+
+}
+
+
+/* =========================================================
+   START APPLICATION
+========================================================= */
+
+loadDatabase();
+
+</script>
+
+</body>
+</html>
