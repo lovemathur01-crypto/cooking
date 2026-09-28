@@ -289,6 +289,47 @@ footer{
     font-size:12px;
 }
 
+
+.summary-card,
+.history-card{margin-bottom:18px;}
+
+.summary-title-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.muted{color:#64748b;font-size:12px;margin-top:4px;}
+.summary-count{
+    background:#eef2ff;
+    color:#3730a3;
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.class-summary-table{width:100%;border-collapse:collapse;margin-top:14px;}
+.class-summary-table th,.class-summary-table td{border:1px solid #dce2ea;padding:8px;text-align:left;font-size:12px;}
+.class-summary-table th{background:#f8fafc;}
+.summary-status{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;}
+.summary-status.complete{background:#dcfce7;color:#166534;}
+.summary-status.pending{background:#fef3c7;color:#92400e;}
+
+.saved-plan-list{display:grid;gap:9px;margin-top:14px;}
+.saved-plan-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid #dce2ea;border-radius:8px;background:#fafafa;}
+.saved-plan-meta{font-size:12px;color:#334155;margin-top:4px;}
+.compact-toolbar{margin:0;}
+.compact-toolbar button{padding:7px 10px;font-size:12px;}
+button.danger{color:#b91c1c;border-color:#fecaca;background:#fff1f2;}
+
+@media(max-width:700px){
+    .saved-plan-item{align-items:flex-start;flex-direction:column;}
+}
+
 /* PRINT - ONE EXAM ROOM PER PAGE */
 @page{
     size:A4 landscape;
@@ -305,6 +346,8 @@ footer{
         padding:0;
     }
 
+    body.print-arrangement #classWiseSummary,
+    body.print-arrangement #savedPlansSection,
     body.print-arrangement nav,
     body.print-arrangement header,
     body.print-arrangement footer,
@@ -581,6 +624,10 @@ An examination room cannot exceed its capacity.
 
 </div>
 
+</section>
+
+<section id="savedPlansSection" class="no-print">
+    <div id="savedPlans"></div>
 </section>
 
 
@@ -996,6 +1043,8 @@ Backup JSON
 </div>
 
 
+<div id="classWiseSummary"></div>
+
 <div id="arrangementOutput">
 </div>
 
@@ -1088,7 +1137,9 @@ let db = {
 
     },
 
-    arrangement:[]
+    arrangement:[],
+
+    history:[]
 
 };
 
@@ -1257,6 +1308,10 @@ function loadDatabase(){
     }
 
 
+    if(!Array.isArray(db.history)){
+        db.history=[];
+    }
+
     if(!db.classes.length){
 
         loadSample(false);
@@ -1408,7 +1463,9 @@ function clearAll(){
 
         },
 
-        arrangement:[]
+        arrangement:[],
+
+        history:[]
 
     };
 
@@ -3466,6 +3523,7 @@ function generateArrangement(){
     db.arrangement =
         result;
 
+    saveSeatingPlanToHistory();
 
     saveDatabase();
 
@@ -3491,6 +3549,201 @@ function generateArrangement(){
 
 }
 
+
+/* =========================================================
+   SAVED PLAN HISTORY + CLASS-WISE SUMMARY
+========================================================= */
+
+function getClassWiseSummary(arrangement=db.arrangement, classes=db.classes){
+
+    const summary={};
+
+    classes.forEach(function(c){
+        summary[c.id]={
+            classId:c.id,
+            label:classLabel(c),
+            originalRoom:c.normalRoom ?? "",
+            total:Number(c.total)||0,
+            allocated:0,
+            rooms:[]
+        };
+    });
+
+    arrangement.forEach(function(room){
+        room.allocations.forEach(function(a){
+            if(!summary[a.classId]){
+                summary[a.classId]={
+                    classId:a.classId,
+                    label:(a.className||"")+"-"+(a.section||""),
+                    originalRoom:"",
+                    total:0,
+                    allocated:0,
+                    rooms:[]
+                };
+            }
+
+            summary[a.classId].allocated += Number(a.count)||0;
+
+            if(!summary[a.classId].rooms.includes(String(room.roomName))){
+                summary[a.classId].rooms.push(String(room.roomName));
+            }
+        });
+    });
+
+    return Object.values(summary);
+}
+
+function saveSeatingPlanToHistory(){
+
+    if(!db.arrangement.length) return;
+
+    const snapshot={
+        id:uid(),
+        savedAt:new Date().toISOString(),
+        setup:JSON.parse(JSON.stringify(db.setup)),
+        classes:JSON.parse(JSON.stringify(db.classes)),
+        rooms:JSON.parse(JSON.stringify(db.rooms)),
+        arrangement:JSON.parse(JSON.stringify(db.arrangement))
+    };
+
+    if(!Array.isArray(db.history)) db.history=[];
+
+    db.history.unshift(snapshot);
+    db.history=db.history.slice(0,5);
+}
+
+function restoreSavedPlan(index){
+
+    const plan=db.history && db.history[index];
+
+    if(!plan) return;
+
+    db.setup=JSON.parse(JSON.stringify(plan.setup||db.setup));
+    db.classes=JSON.parse(JSON.stringify(plan.classes||db.classes));
+    db.rooms=JSON.parse(JSON.stringify(plan.rooms||db.rooms));
+    db.arrangement=JSON.parse(JSON.stringify(plan.arrangement||[]));
+
+    saveDatabase();
+    renderAll();
+    showTab("arrangement");
+
+    showMessage(
+        "generateMessage",
+        "Saved seating plan restored successfully.",
+        "successmsg"
+    );
+}
+
+function deleteSavedPlan(index){
+
+    if(!db.history || !db.history[index]) return;
+
+    if(!confirm("Delete this saved seating plan?")) return;
+
+    db.history.splice(index,1);
+    saveDatabase();
+    renderDashboard();
+}
+
+function renderClassWiseSummary(){
+
+    const el=document.getElementById("classWiseSummary");
+    if(!el) return;
+
+    if(!db.arrangement.length){
+        el.innerHTML="";
+        return;
+    }
+
+    const rows=getClassWiseSummary();
+
+    el.innerHTML=`
+        <div class="card summary-card">
+            <div class="summary-title-row">
+                <div>
+                    <h2>Class-wise Seating Summary</h2>
+                    <p class="muted">Students allocated from each original class and the examination rooms used.</p>
+                </div>
+                <span class="summary-count">${rows.length} Classes</span>
+            </div>
+            <table class="class-summary-table">
+                <thead>
+                    <tr>
+                        <th>Class</th>
+                        <th>Original Class Room</th>
+                        <th>Total Students</th>
+                        <th>Allocated</th>
+                        <th>Exam Room(s)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows.map(function(r){
+                        const complete=Number(r.allocated)===Number(r.total);
+                        return `<tr>
+                            <td><b>${escapeHTML(r.label)}</b></td>
+                            <td>${escapeHTML(r.originalRoom || "Not Assigned")}</td>
+                            <td>${r.total}</td>
+                            <td>${r.allocated}</td>
+                            <td>${r.rooms.length ? r.rooms.map(escapeHTML).join(", ") : "—"}</td>
+                            <td><span class="summary-status ${complete?'complete':'pending'}">${complete?'Complete':'Pending'}</span></td>
+                        </tr>`;
+                    }).join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderSavedPlans(){
+
+    const el=document.getElementById("savedPlans");
+    if(!el) return;
+
+    const plans=Array.isArray(db.history)?db.history:[];
+
+    if(!plans.length){
+        el.innerHTML=`
+            <div class="card history-card">
+                <h2>Last 5 Saved Seating Plans</h2>
+                <div class="message info">No saved seating plans yet. Every newly generated plan will be saved here automatically.</div>
+            </div>`;
+        return;
+    }
+
+    el.innerHTML=`
+        <div class="card history-card">
+            <div class="summary-title-row">
+                <div>
+                    <h2>Last 5 Saved Seating Plans</h2>
+                    <p class="muted">The five most recently generated seating arrangements are retained automatically.</p>
+                </div>
+                <span class="summary-count">${plans.length}/5 Saved</span>
+            </div>
+            <div class="saved-plan-list">
+                ${plans.map(function(plan,index){
+                    const rooms=(plan.arrangement||[]).length;
+                    const students=(plan.arrangement||[]).reduce(function(total,room){
+                        return total + (room.allocations||[]).reduce(function(t,a){return t+(Number(a.count)||0);},0);
+                    },0);
+                    const date=new Date(plan.savedAt);
+                    const dateText=isNaN(date.getTime()) ? "Unknown date" : date.toLocaleString();
+                    return `<div class="saved-plan-item">
+                        <div>
+                            <b>${escapeHTML(plan.setup?.examName || "Seating Plan")}</b>
+                            <div class="muted">${escapeHTML(plan.setup?.session || "")} • ${escapeHTML(plan.setup?.examDate || "Date not set")} • Saved ${escapeHTML(dateText)}</div>
+                            <div class="saved-plan-meta">${rooms} Exam Rooms • ${students} Students</div>
+                        </div>
+                        <div class="toolbar compact-toolbar">
+                            <button onclick="restoreSavedPlan(${index})">Open</button>
+                            <button class="danger" onclick="deleteSavedPlan(${index})">Delete</button>
+                        </div>
+                    </div>`;
+                }).join("")}
+            </div>
+        </div>
+    `;
+}
 
 /* =========================================================
    PRINT + ORIGINAL CLASS HELPERS
@@ -3584,6 +3837,8 @@ function renderArrangement(){
 
     }
 
+
+    renderClassWiseSummary();
 
     output.innerHTML =
         db.arrangement
@@ -4411,6 +4666,7 @@ function showMessage(
 function renderAll(){
 
     renderDashboard();
+    renderSavedPlans();
 
     renderClasses();
 
