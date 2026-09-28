@@ -289,42 +289,132 @@ footer{
     font-size:12px;
 }
 
-/* PRINT */
+/* PRINT - ONE EXAM ROOM PER PAGE */
+@page{
+    size:A4 landscape;
+    margin:8mm;
+}
+
 @media print{
 
-    nav,
-    header,
-    footer,
-    .no-print,
-    .settings,
-    .toolbar{
-        display:none !important;
-    }
-
+    html,
     body{
-        background:white;
-    }
-
-    main{
-        max-width:none;
+        background:white !important;
+        width:100%;
+        margin:0;
         padding:0;
     }
 
-    .tab{
+    body.print-arrangement nav,
+    body.print-arrangement header,
+    body.print-arrangement footer,
+    body.print-arrangement main > .tab:not(#arrangement),
+    body.print-arrangement #arrangement > .no-print{
+        display:none !important;
+    }
+
+    body.print-arrangement main{
+        max-width:none;
+        width:100%;
+        margin:0;
+        padding:0;
+    }
+
+    body.print-arrangement #arrangement{
         display:block !important;
+        width:100%;
+        margin:0;
+        padding:0;
     }
 
-    .card{
+    body.print-arrangement #arrangementOutput{
+        width:100%;
+        margin:0;
+        padding:0;
+    }
+
+    body.print-arrangement .roomcard{
+        width:100%;
+        margin:0;
+        padding:8mm;
+        border:1px solid #222;
+        border-radius:0;
         box-shadow:none;
-        border:0;
-    }
-
-    .roomcard{
+        break-inside:avoid;
         page-break-inside:avoid;
     }
 
-    .seats{
-        grid-template-columns:repeat(4,1fr);
+    body.print-arrangement .roomcard.print-room-break{
+        break-after:page;
+        page-break-after:always;
+    }
+
+    body.print-arrangement .roomcard.print-last-room{
+        break-after:auto;
+        page-break-after:auto;
+    }
+
+    body.print-arrangement .roomhead{
+        border-bottom:1px solid #222;
+        padding-bottom:5px;
+        margin-bottom:8px;
+    }
+
+    body.print-arrangement .roomhead h2{
+        margin:0;
+        font-size:20px;
+    }
+
+    body.print-arrangement .original-class{
+        display:block;
+        margin-top:3px;
+        font-size:13px;
+        font-weight:600;
+        color:#222;
+    }
+
+    body.print-arrangement table{
+        font-size:11px;
+        margin-bottom:7px;
+    }
+
+    body.print-arrangement th,
+    body.print-arrangement td{
+        padding:4px 6px;
+        border:1px solid #999;
+    }
+
+    body.print-arrangement h3{
+        margin:7px 0 5px !important;
+        font-size:14px;
+    }
+
+    body.print-arrangement .seats{
+        grid-template-columns:repeat(6,1fr);
+        gap:4px;
+        margin-top:5px;
+    }
+
+    body.print-arrangement .seat{
+        padding:5px;
+        border:1px solid #999;
+        border-radius:2px;
+        font-size:10px;
+    }
+
+    body.print-arrangement .seat strong{
+        margin:2px 0;
+        font-size:11px;
+    }
+
+    body.print-arrangement .small{
+        font-size:9px;
+    }
+
+    body.print-arrangement .badge{
+        border:1px solid #222;
+        background:white !important;
+        color:#111 !important;
     }
 }
 </style>
@@ -879,7 +969,7 @@ Room-wise Seating Arrangement
 
 <button
     class="primary"
-    onclick="window.print()">
+    onclick="printSeatingArrangement()">
 
 Print / Save PDF
 
@@ -3403,6 +3493,64 @@ function generateArrangement(){
 
 
 /* =========================================================
+   PRINT + ORIGINAL CLASS HELPERS
+========================================================= */
+
+function getOriginalClassNames(room){
+
+    const names =
+        db.classes
+        .filter(function(classObject){
+
+            return String(classObject.normalRoom ?? "")
+                .trim()
+                .toLowerCase() ===
+                String(room.roomName ?? "")
+                .trim()
+                .toLowerCase();
+
+        })
+        .map(function(classObject){
+
+            return classLabel(classObject);
+
+        });
+
+    return names.length
+        ? names.join(", ")
+        : "Not Assigned";
+}
+
+
+function printSeatingArrangement(){
+
+    if(!db.arrangement.length){
+
+        alert("Please generate the seating arrangement first.");
+
+        return;
+
+    }
+
+    document.body.classList.add("print-arrangement");
+
+    setTimeout(function(){
+
+        window.print();
+
+    },50);
+
+}
+
+
+window.addEventListener("afterprint", function(){
+
+    document.body.classList.remove("print-arrangement");
+
+});
+
+
+/* =========================================================
    ARRANGEMENT DISPLAY
 ========================================================= */
 
@@ -3440,7 +3588,7 @@ function renderArrangement(){
     output.innerHTML =
         db.arrangement
         .map(
-            function(room){
+            function(room,roomIndex){
 
                 const allocated =
                     room.allocations.reduce(
@@ -3452,17 +3600,24 @@ function renderArrangement(){
 
                 return `
 
-<div class="card roomcard">
+<div class="card roomcard ${
+    roomIndex < db.arrangement.length - 1
+        ? "print-room-break"
+        : "print-last-room"
+}">
 
 
 <div class="roomhead">
 
+<div>
 <h2>
-
-Exam Room
-${escapeHTML(room.roomName)}
-
+Exam Room ${escapeHTML(room.roomName)}
 </h2>
+
+<div class="original-class">
+Original Class: ${escapeHTML(getOriginalClassNames(room))}
+</div>
+</div>
 
 
 <span class="badge ${
