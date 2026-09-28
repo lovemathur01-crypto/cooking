@@ -317,6 +317,7 @@ body:before{
 .b5{--c1:#008fca;--c2:#13d8ec}
 .b6{--c1:#6e38ff;--c2:#bd48ff}
 .b7{--c1:#ff8a19;--c2:#ff4b5f}
+.b8{--c1:#d83bff;--c2:#ff4f9a}
 
 /* PANELS */
 
@@ -1490,6 +1491,23 @@ body.authenticated .protected:after{
 
     </button>
 
+    <!-- SEATING ARRANGEMENT - PROTECTED -->
+
+    <button
+      class="menu-btn b8 protected"
+      data-action="seating"
+      type="button"
+    >
+
+      <span>🪑</span>
+
+      <div>
+        <b>Make Seating Arrangement</b>
+        <small>Login required to open seating arrangement</small>
+      </div>
+
+    </button>
+
   </div>
 
 </div>
@@ -2279,7 +2297,7 @@ function logout(){
 function openProtected(action){
   protectedAction = action;
 
-  /* One successful login unlocks all three protected services. */
+  /* One successful login unlocks all four protected services. */
   if(isAuthenticated()){
     touchSession();
     handleProtectedAction(action);
@@ -2289,11 +2307,13 @@ function openProtected(action){
   const description = document.getElementById("loginDescription");
 
   if(action === "generator"){
-    description.textContent = "Login once to unlock the Question Generator, Question Paper Checking, and Class-wise Question Papers.";
+    description.textContent = "Login once to unlock the Question Generator, Question Paper Checking, Class-wise Question Papers, and Seating Arrangement.";
   }else if(action === "checking"){
     description.textContent = "Login once to unlock Question Paper Checking, the Snake Game, and the other protected services.";
+  }else if(action === "seating"){
+    description.textContent = "Login once to unlock Seating Arrangement and the other protected examination services.";
   }else{
-    description.textContent = "Login once to unlock Class-wise Question Papers, Question Generator, and Question Paper Checking.";
+    description.textContent = "Login once to unlock Class-wise Question Papers, Question Generator, Question Paper Checking, and Seating Arrangement.";
   }
 
   document.getElementById("loginError").classList.remove("show");
@@ -2309,6 +2329,13 @@ function openProtected(action){
 
 const CLASS_PAPERS_URL =
   "https://drive.google.com/open?id=15C430j50ZvskRbR3Ydt0Rfwz2Suq3aAB&usp=sharing";
+
+
+/* =========================================================
+   SEATING ARRANGEMENT LINK
+========================================================= */
+
+const SEATING_ARRANGEMENT_URL = "seating_arr.html";
 
 
 /* =========================================================
@@ -2470,7 +2497,7 @@ document
     document.body.classList.add("authenticated");
     closeLogin();
 
-    // The same session authorizes all three protected services.
+    // The same session authorizes all four protected services.
     const actionToOpen = protectedAction;
     protectedAction = null;
     handleProtectedAction(actionToOpen);
@@ -2494,6 +2521,10 @@ function handleProtectedAction(action){
 
   if(action === "classpapers"){
     window.open(CLASS_PAPERS_URL,"_blank","noopener,noreferrer");
+  }
+
+  if(action === "seating"){
+    window.open(SEATING_ARRANGEMENT_URL,"_blank","noopener,noreferrer");
   }
 }
 
@@ -3117,7 +3148,8 @@ loadTracking();
   IMPORTANT:
   localStorage keeps the login session when this HTML file is closed
   and opened again, provided the 30-minute inactivity period has not
-  expired.
+  expired. The same session is shared by all four protected services
+  on this site/origin, including Seating Arrangement.
 */
 if(isAuthenticated()){
   startSessionUI();
