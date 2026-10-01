@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HIS Timetable & Substitution Duty System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif;background:#eef3f8;color:#172033}
+.app{max-width:1700px;margin:auto;padding:18px}
+.header{background:linear-gradient(135deg,#17375e,#245887);color:#fff;border-radius:16px;padding:24px 28px}
+.header h1{margin:0 0 5px;font-size:28px}.header p{margin:0;opacity:.9}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;background:#fff;padding:10px;border-radius:12px;margin:16px 0;box-shadow:0 3px 15px rgba(0,0,0,.07)}
+.tab-btn{border:0;background:#e8eef5;color:#17375e;padding:12px 17px;border-radius:8px;font-weight:700;cursor:pointer}
+.tab-btn.active{background:#17375e;color:#fff}.tab{display:none}.tab.active{display:block}
+.card{background:#fff;border-radius:13px;padding:20px;margin-bottom:18px;box-shadow:0 3px 15px rgba(0,0,0,.07)}
+.card h2{margin:0 0 15px;color:#17375e;font-size:21px}.card h3{color:#17375e;margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{display:block;font-weight:700;margin-bottom:6px}
+input[type=date],select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;font-size:14px;background:#fff}
+input[type=file]{display:none}
+.btn{border:0;border-radius:7px;padding:10px 16px;font-weight:700;cursor:pointer;margin:4px}
+.primary{background:#17375e;color:#fff}.success{background:#16a34a;color:#fff}.warning{background:#f59e0b;color:#fff}
+.danger{background:#dc2626;color:#fff}.secondary{background:#64748b;color:#fff}.purple{background:#7c3aed;color:#fff}.light{background:#e8eef5;color:#17375e}
+.actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
+.info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:8px;padding:13px;margin-bottom:15px}
+.success-box{background:#ecfdf5;border:1px solid #86efac;color:#166534;border-radius:8px;padding:13px;margin-bottom:15px}
+.error-box{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:13px;margin-bottom:15px}
+.warning-box{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:13px;margin-bottom:15px}
+.muted{color:#64748b}.small{font-size:12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{padding:14px;border:1px solid #dbe3ec;border-radius:10px;text-align:center;background:#f8fafc}
+.kpi strong{display:block;font-size:25px;color:#17375e}.kpi span{font-size:12px;color:#64748b}
+.preview-box{max-height:550px;overflow:auto}
+table{border-collapse:collapse;width:100%}
+.preview-box table{min-width:1000px}
+.preview-box th,.preview-box td{border:1px solid #cbd5e1;padding:7px 8px;font-size:12px;white-space:pre-line}
+.preview-box th{background:#17375e;color:#fff;white-space:nowrap}
+.badge{display:inline-block;padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.badge.ok{background:#dcfce7;color:#166534}.badge.err{background:#fee2e2;color:#991b1b}.badge.warn{background:#fef3c7;color:#92400e}
+.check-list{display:grid;gap:8px}
+.check-item{padding:10px;border:1px solid #e2e8f0;border-radius:8px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.absent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.absent-panel{border:1px solid #dbe3ec;border-radius:10px;padding:15px;min-width:0}
+.teacher-list{max-height:450px;overflow:auto;border:1px solid #dbe3ec;border-radius:8px;background:#fff}
+.teacher-row{display:grid;grid-template-columns:35px 1fr;align-items:center;padding:9px;border-bottom:1px solid #e5e7eb;margin:0;font-weight:400}
+.teacher-row:hover{background:#f1f5f9}.teacher-row input{width:18px;height:18px}
+.full-day{background:#fff1f2}.first-half{background:#eff6ff}.second-half{background:#f0fdf4}
+.free-cell{background:#dcfce7;color:#166534;font-weight:700}.na-cell{background:#fee2e2;color:#991b1b;font-weight:700}
+.history-actions{display:flex;gap:6px;flex-wrap:wrap}
+.duty-chart-wrap{overflow:auto;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+.generated-duty-paper{background:#fff;color:#111;overflow-x:auto;padding:4px}
+.paper-title{text-align:center;font-size:27px;font-weight:900;color:#17375e}
+.paper-date{text-align:center;font-size:24px;font-weight:800;color:#17375e;margin:2px 0 10px}
+.status-free{font-weight:800}.muted-small{font-size:10px;color:#555}
+.live-count{font-size:9px;color:#475569;margin-top:2px}
+.free-summary-title{font-size:13px;font-weight:800;border-top:1px solid #999;margin-top:10px;padding:7px 4px}
+.free-summary-title span{margin-left:30px;color:#245887}
+.live-banner{font-size:12px;font-weight:700;padding:7px 8px;margin:6px 0;border-radius:6px;background:#eff6ff;color:#1e40af}
+.free-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;padding-top:5px}
+.free-summary-row{font-size:10.5px;line-height:1.5;padding:2px 5px;margin-bottom:2px;border-radius:3px}
+.free-summary-row.ok{background:#f0fdf4}
+.free-summary-row.zero{background:#fee2e2;color:#991b1b;font-weight:700}
+.free-summary-row.nofree{background:#f1f5f9;color:#64748b}
+.teacher-note{font-size:10px;line-height:1.45;margin-top:10px;padding-top:7px;border-top:1px solid #aaa}
+.auto-toggle{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:700}
+.auto-toggle input{width:17px;height:17px}
+@media(max-width:1100px){.absent-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:850px){.absent-grid,.free-summary-grid{grid-template-columns:1fr}.header h1{font-size:22px}.app{padding:9px}}
+@media print{
+ body{background:#fff}.app{max-width:none;padding:0}.header,.tabs,.no-print{display:none!important}
+ .tab{display:none!important}.tab.active{display:block!important}
+ .card{box-shadow:none;border:0;padding:0;margin:0}
+ .duty-chart-wrap{border:0;overflow:visible}
+ .free-summary-row,.teacher-note{font-size:8px}.paper-title{font-size:24px}.paper-date{font-size:20px}
+ @page{size:A4 landscape;margin:8mm}
+}
+.screen-only{display:block;width:100%}.print-only{display:none}
+.duty-grid{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
+.duty-grid th,.duty-grid td{border:1px solid #8a97a8;text-align:center;vertical-align:top;padding:0}
+.duty-grid .ip-col{width:100px;background:#17375e;color:#fff;font-size:13px;font-weight:800;vertical-align:middle}
+.duty-grid .ip-time{display:block;font-size:9px;font-weight:600;line-height:1.3;margin-top:2px;letter-spacing:0}
+.duty-grid .ip-note{display:block;font-size:9px;font-weight:700;line-height:1.2}
+.duty-grid .abs-col{background:#d9363e;color:#fff;font-size:14px;font-weight:800;padding:8px 4px;line-height:1.25}
+.abs-type{display:block;font-size:10px;font-weight:600}
+.duty-grid .cls-line{padding:6px 5px;min-height:40px;background:#fffbea;white-space:pre-line;font-size:11px;line-height:1.3;color:#333;display:flex;align-items:center;justify-content:center}
+.duty-grid .sub-line{padding:6px 5px;border-top:1px dashed #8a97a8;background:#e8f8ef;font-weight:800;font-size:12.5px;min-height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.duty-grid .unassigned .sub-line{background:#fee2e2;color:#991b1b}
+.duty-grid .off .cls-line,.duty-grid .off .sub-line{background:#f3f4f6;color:#6b7280}
+.duty-grid .sub-line select{width:100%;font-size:11px;padding:4px}
+.duty-grid tbody tr>th,.duty-grid tbody tr>td{border-top:2.5px solid #000}
+@media print{
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .screen-only,.live-count{display:none!important}.print-only{display:block!important;width:100%}
+ .duty-grid{min-width:0!important;font-size:11px}
+ .duty-grid .cls-line{font-size:10.5px;padding:4px 3px;min-height:34px}
+ .duty-grid .sub-line{font-size:12px;padding:4px 3px;min-height:30px;border-top:1.5px dashed #000}
+ .duty-grid .abs-col{font-size:13px}.duty-grid tr{page-break-inside:avoid}
+ .free-summary-row,.teacher-note{font-size:9px!important}
+ .paper-title{font-size:22px}.paper-date{font-size:18px}
+}
+input,select,button,textarea{font-family:inherit}
+.duty-grid .ip-col{background:#FCE2D4;color:#3b1f10}
+.duty-grid .abs-col{background:#FA4C4C;color:#fff}
+.duty-grid .cls-line,.duty-grid .sub-line{background:#fff}
+.duty-grid .got-sub .sub-line{background:#FFF2CC}
+.duty-grid .free .cls-line,.duty-grid .free .sub-line{background:#CCFF99;color:#1f3d0a}
+.duty-grid .unassigned .sub-line{background:#fee2e2;color:#991b1b}
+.free-summary-row.ok{background:#fff}
+.free-summary-row.duty{background:#FFF2CC}
+.free-summary-row.zero{background:#FFF2CC;color:#991b1b;font-weight:700}
+.custom-name{width:100%;margin-top:4px;padding:4px 5px;font-size:11px;border:1px solid #FA4C4C;border-radius:5px;background:#fff}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<h1>HIS TIMETABLE & SUBSTITUTION DUTY SYSTEM</h1>
+<p>Compatible with sample_master_timetable.xlsx and similar Master Timetable Excel files</p>
+</div>
+
+<div class="tabs">
+<button class="tab-btn active" data-tab="tab1" onclick="openTab('tab1')">1. Upload Excel</button>
+<button class="tab-btn" data-tab="tab2" onclick="openTab('tab2')">2. Check Excel</button>
+<button class="tab-btn" data-tab="tab3" onclick="openTab('tab3')">3. Absent Teachers</button>
+<button class="tab-btn" data-tab="tab4" onclick="openTab('tab4')">4. Date & Day</button>
+<button class="tab-btn" data-tab="tab5" onclick="openTab('tab5')">5. Generate Duty List</button>
+<button class="tab-btn" data-tab="tab6" onclick="openTab('tab6')">6. Print Duty Chart</button>
+<button class="tab-btn" data-tab="tab7" onclick="openTab('tab7')">7. Saved Duty Charts</button>
+</div>
+
+<section id="tab1" class="tab active">
+<div class="card">
+<h2>Upload Timetable Excel</h2>
+<div class="info">
+Expected columns: <b>Teacher Name, Day, 1st IP, 2nd IP, 3rd IP, 4th IP, Lunch Break, 5th IP, 6th IP, 7th IP, 8th IP</b>.<br>
+<b>Free, FREE, free, blank and -</b> are all treated as free periods. Multiline class names are preserved.
+</div>
+<div class="actions">
+<button class="btn purple" onclick="downloadSample()">Download Compatible Sample</button>
+<button class="btn light" onclick="document.getElementById('excelFile').click()">Choose Excel File</button>
+<input id="excelFile" type="file" accept=".xlsx,.xls,.csv" onchange="uploadExcel(event)">
+</div>
+<div id="uploadMessage" class="info" style="margin-top:14px">No Excel file uploaded yet.</div>
+<div class="kpis">
+<div class="kpi"><strong id="kpiRows">0</strong><span>Rows Loaded</span></div>
+<div class="kpi"><strong id="kpiTeachers">0</strong><span>Teachers</span></div>
+<div class="kpi"><strong id="kpiDays">0</strong><span>Days</span></div>
+<div class="kpi"><strong id="kpiFree">0</strong><span>FREE Cells</span></div>
+<div class="kpi"><strong id="kpiNA">0</strong><span>NOT AVAILABLE</span></div>
+</div>
+</div>
+<div class="card"><h2>Detected Excel Structure</h2><div id="detectedStructure" class="info">Upload your Excel file to see the detected sheet and columns.</div></div>
+</section>
+
+<section id="tab2" class="tab">
+<div class="card"><h2>Check Uploaded Excel</h2><div id="validationSummary" class="warning-box">Upload an Excel file to start validation.</div></div>
+<div class="card"><h2>Validation Results</h2><div id="validationList" class="check-list"></div></div>
+<div class="card"><h2>Uploaded Timetable Preview</h2><div id="preview" class="preview-box muted">No timetable loaded.</div></div>
+</section>
+
+<section id="tab3" class="tab">
+<div class="card">
+<h2>Select Absent Teachers</h2>
+<div class="info"><b>A teacher can have only one absence type:</b> Full Day (1st–8th), First Half (1st–4th) or Second Half (5th–8th). Duties are generated only for the selected range. An absent teacher is never given a substitution duty.</div>
+<div class="absent-grid">
+<div class="absent-panel full-day"><h3>Full Day Absent</h3><p class="small muted">1st to 8th IP</p><div id="fullDayList" class="teacher-list"><div class="muted" style="padding:15px">Select a day first.</div></div></div>
+<div class="absent-panel first-half"><h3>First Half Day Absent</h3><p class="small muted">1st to 4th IP</p><div id="firstHalfList" class="teacher-list"><div class="muted" style="padding:15px">Select a day first.</div></div></div>
+<div class="absent-panel second-half"><h3>Second Half Day Absent</h3><p class="small muted">5th to 8th IP</p><div id="secondHalfList" class="teacher-list"><div class="muted" style="padding:15px">Select a day first.</div></div></div>
+</div>
+<div id="absenceSummary" class="info" style="margin-top:15px">No teachers selected.</div>
+</div>
+</section>
+
+<section id="tab4" class="tab">
+<div class="card">
+<h2>Select Date & Day</h2>
+<div class="grid">
+<div><label>Date</label><input id="dateInput" type="date"></div>
+<div><label>Day</label><select id="daySelect"><option value="">-- Select Day --</option></select></div>
+</div>
+<div class="actions"><button class="btn primary" onclick="syncDayFromDate()">Set Day from Date</button><button class="btn light" onclick="refreshAbsentLists()">Refresh Teacher List</button></div>
+<div id="dateDayMessage" class="info" style="margin-top:14px">Select the date and day for the substitution arrangement.</div>
+</div>
+</section>
+
+<section id="tab5" class="tab">
+<div class="card no-print">
+<h2>5. Generate Duty List</h2>
+<div class="actions">
+<button class="btn success" onclick="generateDutyListAutomatically(true)">⚡ Generate Duty List Automatically</button>
+<button class="btn light" onclick="renderDutyListChart()">Refresh Chart</button>
+<button class="btn warning" onclick="window.print()">Print Duty Chart</button>
+<button class="btn secondary" onclick="savePlan()">Save Duty Chart</button>
+<button class="btn danger" onclick="clearArrangement()">Clear Chart</button>
+</div>
+<label class="auto-toggle"><input type="checkbox" id="autoGenerateToggle" checked> Automatically generate/update the duty list when Tab 5 is opened</label>
+<div id="generationMessage" class="info" style="margin-top:12px">Select the date/day and absent teachers. When you open Tab 5, the duty list is generated automatically.</div>
+</div>
+<div class="card"><div id="dutyListChart" class="duty-chart-wrap"><div class="muted" style="padding:12px">Your generated duty chart will appear here.</div></div></div>
+</section>
+
+<section id="tab6" class="tab">
+<div class="card no-print"><h2>6. Print Duty Chart</h2><div class="info">Make any corrections in Tab 5 first, then click <b>Refresh Print Chart</b>.</div>
+<div class="actions"><button class="btn primary" onclick="refreshPrintChart()">Refresh Print Chart</button><button class="btn warning" onclick="window.print()">Print Duty Chart</button><button class="btn secondary" onclick="savePlan()">Save Current Chart</button></div></div>
+<div class="card"><div id="printChartContent"><div class="muted">Generate a duty arrangement first.</div></div></div>
+</section>
+
+<section id="tab7" class="tab">
+<div class="card"><h2>7. Saved Duty Charts — Last 5</h2><div class="info">The latest <b>5 duty charts</b> are kept in this browser. Load one, correct it in Tab 5, and save it again.</div><div id="history"></div></div>
+</section>
+</div>
+
+<script>
+"use strict";
+const PERIODS=["1st IP","2nd IP","3rd IP","4th IP","5th IP","6th IP","7th IP","8th IP"];
+const periodTimes=["","","","","","","",""];
+const EXCEL_COLUMNS=["Teacher Name","Day",...PERIODS.slice(0,4),"Lunch Break",...PERIODS.slice(4)];
+const DAY_NAMES=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const STORAGE_KEY="HIS_TIMETABLE_DUTY_PLANS_V4";
+let timetable={},importedRows=[],validation=null,generated=null;
+
+/* ---------- helpers ---------- */
+function normalize(v){return String(v??"").replace(/\u00a0/g," ").trim().replace(/\r\n/g,"\n").replace(/\r/g,"\n").replace(/[ \t]+/g," ")}
+function key(v){return normalize(v).toLowerCase()}
+function escapeHTML(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function isFree(v){const s=key(v);return !s||["free","f","-","—"].includes(s)}
+function isNA(v){return ["not available","notavailable","unavailable","n/a","na"].includes(key(v))}
+function actualValue(v){return normalize(v)===""?"FREE":normalize(v)}
+function setMessage(id,text,type){
+ const e=document.getElementById(id);
+ e.className=type==="success"?"success-box":type==="error"?"error-box":type==="warning"?"warning-box":"info";
+ e.innerHTML=text;
+}
+function canonicalHeader(v){return key(v).replace(/[^a-z0-9]/g,"")}
+function findHeader(headers,aliases){
+ const canon=headers.map(h=>({raw:h,c:canonicalHeader(h)}));
+ for(const a of aliases){const f=canon.find(x=>x.c===canonicalHeader(a));if(f)return f.raw}
+ for(const a of aliases){const ca=canonicalHeader(a);const f=canon.find(x=>x.c&&ca.length>2&&(x.c.includes(ca)||ca.includes(x.c)));if(f)return f.raw}
+ return null;
+}
+function getCell(row,name){
+ const w=canonicalHeader(name),f=Object.keys(row).find(k=>canonicalHeader(k)===w);
+ return f===undefined?"":row[f];
+}
+function getTeacherName(row){return normalize(getCell(row,"Teacher Name")||getCell(row,"Teacher")||getCell(row,"Staff Name"))}
+function getDay(row){return normalize(getCell(row,"Day"))}
+function formatDate(v){return v?new Date(v+"T00:00:00").toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"}):""}
+
+function openTab(id){
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".tab-btn").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ const b=document.querySelector(`[data-tab="${id}"]`);if(b)b.classList.add("active");
+ if(id==="tab3")refreshAbsentLists();
+ if(id==="tab5")setTimeout(()=>generateDutyListAutomatically(false),0);
+ if(id==="tab6")refreshPrintChart();
+ if(id==="tab7")renderHistory();
+}
+
+/* ---------- Excel ---------- */
+function downloadSample(){
+ if(typeof XLSX==="undefined"){alert("The Excel engine could not be loaded. Check your internet connection and reload.");return}
+ const data=[{"Teacher Name":"Deepanki Ma'am","Day":"Tuesday","1st IP":"XII-Science\nChemistry","2nd IP":"XII-Science\nChemistry","3rd IP":"VI-A\nScience","4th IP":"IX-A\nChemistry","Lunch Break":"Lunch Break","5th IP":"Free","6th IP":"VI-B\nScience","7th IP":"X-A\nChemistry","8th IP":"XI-Science\nChemistry"}];
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(data),"Master Timetable");
+ XLSX.writeFile(wb,"HIS_Compatible_Master_Timetable.xlsx");
+}
+
+function uploadExcel(event){
+ const file=event.target.files&&event.target.files[0];
+ if(!file)return;
+ if(typeof XLSX==="undefined"){setMessage("uploadMessage","<b>Excel engine not found.</b> Check your internet connection and reload the page.","error");return}
+ setMessage("uploadMessage","Reading <b>"+escapeHTML(file.name)+"</b>...","info");
+ const reader=new FileReader();
+ reader.onload=function(e){
+  try{
+   const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true,raw:false});
+   if(!wb.SheetNames.length)throw new Error("The Excel workbook has no sheets.");
+   const sheetName=wb.SheetNames.find(x=>key(x)==="master timetable")||wb.SheetNames[0];
+   const matrix=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:"",raw:false});
+   if(!matrix.length)throw new Error("The selected Excel sheet is empty.");
+   let headerIndex=-1;
+   for(let i=0;i<Math.min(matrix.length,30);i++){
+    const row=matrix[i].map(canonicalHeader);
+    if(row.includes("teachername")&&row.includes("day")){headerIndex=i;break}
+   }
+   if(headerIndex<0)throw new Error('Could not find the header row containing "Teacher Name" and "Day".');
+   const rawHeaders=matrix[headerIndex].map((x,i)=>normalize(x)||("Column "+(i+1)));
+   const objects=[];
+   for(let r=headerIndex+1;r<matrix.length;r++){
+    const vals=matrix[r];
+    if(!vals.some(v=>normalize(v)!==""))continue;
+    const o={};rawHeaders.forEach((h,i)=>o[h]=vals[i]??"");objects.push(o);
+   }
+   if(!objects.length)throw new Error("No timetable rows were found below the header row.");
+   const aliases={
+    "Teacher Name":["Teacher Name","Teacher","Staff Name","Staff"],"Day":["Day","Days"],
+    "1st IP":["1st IP","1st","1st Period","Period 1","P1"],"2nd IP":["2nd IP","2nd","2nd Period","Period 2","P2"],
+    "3rd IP":["3rd IP","3rd","3rd Period","Period 3","P3"],"4th IP":["4th IP","4th","4th Period","Period 4","P4"],
+    "Lunch Break":["Lunch Break","Lunch","Lunch Period"],
+    "5th IP":["5th IP","5th","5th Period","Period 5","P5"],"6th IP":["6th IP","6th","6th Period","Period 6","P6"],
+    "7th IP":["7th IP","7th","7th Period","Period 7","P7"],"8th IP":["8th IP","8th","8th Period","Period 8","P8"]
+   };
+   const map={};
+   Object.keys(aliases).forEach(std=>map[std]=findHeader(rawHeaders,aliases[std]));
+   if(!map["Teacher Name"]||!map["Day"])throw new Error("Teacher Name and Day columns could not be detected.");
+   importedRows=objects.map(row=>{const out={};EXCEL_COLUMNS.forEach(std=>{out[std]=map[std]?row[map[std]]:""});return out});
+   generated=null;
+   buildValidation();buildTimetable();updateKPIs();renderValidation();renderPreview();
+   const missing=EXCEL_COLUMNS.filter(x=>!["Teacher Name","Day","Lunch Break"].includes(x)&&!map[x]);
+   document.getElementById("detectedStructure").innerHTML=
+    `<b>Sheet:</b> ${escapeHTML(sheetName)}<br><b>Header row:</b> Excel row ${headerIndex+1}<br><b>Rows imported:</b> ${importedRows.length}<br><b>Detected columns:</b> ${rawHeaders.map(escapeHTML).join(", ")}`+
+    (missing.length?`<br><b>Not found:</b> ${missing.map(escapeHTML).join(", ")} (treated as FREE)`:"");
+   setMessage("uploadMessage",`<b>Excel uploaded successfully.</b> ${importedRows.length} teacher/day row(s) imported from <b>${escapeHTML(sheetName)}</b>.`,validation.errors.length?"warning":"success");
+  }catch(err){
+   console.error(err);
+   setMessage("uploadMessage","<b>Could not read this Excel file:</b><br>"+escapeHTML(err.message),"error");
+   importedRows=[];timetable={};validation=null;
+  }
+ };
+ reader.onerror=()=>setMessage("uploadMessage","Could not read the selected file.","error");
+ reader.readAsArrayBuffer(file);
+ event.target.value="";
+}
+
+function buildValidation(){
+ validation={errors:[],warnings:[],rows:importedRows.length,teachers:new Set(),days:new Set()};
+ if(!importedRows.length){validation.errors.push("The uploaded sheet is empty.");return}
+ const seen=new Map();
+ importedRows.forEach((row,index)=>{
+  const teacher=getTeacherName(row),day=getDay(row);
+  if(!teacher)validation.errors.push(`Row ${index+2}: Teacher Name is blank.`);else validation.teachers.add(teacher);
+  if(!day)validation.errors.push(`Row ${index+2}: Day is blank.`);
+  else{validation.days.add(day);if(!DAY_NAMES.map(key).includes(key(day)))validation.warnings.push(`Row ${index+2}: "${day}" is not a standard school day.`)}
+  if(teacher&&day){
+   const dup=key(day)+"|"+key(teacher);
+   if(seen.has(dup))validation.errors.push(`Duplicate teacher/day: ${teacher} / ${day} (rows ${seen.get(dup)} and ${index+2}).`);
+   else seen.set(dup,index+2);
+  }
+ });
+ if(!validation.errors.length)validation.warnings.unshift("No blocking errors found.");
+}
+function renderValidation(){
+ const sum=document.getElementById("validationSummary");
+ if(!validation){sum.innerHTML="Upload an Excel file to start validation.";return}
+ const ok=!validation.errors.length;
+ sum.className=ok?"success-box":"error-box";
+ sum.innerHTML=`<b>${ok?"Excel structure is usable.":"Excel requires attention."}</b> Rows: ${validation.rows} | Teachers: ${validation.teachers.size} | Days: ${validation.days.size} | Errors: ${validation.errors.length} | Warnings: ${validation.warnings.length}`;
+ let html="";
+ validation.errors.forEach(x=>html+=`<div class="check-item"><span>${escapeHTML(x)}</span><span class="badge err">ERROR</span></div>`);
+ validation.warnings.slice(0,100).forEach(x=>html+=`<div class="check-item"><span>${escapeHTML(x)}</span><span class="badge warn">WARNING</span></div>`);
+ document.getElementById("validationList").innerHTML=html||`<div class="check-item"><span>No validation issues.</span><span class="badge ok">OK</span></div>`;
+}
+function renderPreview(){
+ const box=document.getElementById("preview");
+ if(!importedRows.length){box.innerHTML="No timetable loaded.";return}
+ let html="<table><thead><tr>"+EXCEL_COLUMNS.map(h=>`<th>${escapeHTML(h)}</th>`).join("")+"</tr></thead><tbody>";
+ importedRows.slice(0,60).forEach(row=>{
+  html+="<tr>"+EXCEL_COLUMNS.map(h=>{const v=getCell(row,h);return `<td class="${isFree(v)?"free-cell":isNA(v)?"na-cell":""}">${escapeHTML(actualValue(v))}</td>`}).join("")+"</tr>";
+ });
+ html+="</tbody></table>";
+ if(importedRows.length>60)html+=`<p class="small muted">Showing first 60 rows of ${importedRows.length}.</p>`;
+ box.innerHTML=html;
+}
+function buildTimetable(){
+ timetable={};
+ importedRows.forEach(row=>{
+  const teacher=getTeacherName(row),day=getDay(row);
+  if(!teacher||!day)return;
+  if(!timetable[day])timetable[day]={};
+  const periods={};
+  PERIODS.forEach(p=>periods[p]=actualValue(getCell(row,p)));
+  periods["Lunch Break"]=actualValue(getCell(row,"Lunch Break")||"Lunch Break");
+  timetable[day][teacher]=periods;
+ });
+ updateDayOptions();
+}
+function updateDayOptions(){
+ const select=document.getElementById("daySelect"),current=select.value,days=Object.keys(timetable);
+ select.innerHTML='<option value="">-- Select Day --</option>'+days.map(d=>`<option value="${escapeHTML(d)}">${escapeHTML(d)}</option>`).join("");
+ if(days.includes(current))select.value=current;else if(days.length===1)select.value=days[0];
+ refreshAbsentLists();
+}
+function updateKPIs(){
+ let free=0,na=0;
+ Object.values(timetable).forEach(day=>Object.values(day).forEach(row=>PERIODS.forEach(p=>{if(isFree(row[p]))free++;if(isNA(row[p]))na++})));
+ document.getElementById("kpiRows").textContent=importedRows.length;
+ document.getElementById("kpiTeachers").textContent=new Set(importedRows.map(getTeacherName).filter(Boolean)).size;
+ document.getElementById("kpiDays").textContent=Object.keys(timetable).length;
+ document.getElementById("kpiFree").textContent=free;
+ document.getElementById("kpiNA").textContent=na;
+}
+
+/* ---------- date / day / absent teachers ---------- */
+function syncDayFromDate(){
+ const value=document.getElementById("dateInput").value;if(!value)return;
+ const d=new Date(value+"T00:00:00"),day=DAY_NAMES[d.getDay()-1]||"Sunday";
+ const select=document.getElementById("daySelect");
+ const option=[...select.options].find(o=>key(o.value)===key(day));
+ if(option){select.value=option.value;refreshAbsentLists();setMessage("dateDayMessage",`Date: <b>${escapeHTML(value)}</b> — Day: <b>${escapeHTML(option.value)}</b>.`,"success")}
+ else setMessage("dateDayMessage",`The selected date is <b>${escapeHTML(value)}</b> (${day}), but that day is not present in the uploaded timetable.`,"warning");
+}
+document.getElementById("daySelect").addEventListener("change",refreshAbsentLists);
+
+const GROUP_SEL={full:".full-teacher",first:".first-teacher",second:".second-teacher"};
+function getSelected(type){return[...document.querySelectorAll(GROUP_SEL[type])].filter(x=>x.checked).map(x=>x.value)}
+function refreshAbsentLists(){
+ const day=document.getElementById("daySelect").value;
+ const lists=[["fullDayList","full-teacher"],["firstHalfList","first-teacher"],["secondHalfList","second-teacher"]].map(([id,c])=>[document.getElementById(id),c]);
+ if(!day||!timetable[day]){lists.forEach(([el])=>el.innerHTML='<div class="muted" style="padding:15px">Select a valid day.</div>');return}
+ const teachers=Object.keys(timetable[day]).sort((a,b)=>a.localeCompare(b));
+ const old={full:getSelected("full"),first:getSelected("first"),second:getSelected("second")};
+ lists.forEach(([el,c])=>el.innerHTML=teachers.map(t=>`<label class="teacher-row"><input type="checkbox" class="${c}" value="${escapeHTML(t)}" onchange="handleAbsenceSelection(this)"><span>${escapeHTML(t)}</span></label>`).join(""));
+ Object.keys(old).forEach(g=>{const w=new Set(old[g].map(key));document.querySelectorAll(GROUP_SEL[g]).forEach(x=>x.checked=w.has(key(x.value)))});
+ handleAbsenceSelection();
+}
+function handleAbsenceSelection(changed){
+ // A teacher can belong to only one absence group: the group just ticked wins.
+ if(changed&&changed.checked){
+  document.querySelectorAll(".full-teacher,.first-teacher,.second-teacher").forEach(x=>{
+   if(x!==changed&&key(x.value)===key(changed.value))x.checked=false;
+  });
+ }
+ const s={full:getSelected("full"),first:getSelected("first"),second:getSelected("second")};
+ const f=a=>a.length?a.map(escapeHTML).join(", "):"None";
+ document.getElementById("absenceSummary").innerHTML=
+  `<b>Full Day (1st–8th):</b> ${f(s.full)}<br><b>First Half (1st–4th):</b> ${f(s.first)}<br><b>Second Half (5th–8th):</b> ${f(s.second)}`;
+}
+function getAbsenceConfig(){
+ const c={};
+ getSelected("full").forEach(t=>c[key(t)]={name:t,type:"Full Day",periods:[0,1,2,3,4,5,6,7]});
+ getSelected("first").forEach(t=>{if(!c[key(t)])c[key(t)]={name:t,type:"First Half Day",periods:[0,1,2,3]}});
+ getSelected("second").forEach(t=>{if(!c[key(t)])c[key(t)]={name:t,type:"Second Half Day",periods:[4,5,6,7]}});
+ return c;
+}
+
+/* ---------- live free-IP calculation ---------- */
+function totalFree(day,t){const row=timetable[day][t]||{};return PERIODS.filter(p=>isFree(row[p])).length}
+function dutiesOf(t){
+ const out=[];
+ if(!generated)return out;
+ Object.keys(generated.results).forEach(a=>PERIODS.forEach(p=>{
+  const r=generated.results[a][p];
+  if(r&&r.status==="assigned"&&key(r.substitute)===key(t))out.push({period:p,absent:a});
+ }));
+ return out;
+}
+function zeroFreeTeachers(){
+ const day=generated.day,absent=new Set(Object.keys(generated.absence)),z=[];
+ Object.keys(timetable[day]||{}).forEach(t=>{
+  if(absent.has(key(t)))return;
+  const tf=totalFree(day,t);
+  if(tf>0&&tf-dutiesOf(t).length<=0)z.push(t);
+ });
+ return z;
+}
+function freeStatusMsg(){
+ const z=zeroFreeTeachers();
+ return z.length?`⚠ ${z.length} teacher(s) have no free IP left: ${z.map(escapeHTML).join(", ")}.`:"✔ Every teacher still has at least one free IP.";
+}
+function signature(){
+ return JSON.stringify([document.getElementById("daySelect").value,Object.values(getAbsenceConfig()).map(a=>key(a.name)+":"+a.type).sort()]);
+}
+
+/* ---------- automatic allocation ---------- */
+// Goal 1: every teacher keeps at least one free IP (if at all possible).
+// Goal 2: duties are spread as evenly as possible.
+// If goal 1 is impossible, the remaining duties are given with the cap relaxed.
+function optimizeAssignments(){
+ const day=generated.day,absent=new Set(Object.keys(generated.absence));
+ const slots=[];
+ Object.keys(generated.results).forEach(a=>PERIODS.forEach((p,pi)=>{
+  const r=generated.results[a][p];
+  if(r&&(r.status==="assigned"||r.status==="unassigned"))slots.push({p,pi,r,teacher:null,elig:[]});
+ }));
+ const teachers=Object.keys(timetable[day]||{}).filter(t=>!absent.has(key(t)));
+ const free={},held={},cap={};
+ teachers.forEach(t=>{free[t]=totalFree(day,t);held[t]=[]});
+ slots.forEach(s=>{s.elig=teachers.filter(t=>isFree(timetable[day][t][s.p]))});
+ const assign=(s,t)=>{if(s.teacher)held[s.teacher]=held[s.teacher].filter(x=>x!==s);s.teacher=t;held[t].push(s)};
+ const order=s=>s.elig.slice().sort((x,y)=>held[x].length-held[y].length||free[y]-free[x]||x.localeCompare(y));
+ function tryAssign(s,vis){
+  for(const t of order(s)){
+   if(vis.has(t))continue;
+   vis.add(t);
+   const same=held[t].find(x=>x!==s&&x.pi===s.pi);
+   if(same){if(tryAssign(same,vis)){assign(s,t);return true}continue}
+   if(held[t].length<cap[t]){assign(s,t);return true}
+   for(const s2 of held[t].slice()){if(s2!==s&&tryAssign(s2,vis)){assign(s,t);return true}}
+  }
+  return false;
+ }
+ const maxFree=Math.max(1,...teachers.map(t=>free[t]));
+ const sorted=slots.slice().sort((a,b)=>a.elig.length-b.elig.length||a.pi-b.pi);
+ [1,0].forEach(reserve=>{
+  for(let L=1;L<=maxFree;L++){
+   teachers.forEach(t=>{cap[t]=Math.max(held[t].length,Math.min(L,Math.max(0,free[t]-reserve)))});
+   sorted.filter(s=>!s.teacher).forEach(s=>tryAssign(s,new Set()));
+  }
+ });
+ slots.forEach(s=>{
+  if(s.teacher){s.r.status="assigned";s.r.substitute=s.teacher}
+  else{s.r.status="unassigned";s.r.substitute="UNASSIGNED"}
+ });
+ rebuildDutyCount();
+}
+
+// Used by the AUTO choice in a single dropdown.
+function findSubstitute(day,pi,absentSet,usedThisPeriod,dutyCount){
+ const data=timetable[day]||{},c=[];
+ Object.keys(data).forEach(t=>{
+  if(absentSet.has(key(t))||usedThisPeriod.has(key(t)))return;
+  const v=data[t][PERIODS[pi]];
+  if(!isFree(v)||isNA(v))return;
+  const duties=dutyCount[key(t)]||0;
+  c.push({t,after:totalFree(day,t)-duties-1,duties});
+ });
+ c.sort((a,b)=>(a.after<1)-(b.after<1)||a.duties-b.duties||b.after-a.after||a.t.localeCompare(b.t));
+ return c.length?c[0].t:null;
+}
+
+function generateDutyListAutomatically(force){
+ try{
+  const toggle=document.getElementById("autoGenerateToggle");
+  if(!force&&toggle&&!toggle.checked){
+   renderDutyListChart();
+   setMessage("generationMessage","Automatic generation is off. Click <b>Generate Duty List Automatically</b>.","warning");
+   return false;
+  }
+  if(!force&&generated&&generated.signature===signature()){
+   const d=document.getElementById("dateInput").value;if(d)generated.date=d;
+   renderDutyListChart();refreshPrintChart();return true;
+  }
+  return generateArrangement();
+ }catch(err){
+  console.error(err);
+  setMessage("generationMessage","<b>Duty list could not be generated.</b><br>"+escapeHTML(err.message||String(err)),"error");
+  return false;
+ }
+}
+
+function generateArrangement(){
+ if(!Object.keys(timetable).length){setMessage("generationMessage","<b>Please upload the timetable Excel first.</b>","error");openTab("tab1");return false}
+ if(validation&&validation.errors.some(x=>/Teacher Name is blank|Day is blank|Duplicate teacher\/day/i.test(x))){
+  setMessage("generationMessage","<b>Please fix the Excel errors first (see Tab 2).</b>","error");openTab("tab2");return false;
+ }
+ const daySelect=document.getElementById("daySelect");
+ let day=daySelect.value;
+ const date=document.getElementById("dateInput").value||"";
+ if(!day&&Object.keys(timetable).length===1){day=Object.keys(timetable)[0];daySelect.value=day}
+ if(!day||!timetable[day]){setMessage("generationMessage","<b>Please select the Day first.</b> Go to <b>4. Date & Day</b>.","warning");openTab("tab4");return false}
+ const absence=getAbsenceConfig();
+ if(!Object.keys(absence).length){setMessage("generationMessage","<b>Please select at least one absent teacher.</b> Go to <b>3. Absent Teachers</b>.","warning");openTab("tab3");return false}
+
+ const results={};
+ let required=0,noDuty=0;
+ Object.values(absence).forEach(a=>{
+  results[a.name]={};
+  PERIODS.forEach(p=>{results[a.name][p]={status:"present",original:timetable[day]?.[a.name]?.[p]??"FREE",substitute:""}});
+  a.periods.forEach(pi=>{
+   const p=PERIODS[pi],original=timetable[day]?.[a.name]?.[p]??"FREE";
+   if(isFree(original)){results[a.name][p]={original,substitute:"NO DUTY REQUIRED",status:"no-duty"};noDuty++}
+   else if(isNA(original)){results[a.name][p]={original,substitute:"NOT AVAILABLE",status:"na"};noDuty++}
+   else if(["lunch","lunch break"].includes(key(original)))results[a.name][p]={original,substitute:"LUNCH",status:"lunch"};
+   else{results[a.name][p]={original,substitute:"UNASSIGNED",status:"unassigned"};required++}
+  });
+ });
+ generated={day,date,absence,results,dutyCount:{},required,assigned:0,unassigned:0,noDuty,signature:signature()};
+ optimizeAssignments();
+ renderDutyListChart();refreshPrintChart();
+ setMessage("generationMessage",`<b>Duty list generated automatically.</b> ${generated.required} required, ${generated.assigned} assigned, ${generated.unassigned} unassigned.<br>${freeStatusMsg()}`,generated.unassigned?"warning":"success");
+ return true;
+}
+
+/* ---------- chart with live dropdowns ---------- */
+function chartDutyOptions(absName,pi){
+ const period=PERIODS[pi],r=generated.results[absName][period];
+ const current=(r.status==="assigned"&&r.substitute&&r.substitute!=="UNASSIGNED"&&!r.custom)?r.substitute:"";
+ const absent=new Set(Object.keys(generated.absence));
+ const cands=[];
+ Object.keys(timetable[generated.day]||{}).forEach(t=>{
+  if(absent.has(key(t)))return;
+  const row=timetable[generated.day][t]||{};
+  if(!isFree(row[period]))return;
+  const d=dutiesOf(t),isCur=key(t)===key(current);
+  if(!isCur&&d.some(x=>x.period===period))return;
+  const leftNow=totalFree(generated.day,t)-d.length;
+  const leftAfter=isCur?leftNow:leftNow-1;
+  cands.push({t,isCur,leftNow,leftAfter,duties:isCur?d.length:d.length+1});
+ });
+ cands.sort((a,b)=>(a.leftAfter<1)-(b.leftAfter<1)||a.duties-b.duties||b.leftAfter-a.leftAfter||a.t.localeCompare(b.t));
+ const custom=!!r.custom&&r.status==="assigned";
+ let opts=custom?`<option value="__KEEP__" selected>✍ Typed: ${escapeHTML(r.substitute)}</option>`:(r.status==="unassigned"?'<option value="__NONE__" selected>— Unassigned: choose or type —</option>':'');
+ opts+='<option value="__AUTO__">AUTO — best teacher (keeps free IPs)</option>';
+ cands.forEach(c=>{
+  const label=c.isCur
+   ?`✔ ${c.t} — ${c.leftAfter} free IP left | ${c.duties} duties (selected)`
+   :`${c.leftAfter<1?"⚠ ":""}${c.t} — ${c.leftNow} free now → ${c.leftAfter} after duty | ${c.duties} duties`;
+  opts+=`<option value="${escapeHTML(c.t)}"${c.isCur?" selected":""}>${escapeHTML(label)}</option>`;
+ });
+ if(!cands.length)opts+='<option value="__NONE__">UNASSIGNED — no eligible teacher</option>';
+ opts+='<option value="__CUSTOM__">✍ Type another name…</option>';
+ const inp=(custom||r.status==="unassigned")?`<input type="text" class="custom-name" placeholder="Or type another person's name" value="${custom?escapeHTML(r.substitute):""}" data-abs="${escapeHTML(absName)}" data-pi="${pi}" onchange="customDutyChanged(this)">`:"";
+ return `<select data-abs="${escapeHTML(absName)}" data-pi="${pi}" onchange="dutyDropdownChanged(this)">${opts}</select>${inp}<div class="live-count">${cands.length} eligible now</div>`;
+}
+function dutyDropdownChanged(sel){
+ if(!generated)return;
+ dutyChoiceChanged(sel.dataset.abs,Number(sel.dataset.pi),sel.value);
+ if(sel.value==="__CUSTOM__"){
+  setMessage("generationMessage","<b>Type the other person's name</b> in the box under the dropdown, then press Enter or click outside.","info");
+  const inp=[...document.querySelectorAll(".custom-name")].find(i=>i.dataset.abs===sel.dataset.abs&&i.dataset.pi===sel.dataset.pi);
+  if(inp)inp.focus();
+  return;
+ }
+ setMessage("generationMessage","<b>Duty updated.</b> "+freeStatusMsg(),zeroFreeTeachers().length?"warning":"success");
+}
+function customDutyChanged(inp){
+ if(!generated)return;
+ const abs=inp.dataset.abs,pi=Number(inp.dataset.pi),period=PERIODS[pi],r=generated.results[abs][period],name=normalize(inp.value);
+ if(name){
+  if(generated.absence[key(name)]){alert("That person is marked absent, so they cannot take a duty.");renderDutyListChart();return}
+  const clash=Object.keys(generated.results).some(a=>a!==abs&&generated.results[a][period].status==="assigned"&&key(generated.results[a][period].substitute)===key(name));
+  if(clash){alert("This person already has a duty in "+period+".");renderDutyListChart();return}
+  r.status="assigned";r.substitute=name;r.custom=true;
+ }else{r.status="unassigned";r.substitute="UNASSIGNED";delete r.custom}
+ rebuildDutyCount();renderDutyListChart();refreshPrintChart();
+ setMessage("generationMessage","<b>Duty updated.</b> "+freeStatusMsg(),zeroFreeTeachers().length?"warning":"success");
+}
+function ensurePeriodUnique(absName,pi,teacher){
+ const k=key(teacher);
+ if(Object.keys(generated.absence).some(a=>a===k))return false;
+ const row=timetable[generated.day]?.[teacher];
+ if(!row||!isFree(row[PERIODS[pi]]))return false;
+ for(const a of Object.keys(generated.results)){
+  if(a===absName)continue;
+  const x=generated.results[a][PERIODS[pi]];
+  if(x&&x.status==="assigned"&&key(x.substitute)===k)return false;
+ }
+ return true;
+}
+function dutyChoiceChanged(absName,pi,value){
+ const period=PERIODS[pi],r=generated.results[absName][period];
+ if(value==="__KEEP__")return;
+ if(value==="__CUSTOM__"){r.status="unassigned";r.substitute="UNASSIGNED";delete r.custom}
+ else if(value==="__AUTO__"){
+  delete r.custom;r.status="unassigned";r.substitute="UNASSIGNED";rebuildDutyCount();
+  const used=new Set();
+  Object.keys(generated.results).forEach(a=>{
+   const x=generated.results[a][period];
+   if(x&&x.status==="assigned"&&a!==absName)used.add(key(x.substitute));
+  });
+  const sub=findSubstitute(generated.day,pi,new Set(Object.keys(generated.absence)),used,generated.dutyCount);
+  if(sub){r.status="assigned";r.substitute=sub}
+ }else if(value==="__NONE__"){
+  delete r.custom;r.status="unassigned";r.substitute="UNASSIGNED";
+ }else{
+  if(!ensurePeriodUnique(absName,pi,value)){
+   alert("That teacher is not eligible for this IP. They may be teaching, unavailable, absent, or already on duty in this IP.");
+   renderDutyListChart();return;
+  }
+  r.status="assigned";r.substitute=value;delete r.custom;
+ }
+ rebuildDutyCount();
+ renderDutyListChart();refreshPrintChart();
+}
+function rebuildDutyCount(){
+ generated.dutyCount={};generated.assigned=0;generated.unassigned=0;
+ Object.values(generated.results).forEach(byP=>Object.values(byP).forEach(r=>{
+  if(r.status==="assigned"&&r.substitute){generated.dutyCount[key(r.substitute)]=(generated.dutyCount[key(r.substitute)]||0)+1;generated.assigned++}
+  if(r.status==="unassigned")generated.unassigned++;
+ }));
+}
+
+const IP_TIMINGS={"1st IP":"08:20 AM – 09:00 AM","2nd IP":"09:00 AM – 09:40 AM","3rd IP":"09:40 AM – 10:20 AM","4th IP":"10:20 AM – 11:00 AM","5th IP":"11:20 AM – 12:00 Noon","6th IP":"12:00 Noon – 12:40 PM","7th IP":"12:40 PM – 01:20 PM","8th IP":"01:20 PM – 02:00 PM"};
+const IP_NOTES={"1st IP":"(Attendance + Diary)"};
+function buildChartHTML(editable){
+ const abs=Object.values(generated.absence),day=generated.day;
+  let h=`<div class="generated-duty-paper"><div class="paper-title">SUBSTITUTION DUTY</div>`;
+ h+=`<div class="paper-date">${escapeHTML(day)}${generated.date?", "+escapeHTML(formatDate(generated.date)):""}</div>`;
+ h+=`<table class="duty-grid" style="min-width:${100+abs.length*150}px"><thead><tr><th class="ip-col">IP</th>`;
+ abs.forEach(a=>h+=`<th class="abs-col">${escapeHTML(a.name)}<span class="abs-type">${escapeHTML(a.type)}</span></th>`);
+ h+=`</tr></thead><tbody>`;
+ PERIODS.forEach((p,pi)=>{
+  h+=`<tr><th class="ip-col">${escapeHTML(p)}${IP_NOTES[p]?`<span class="ip-note">${IP_NOTES[p]}</span>`:""}${IP_TIMINGS[p]?`<span class="ip-time">${IP_TIMINGS[p]}</span>`:""}</th>`;
+  abs.forEach(a=>{
+   const r=generated.results[a.name][p]||{};
+   const orig=normalize(r.original);
+   const classHtml=escapeHTML(orig||"FREE");
+   let sub="",cls="";
+   if(r.status==="assigned"||r.status==="unassigned"){
+    const text=r.status==="assigned"?escapeHTML(r.substitute):"UNASSIGNED";
+    sub=editable?`<div class="screen-only">${chartDutyOptions(a.name,pi)}</div><div class="print-only">${text}</div>`:text;
+    cls=r.status==="unassigned"?"unassigned":"got-sub";
+   }else if(r.status==="no-duty"){sub="FREE";cls="free"}
+   else if(r.status==="na"){sub="NA";cls="free"}
+   else if(r.status==="lunch"){sub="LUNCH";cls="off"}
+   else{sub="Not absent";cls="off"}
+   h+=`<td class="duty-cell ${cls}"><div class="cls-line">${classHtml}</div><div class="sub-line">${sub}</div></td>`;
+  });
+  h+="</tr>";
+ });
+ h+="</tbody></table>";
+
+
+ const absent=new Set(Object.keys(generated.absence));
+ const teachers=Object.keys(timetable[day]||{}).filter(t=>!absent.has(key(t))).sort((a,b)=>a.localeCompare(b));
+ h+=`<div class="free-summary-title">Teacher's Name</div><div class="live-banner">${freeStatusMsg()}</div><div class="free-summary-grid">`;
+ const half=Math.ceil(teachers.length/2);
+ [teachers.slice(0,half),teachers.slice(half)].forEach(col=>{
+  h+="<div>";
+  col.forEach(t=>{
+   const row=timetable[day][t]||{};
+   const free=PERIODS.filter(p=>isFree(row[p]));
+   const duties=dutiesOf(t),dset=new Set(duties.map(d=>d.period));
+   const left=free.filter(p=>!dset.has(p));
+   const cls=(duties.length?"duty ":"")+(free.length===0?"nofree":left.length===0?"zero":"ok");
+   const dtxt=duties.length?duties.map(d=>d.period+" for "+d.absent).join("; "):"—";
+   h+=`<div class="free-summary-row ${cls}"><b>${escapeHTML(t)}</b> | Free IPs left = <b>${left.length}</b> of ${free.length} | Free periods left: ${escapeHTML(left.length?left.join(", "):"None")} | Duties = ${duties.length} (${escapeHTML(dtxt)})</div>`;
+  });
+  h+="</div>";
+ });
+ h+=`</div><div class="teacher-note"><b>Dear Teachers,</b><br>Please note that due to the absence of several teachers today, some teachers may have <b>zero free periods</b> in their timetable.<br>You are requested to kindly cooperate with the school administration and support the arrangement of substitute periods wherever required. Your flexibility and cooperation will help ensure that academic work continues smoothly.</div></div>`;
+  return h;
+}
+
+function renderDutyListChart(){
+ const box=document.getElementById("dutyListChart");
+ if(!generated){box.innerHTML='<div class="muted" style="padding:12px">Your generated duty chart will appear here.</div>';return}
+ const oldPaper=box.querySelector(".generated-duty-paper");
+ const sl=oldPaper?oldPaper.scrollLeft:0,st=box.scrollTop,sy=window.scrollY;
+ box.innerHTML=buildChartHTML(true);
+ const np=box.querySelector(".generated-duty-paper");
+ if(np)np.scrollLeft=sl;
+ box.scrollTop=st;window.scrollTo(window.scrollX,sy);
+}
+
+function refreshPrintChart(){
+ const box=document.getElementById("printChartContent");
+ if(!generated){box.innerHTML='<div class="muted">Generate a duty chart first.</div>';return}
+ box.innerHTML=buildChartHTML(false);
+}
+
+/* ---------- save / load / history ---------- */
+function readHistory(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]")}catch(e){return[]}}
+function savePlan(){
+ if(!generated){alert("Generate the duty chart first.");return}
+ rebuildDutyCount();
+ const h=readHistory();
+ h.unshift({savedAt:new Date().toLocaleString("en-IN"),day:generated.day,date:generated.date,absence:generated.absence,results:generated.results,dutyCount:generated.dutyCount,required:generated.required,assigned:generated.assigned,unassigned:generated.unassigned,noDuty:generated.noDuty});
+ try{localStorage.setItem(STORAGE_KEY,JSON.stringify(h.slice(0,5)))}catch(e){alert("Could not save in this browser.");return}
+ renderHistory();
+ setMessage("generationMessage","<b>Complete duty chart saved.</b> The latest 5 charts are kept.","success");
+}
+function loadPlan(i){
+ const x=readHistory()[i];
+ if(!x){alert("Saved chart not found.");return}
+ if(!timetable[x.day]){alert("Please upload the same timetable Excel first so this saved chart can be loaded.");return}
+ document.getElementById("daySelect").value=x.day;
+ document.getElementById("dateInput").value=x.date||"";
+ refreshAbsentLists();
+ document.querySelectorAll(".full-teacher,.first-teacher,.second-teacher").forEach(cb=>cb.checked=false);
+ Object.values(x.absence||{}).forEach(a=>{
+  const cls=a.type==="Full Day"?".full-teacher":a.type==="First Half Day"?".first-teacher":".second-teacher";
+  document.querySelectorAll(cls).forEach(cb=>{if(key(cb.value)===key(a.name))cb.checked=true});
+ });
+ handleAbsenceSelection();
+ generated={day:x.day,date:x.date||"",absence:x.absence||{},results:x.results||{},dutyCount:{},required:x.required||0,assigned:0,unassigned:0,noDuty:x.noDuty||0,signature:signature()};
+ rebuildDutyCount();
+ openTab("tab5");
+ renderDutyListChart();refreshPrintChart();
+ setMessage("generationMessage","<b>Saved chart loaded.</b> "+freeStatusMsg(),"success");
+}
+function deletePlan(i){const h=readHistory();h.splice(i,1);localStorage.setItem(STORAGE_KEY,JSON.stringify(h));renderHistory()}
+function renderHistory(){
+ const box=document.getElementById("history"),h=readHistory();
+ if(!h.length){box.innerHTML='<div class="muted">No saved duty charts.</div>';return}
+ box.innerHTML=h.map((x,i)=>`<div class="check-item"><div><b>${i+1}. ${escapeHTML(x.day)} — ${escapeHTML(x.date||"")}</b><br><span class="small">Absent: ${Object.values(x.absence||{}).map(a=>escapeHTML(a.name)+" ("+escapeHTML(a.type)+")").join(", ")}<br>Required: ${x.required} | Assigned: ${x.assigned} | Unassigned: ${x.unassigned} | No Duty: ${x.noDuty}<br>Saved: ${escapeHTML(x.savedAt)}</span></div><div class="history-actions"><button class="btn primary" onclick="loadPlan(${i})">Load / Correct</button><button class="btn danger" onclick="deletePlan(${i})">Delete</button></div></div>`).join("");
+}
+function clearArrangement(){
+ generated=null;
+ renderDutyListChart();refreshPrintChart();
+ setMessage("generationMessage","Duty list cleared. Generate it again when ready.","warning");
+}
+
+/* ---------- init ---------- */
+(function(){
+ const t=new Date();
+ document.getElementById("dateInput").value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
+ renderHistory();
+ if(typeof XLSX==="undefined")setMessage("uploadMessage","<b>Excel engine not found.</b> Check your internet connection and reload the page.","warning");
+})();
+</script>
+</body>
+</html>
