@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HIS - Daily Coordinator Monitoring Report</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<style>
+:root{--navy:#0d2f70;--blue:#1a56b8;--green:#16883d;--red:#d71920;--amber:#ef7900;--line:#dbe4f0}
+*{box-sizing:border-box}
+body{margin:0;background:#e9eff7;font-family:Arial,Helvetica,sans-serif;color:#18233a}
+.bar{background:var(--navy);color:#fff;padding:14px 22px;font-weight:700;font-size:18px}
+.bar small{display:block;font-weight:400;opacity:.8;font-size:12px;margin-top:2px}
+.ctrl{max-width:900px;margin:14px auto;background:#fff;border-radius:10px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;box-shadow:0 2px 8px #0001}
+.ctrl>div{flex:1;min-width:200px}
+label{font-size:12px;font-weight:700;display:block;margin-bottom:4px}
+input,select{width:100%;padding:9px;border:1px solid #b7c5d8;border-radius:7px;font:inherit;background:#fff}
+button{border:0;border-radius:7px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--green);color:#fff}
+button:disabled{background:#a9b4c3;cursor:not-allowed}
+.link{background:none;color:var(--blue);padding:4px;text-decoration:underline;font-weight:400;font-size:12px}
+#status{max-width:900px;margin:0 auto 10px;font-size:13px;color:#475569;padding:0 6px}
+#pages{transform-origin:top center}
+/* ---------- A4 portrait page ---------- */
+.page{width:794px;height:1123px;margin:0 auto 16px;background:#fff;box-shadow:0 3px 14px #0002;display:flex;flex-direction:column;overflow:hidden}
+.hd{background:linear-gradient(120deg,#0b2860,#1a56b8);color:#fff;padding:16px 30px;position:relative;overflow:hidden}
+.hd:before,.hd:after{content:"";position:absolute;border-radius:50%;background:#ffffff14}
+.hd:before{width:200px;height:200px;right:-50px;top:-90px}.hd:after{width:110px;height:110px;right:150px;bottom:-70px}
+.hd small{letter-spacing:2px;font-size:10px;opacity:.85}.hd h1{margin:3px 0 8px;font-size:21px}
+.pill{display:inline-block;background:#fff;color:var(--navy);border-radius:20px;padding:3px 13px;font-weight:700;font-size:12px;margin-right:8px}
+.pill.o{background:#ffffff26;color:#fff}
+.body{flex:1;min-height:0;overflow:hidden;padding:12px 30px 0}
+.fit{transform-origin:top left;width:734px}
+.ft{padding:7px 30px;font-size:9px;color:#6b778c;display:flex;justify-content:space-between;border-top:1px solid var(--line)}
+.sec{font-size:13px;font-weight:800;color:var(--navy);margin:0 0 7px;padding-left:9px;border-left:5px solid var(--amber)}
+.blk{margin-bottom:10px}
+.two{display:flex;gap:14px;align-items:stretch}
+.glance{width:236px;flex:none;display:flex;flex-direction:column;align-items:center;gap:8px;background:#f4f8fe;border:1px solid var(--line);border-radius:12px;padding:10px}
+.tiles{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 2px;text-align:center}
+.tile b{display:block;font-size:20px;color:var(--navy)}.tile span{font-size:9px;color:#55627a;line-height:1.2;display:block}
+.rate{display:inline-block;color:#fff;border-radius:12px;padding:3px 12px;font-weight:800;font-size:12px}
+.bars{flex:1}
+.row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:11px}
+.row .n{width:108px;font-weight:700}.row .t{flex:1;height:13px;background:#e6ecf5;border-radius:7px;overflow:hidden}
+.row .t i{display:block;height:100%;border-radius:7px}.row .p{width:80px;text-align:right;font-weight:800}.row .p small{font-weight:400;color:#667}
+.cc{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;border:1px solid var(--line);border-left-width:5px;border-radius:9px;padding:7px 10px;margin-bottom:6px;background:#fff}
+.who{width:190px;display:flex;gap:8px;align-items:center}.who b{font-size:12.5px;display:block}.who span{display:block;font-size:9.5px;color:#55627a;margin-top:1px}
+.who .sc{font-weight:800}
+.chips{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.chip{border-radius:6px;padding:3px 6px;display:flex;gap:5px;align-items:center;line-height:1.2}
+.chip i{font-style:normal;font-weight:900;width:16px;height:16px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;flex:none}
+.chip b{display:block;font-size:9px}.chip em{font-style:normal;font-size:8px;opacity:.85}
+.s-done{background:#e7f6ec}.s-done i{background:var(--green)}
+.s-notdone{background:#fdeaea}.s-notdone i{background:var(--red)}
+.s-na{background:#eef0f3}.s-na i{background:#8a94a3}
+.s-partial,.s-pending{background:#fff3e2}.s-partial i,.s-pending i{background:var(--amber)}
+.notes{flex-basis:100%;font-size:9.5px;line-height:1.45;color:#33415c}
+.tag{display:inline-block;border-radius:4px;padding:0 5px;color:#fff;font-weight:700;font-size:8.5px;margin-right:4px}
+.act{border:1px solid #f1b0b0;background:#fff8f8;border-radius:9px;padding:4px 12px}
+.act div{font-size:10px;line-height:1.4;padding:3px 0;border-bottom:1px dashed #f1c4c4}.act div:last-child{border:0}
+.obs{border:1px solid #9bb8e3;border-left:6px solid var(--navy);background:#f3f7fd;border-radius:9px;padding:8px 14px;font-size:10.5px;line-height:1.5}
+.obs p{margin:0 0 4px}.obs p:last-child{margin:0}
+.ok{color:var(--green);font-weight:700;font-size:11px}
+</style></head><body>
+<div class="bar">Daily Coordinator Monitoring Report<small>Upload the Excel sheet, choose a date, download the PDF.</small></div>
+<div class="ctrl">
+  <div><label>1. Upload Excel / CSV</label><input id="file" type="file" accept=".xlsx,.xls,.csv"><button class="link" onclick="downloadTemplate()">Download Excel template</button></div>
+  <div><label>2. Report date</label><select id="dateSel" disabled><option>Upload a file first</option></select></div>
+  <button id="pdfBtn" onclick="generatePDF()" disabled>3. Download PDF</button>
+</div>
+<div id="status">Ready.</div>
+<div id="pages"></div>
+
+<script>
+const SCHOOL="The Himalayan International School, Vikasnagar, Dehradun";
+const METRICS=[["attendance","Attendance (ERP)"],["spiral","Spiral Check"],["notebook","Notebook"],["classTest","Class Test"],["lesson","Lesson Plan"],["homework","Homework"],["activity","Class Activity"],["notice","Notice"]];
+/* column finder: regex on cleaned heading */
+const COLS=[["timestamp",/^timestamp/],["date",/^date$/],["name",/select_name|^name$/],["classes",/^coordinator_of_class/],
+["attendance",/^attendance_updated/],["spiral",/^attendance_checked|spiral/],["notebookNote",/^if_notebook/],["notebook",/^notebook_checking/],
+["classTestNote",/^if_class_test/],["classTest",/^class_test_verified/],["lessonNote",/^if_lesson/],["lesson",/^lesson_plan_verified/],
+["homework",/^homework/],["activity",/^class_activity/],["notice",/^notice/],["pendingReason",/^if_any_task/],["pending",/^any_pending/]];
+let ALL=[],LABEL="",SMALL=false;
+
+/* ---------- helpers ---------- */
+const ck=v=>String(v??"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
+const strip=v=>String(v??"").replace(/[^\p{L}\p{N}\/ ]/gu," ").replace(/\s+/g," ").trim().toLowerCase();
+const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function status(v){const s=strip(v);
+  if(!s)return"notdone";
+  if(/not applicable|^n ?\/? ?a\b/.test(s))return"na";
+  if(/not done|^no$|not working|not yet|incomplete|not updated|not checked/.test(s))return"notdone";
+  if(/partial/.test(s))return"partial";
+  if(/pending/.test(s))return"pending";
+  if(/done|^yes|complete|updated|verified|checked/.test(s))return"done";
+  return"notdone";}
+const isNo=v=>{const s=strip(v);return !s||/^(no|none|nil|na|n ?\/ ?a|not applicable|no issues?|no pending( tasks?)?|not pending|nothing)$/.test(s)};
+const isStatusWord=v=>/^(|not done|done|na|n\/a|not applicable|pending|partially done|nil|no|none)$/.test(strip(v));
+const note=v=>isStatusWord(v)?"":String(v).trim();
+function ymd(d,shift){const x=shift?new Date(d.getTime()+43200000):d;return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
+function parseDate(v,shift){
+  if(v instanceof Date&&!isNaN(v))return ymd(v,shift);
+  const s=String(v??"").trim();let m;
+  if(m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/))return m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0");
+  if(m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/))return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
+  return "";}
+const pretty=k=>new Date(k+"T00:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"});
+const col=p=>p>=80?"#16883d":p>=50?"#ef7900":"#d71920";
+const rating=p=>p>=85?"Excellent":p>=70?"Good":p>=50?"Needs Improvement":"Critical";
+function pendingText(r){
+  const parts=[r.pending,r.pendingReason].filter(x=>!isNo(x)).map(x=>String(x).trim());
+  const txt=[...new Set(parts.filter(x=>!/^(yes|y)$/i.test(x)))].join(" – ");
+  return parts.length?(txt||"Yes"):"";}
+function issueText(r){return [...new Set(r.issues.filter(x=>!isNo(x)).map(x=>String(x).trim()))].join("; ")}
+function score(r){let a=0,d=0;METRICS.forEach(([k])=>{const s=status(r[k]);if(s!=="na"){a++;if(s==="done")d++}});return{a,d,pct:a?d/a*100:0}}
+function stat(rows,k){let a=0,d=0;rows.forEach(r=>{const s=status(r[k]);if(s!=="na"){a++;if(s==="done")d++}});return{a,d,pct:a?d/a*100:0}}
+
+/* ---------- Excel reading ---------- */
+document.getElementById("file").addEventListener("change",loadFile);
+function loadFile(e){
+  const f=e.target.files[0];if(!f)return;
+  setStatus("Reading file...");
+  const rd=new FileReader();
+  rd.onload=ev=>{try{
+    const wb=XLSX.read(ev.target.result,{type:"array",cellDates:true});
+    const aoa=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:"",raw:true});
+    ALL=parse(aoa);
+    if(!ALL.length)throw new Error("No coordinator rows found. Check the column headings (use the template).");
+    const dates=[...new Set(ALL.map(r=>r.dkey))].sort().reverse();
+    const sel=document.getElementById("dateSel");
+    const names=new Set(ALL.map(r=>r.name.toLowerCase())).size;
+    sel.innerHTML=`<option value="all">All uploaded coordinators (${names}) – latest entry of each</option>`+dates.map(d=>`<option value="${d}">${pretty(d)}  (${ALL.filter(r=>r.dkey===d).length} coordinators)</option>`).join("");
+    sel.disabled=false;document.getElementById("pdfBtn").disabled=false;
+    sel.onchange=render;render();
+  }catch(err){console.error(err);setStatus("Error: "+err.message);alert(err.message)}};
+  rd.readAsArrayBuffer(f);}
+function parse(aoa){
+  const hi=aoa.findIndex(r=>r.some(c=>/select_name/.test(ck(c))));
+  if(hi<0)throw new Error('Could not find the "Select Name" column.');
+  const head=aoa[hi].map(ck),map={},issueCols=[];
+  head.forEach((h,i)=>{
+    if(/^any_issue/.test(h))issueCols.push(i);
+    else for(const [f,re] of COLS){if(!(f in map)&&re.test(h)){map[f]=i;break}}});
+  const out=[];
+  aoa.slice(hi+1).forEach(row=>{
+    const o={};for(const f in map)o[f]=row[map[f]]??"";
+    o.issues=issueCols.map(i=>row[i]??"");
+    o.name=String(o.name||"").trim();
+    if(!o.name)return;                      /* skips blank rows */
+    o.dkey=parseDate(o.date,true)||parseDate(o.timestamp,false);
+    if(!o.dkey)return;
+    o.ts=o.timestamp instanceof Date?o.timestamp.getTime():0;
+    out.push(o)});
+  /* one entry per coordinator per day: keep the latest submission */
+  const uniq={};out.forEach(o=>{const k=o.dkey+"|"+o.name.toLowerCase();if(!uniq[k]||o.ts>=uniq[k].ts)uniq[k]=o});
+  return Object.values(uniq);}
+function setStatus(t){document.getElementById("status").textContent=t}
+
+/* ---------- Report building ---------- */
+function ring(p,size,sw,fs){const r=(size-sw)/2,c=2*Math.PI*r,m=size/2;
+  return `<svg width="${size}" height="${size}"><circle cx="${m}" cy="${m}" r="${r}" fill="none" stroke="#e1e8f3" stroke-width="${sw}"/><circle cx="${m}" cy="${m}" r="${r}" fill="none" stroke="${col(p)}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c*p/100} ${c}" transform="rotate(-90 ${m} ${m})"/><text x="${m}" y="${m}" dy=".35em" text-anchor="middle" font-size="${fs}" font-weight="800" fill="${col(p)}">${Math.round(p)}%</text></svg>`}
+const el=h=>{const d=document.createElement("div");d.className="blk";d.innerHTML=h;return d};
+const sec=t=>`<div class="sec">${t}</div>`;
+const ICON={done:"✓",notdone:"✕",na:"–",partial:"½",pending:"…"},LBL={done:"Done",notdone:"Not Done",na:"N/A",partial:"Partial",pending:"Pending"};
+
+function render(){
+  const dk=document.getElementById("dateSel").value;
+  let rows;
+  if(dk==="all"){const m={};[...ALL].sort((a,b)=>a.dkey.localeCompare(b.dkey)||a.ts-b.ts).forEach(r=>m[r.name.toLowerCase()]=r);rows=Object.values(m)}
+  else rows=ALL.filter(r=>r.dkey===dk);
+  rows.sort((a,b)=>a.name.localeCompare(b.name));
+  const ds=rows.map(r=>r.dkey).sort();
+  LABEL=!ds.length?"":ds[0]===ds[ds.length-1]?pretty(ds[0]):pretty(ds[0])+" to "+pretty(ds[ds.length-1]);
+  const n=rows.length,st=METRICS.map(([k,l])=>({k,l,...stat(rows,k)}));
+  const A=st.reduce((x,m)=>x+m.a,0),D=st.reduce((x,m)=>x+m.d,0),overall=A?D/A*100:0;
+  const pend=rows.filter(r=>pendingText(r)),iss=rows.filter(r=>issueText(r));
+  const blocks=[];
+
+  const glance=`<div class="glance">${ring(overall,96,11,24)}<span class="rate" style="background:${col(overall)}">${rating(overall)}</span>
+    <div class="tiles"><div class="tile"><b>${n}</b><span>Coordinators</span></div>
+    <div class="tile"><b style="color:${pend.length?"#d71920":"#16883d"}">${pend.length}</b><span>Pending tasks</span></div>
+    <div class="tile"><b style="color:${iss.length?"#d71920":"#16883d"}">${iss.length}</b><span>Class issues</span></div></div></div>`;
+  const bars=`<div class="bars">${sec("Compliance by Area")}`+st.map(m=>`<div class="row"><span class="n">${m.l}</span><span class="t"><i style="width:${m.pct}%;background:${col(m.pct)}"></i></span><span class="p" style="color:${col(m.pct)}">${m.pct.toFixed(0)}% <small>${m.d}/${m.a}</small></span></div>`).join("")+
+    `<div style="font-size:8.5px;color:#6b778c">Compliance = Done ÷ applicable tasks (N/A excluded). Partial/Pending not counted as done.</div></div>`;
+  blocks.push(el(`<div class="two">${glance}${bars}</div>`));
+
+  const cards=rows.map(r=>{const s=score(r),nt=[];
+    [["Notebook",r.notebookNote],["Class Test",r.classTestNote],["Lesson Plan",r.lessonNote]].forEach(([l,v])=>{if(note(v))nt.push(`<span class="tag" style="background:#1a56b8">${l}</span>${esc(note(v))} &nbsp;`)});
+    if(pendingText(r))nt.push(`<span class="tag" style="background:#ef7900">Pending</span>${esc(pendingText(r))} &nbsp;`);
+    nt.push(issueText(r)?`<span class="tag" style="background:#d71920">Class Issue</span>${esc(issueText(r))}`:`<span class="tag" style="background:#16883d">Class Issue</span>None`);
+    return `<div class="cc" style="border-left-color:${col(s.pct)}"><div class="who">${ring(s.pct,44,5,11)}<div><b>${esc(r.name)}</b><span>${esc(r.classes||"")}</span><span class="sc" style="color:${col(s.pct)}">${s.d} of ${s.a} done</span></div></div>
+      <div class="chips">${METRICS.map(([k,l])=>{const x=status(r[k]);return `<div class="chip s-${x}"><i>${ICON[x]}</i><div><b>${l}</b><em>${LBL[x]}</em></div></div>`}).join("")}</div>
+      ${nt.length?`<div class="notes">${nt.join("")}</div>`:""}</div>`}).join("");
+  blocks.push(el(sec("Coordinator Scorecards")+cards));
+
+  blocks.push(el(sec("Any Issue in Your Class(es) Today?")+(iss.length?`<div class="act">${iss.map(r=>`<div><b>${esc(r.name)}</b>${r.classes?" ("+esc(r.classes)+")":""}: ${esc(issueText(r))}</div>`).join("")}</div>`:`<div class="ok">✓ No class issues reported by any coordinator.</div>`)));
+
+  const acts=[];
+  rows.forEach(r=>{const miss=METRICS.filter(([k])=>["notdone","partial","pending"].includes(status(r[k]))).map(m=>m[1]);
+    if(miss.length)acts.push(`<div><b>${esc(r.name)}</b> – complete: ${miss.join(", ")}</div>`)});
+  pend.forEach(r=>acts.push(`<div><b>${esc(r.name)}</b> – pending task: ${esc(pendingText(r))}</div>`));
+  blocks.push(el(sec("Action Required")+(acts.length?`<div class="act">${acts.join("")}</div>`:`<div class="ok">✓ No action required – all applicable tasks are complete.</div>`)));
+
+  blocks.push(el(sec("Observation")+`<div class="obs">${observation(rows,st,overall,pend,iss)}</div>`));
+  paginate(blocks,dk,n);
+  setStatus(`Showing ${n} coordinator${n===1?"":"s"} for ${LABEL}.`+(SMALL?" Many coordinators, so text is small on the single page.":""));
+  fit();}
+
+function observation(rows,st,overall,pend,iss){
+  const n=rows.length,P=[];
+  P.push(`Overall compliance is <b>${overall.toFixed(0)}%</b> (${rating(overall)}) across ${n} coordinator${n===1?"":"s"}.`);
+  const act=st.filter(m=>m.a),best=[...act].sort((a,b)=>b.pct-a.pct)[0],weak=[...act].sort((a,b)=>a.pct-b.pct)[0];
+  if(best&&weak&&best!==weak&&best.pct!==weak.pct)P.push(`Strongest area is <b>${best.l}</b> (${best.pct.toFixed(0)}%). Weakest is <b>${weak.l}</b> (${weak.pct.toFixed(0)}%), with ${weak.a-weak.d} of ${weak.a} applicable records not completed.`);
+  const zero=act.filter(m=>m.pct===0).map(m=>m.l);
+  if(zero.length)P.push(`No coordinator completed: ${zero.join(", ")}.`);
+  const sc=rows.map(r=>({r,...score(r)})).filter(x=>x.a).sort((a,b)=>b.pct-a.pct);
+  if(sc.length>1){const hi=sc[0],lo=sc[sc.length-1];
+    if(hi.pct!==lo.pct)P.push(`${esc(hi.r.name)} has the highest score (${hi.pct.toFixed(0)}%); ${esc(lo.r.name)} has the lowest (${lo.pct.toFixed(0)}%).`)}
+  const full=sc.filter(x=>x.pct===100);
+  if(full.length&&sc.length>1)P.push(`${full.length} coordinator${full.length===1?"":"s"} completed every applicable task.`);
+  if(pend.length)P.push(`Pending tasks reported by ${pend.map(r=>esc(r.name)).join(", ")}.`);
+  if(iss.length)P.push(`Class issues reported by ${iss.map(r=>esc(r.name)).join(", ")}.`);
+  return P.map(p=>`<p>${p}</p>`).join("");}
+
+/* ---------- Pagination (A4 portrait) ---------- */
+function paginate(blocks,dk,n){
+  const box=document.getElementById("pages");box.innerHTML="";box.style.zoom=1;
+  const p=document.createElement("div");p.className="page";
+  p.innerHTML=`<div class="hd"><small>${esc(SCHOOL.toUpperCase())}</small><h1>Daily Coordinator Monitoring Report</h1>
+    <span class="pill">${LABEL}</span><span class="pill o">${n} Coordinator${n===1?"":"s"}</span></div>
+    <div class="body"><div class="fit"></div></div><div class="ft"><span>${esc(SCHOOL)}</span><span>Generated ${new Date().toLocaleDateString("en-GB")}</span></div>`;
+  box.appendChild(p);
+  const body=p.querySelector(".body"),fit=p.querySelector(".fit");
+  blocks.forEach(b=>fit.appendChild(b));
+  /* everything must fit on ONE page: shrink if needed */
+  const avail=body.clientHeight-4;let s=1;
+  for(let i=0;i<6&&fit.offsetHeight*s>avail;i++){
+    s=Math.max(0.4,s*avail/(fit.offsetHeight*s)*0.985);
+    fit.style.transform=`scale(${s})`;fit.style.width=(734/s)+"px";}
+  SMALL=s<0.62;}
+function fit(){const z=Math.min(1,(window.innerWidth-20)/794);document.getElementById("pages").style.zoom=z}
+window.addEventListener("resize",()=>{if(ALL.length)fit()});
+
+/* ---------- PDF (A4 portrait) ---------- */
+async function generatePDF(){
+  const pgs=[...document.querySelectorAll(".page")];if(!pgs.length)return;
+  const box=document.getElementById("pages");box.style.zoom=1;
+  setStatus("Creating PDF...");document.getElementById("pdfBtn").disabled=true;
+  try{
+    const pdf=new window.jspdf.jsPDF("p","mm","a4");
+    for(let i=0;i<pgs.length;i++){
+      const c=await html2canvas(pgs[i],{scale:2,backgroundColor:"#fff",useCORS:true});
+      if(i)pdf.addPage();
+      pdf.addImage(c.toDataURL("image/jpeg",0.95),"JPEG",0,0,210,297);}
+    pdf.save("Daily_Coordinator_Report_"+(document.getElementById("dateSel").value==="all"?"All":document.getElementById("dateSel").value)+".pdf");
+    setStatus("PDF downloaded.");
+  }catch(e){console.error(e);alert("PDF failed: "+e.message);setStatus("PDF failed.")}
+  finally{document.getElementById("pdfBtn").disabled=false;fit()}}
+
+/* ---------- Template ---------- */
+function downloadTemplate(){
+  const h=["Timestamp","Email Address","Date","Select Name","Coordinator of Class(es)","Attendance Updated in ERP","Attendance Checked in Spiral","Notebook Checking Verified","If Notebook Checking was Done, mention Class & Subject","Class Test Verified","If Class Test was Done, mention Class & Subject","Lesson Plan Verified in ERP","If Lesson Plan was Done, mention Class & Subject","Homework Updated in ERP","Class Activity Updated in ERP","Notice Updated in ERP","Any Pending Task?","If Any Task is Pending, Reason","Any Issue in Your Class(es) Today?","Any Issue in Your Class(es) Today? 2"];
+  const ws=XLSX.utils.aoa_to_sheet([h,["","","2026-10-04","Sample Coordinator","III to V","Done","Done","Done","Class 5 English","Not Done","","Done","Class 5","Done","Done","Done","No Pending Task","","No Issue","No Issue"]]);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Responses");XLSX.writeFile(wb,"Coordinator_Report_Template.xlsx");}
+</script></body></html>
