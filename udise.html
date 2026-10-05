@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UDISE Student Management</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--pri:#1f4f8f;--bg:#f4f7fb;--card:#fff;--tx:#172033;--mu:#6b7280;--bd:#e2e8f0;--hd:#f7f9fc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--card:#1e293b;--tx:#e5e7eb;--mu:#94a3b8;--bd:#334155;--hd:#273449}}
+:root[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--tx:#e5e7eb;--mu:#94a3b8;--bd:#334155;--hd:#273449}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--tx)}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
+.hidden{display:none!important}
+header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+header h1{font-size:18px;margin:0}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--bd)}
+nav button{border:0;background:transparent;padding:8px 12px;border-radius:8px;color:var(--tx)}
+nav button.on{background:var(--pri);color:#fff}
+main{padding:16px;max-width:1300px;margin:auto}
+.btn{border:0;border-radius:8px;padding:9px 14px;font-weight:bold;background:#e5ecf6;color:#1b2b44}
+.p{background:var(--pri);color:#fff}.g{background:#15803d;color:#fff}.r{background:#dc2626;color:#fff}.w{background:#f59e0b;color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.card,.panel{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px}
+.card small{color:var(--mu);font-size:11px;text-transform:uppercase}.card b{display:block;font-size:26px;margin-top:4px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.bar{margin-bottom:10px;font-size:12px}.bar div.t{display:flex;justify-content:space-between;margin-bottom:3px}
+.bar div.b{height:8px;background:var(--bd);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pri)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+input,select,textarea{border:1px solid var(--bd);border-radius:8px;padding:9px;background:var(--card)}
+.sc{overflow:auto;max-height:68vh;border:1px solid var(--bd);border-radius:12px;background:var(--card)}
+table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}
+th{position:sticky;top:0;background:var(--hd);text-transform:uppercase;font-size:11px}
+th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--bd)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal.show{display:flex}
+.box{background:var(--card);border-radius:14px;width:820px;max-width:100%;max-height:90vh;overflow:auto;padding:18px}
+.dg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:12px 0}
+.dg div{border:1px solid var(--bd);border-radius:8px;padding:8px;font-size:13px;word-break:break-word}
+.dg small{display:block;color:var(--mu);font-size:10px;text-transform:uppercase;margin-bottom:3px}
+textarea{width:100%;min-height:90px}
+.drop{border:2px dashed var(--bd);border-radius:12px;padding:30px;text-align:center;background:var(--card)}
+#toast{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));background:#172033;color:#fff;padding:11px 15px;border-radius:9px;display:none;z-index:99;max-width:320px;font-size:13px}
+.mu{color:var(--mu)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏫 UDISE Student Management</h1>
+  <div id="who"></div>
+</header>
+<nav id="nav"></nav>
+<main>
+<section id="p-dash">
+  <div class="cards" id="stats"></div>
+  <div class="two">
+    <div class="panel"><h3>Class-wise students</h3><div id="clsChart"></div></div>
+    <div class="panel"><h3>Gender</h3><div id="genChart"></div></div>
+  </div>
+</section>
+
+<section id="p-students" class="hidden">
+  <div class="tools">
+    <input id="q" placeholder="Search name, PEN, parent..." oninput="rs()">
+    <select id="fc" onchange="rs()"></select>
+    <select id="fs" onchange="rs()"></select>
+    <select id="fg" onchange="rs()"><option value="">All Gender</option><option>male</option><option>female</option><option>other</option></select>
+    <label id="remOnlyW" class="hidden"><input type="checkbox" id="ro" onchange="rs()"> With remarks</label>
+    <button class="btn" onclick="clr()">Clear</button>
+  </div>
+  <div class="sc"><table><thead><tr><th>#</th><th>Class</th><th>Sec</th><th>Name</th><th>Gender</th><th>PEN</th><th>Father</th><th>Mother</th><th>APAAR</th><th class="rc">Remark</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+  <p class="mu" id="cnt"></p>
+</section>
+
+<section id="p-classes" class="hidden"><div class="cards" id="clsCards"></div></section>
+
+<section id="p-upload" class="hidden">
+  <div class="drop">
+    <h2>📊 Upload UDISE Excel</h2>
+    <p class="mu">.xlsx / .xls. Header row (Class, Name...) is detected automatically.</p>
+    <input type="file" id="xf" accept=".xlsx,.xls"><br><br>
+    <button class="btn p" onclick="imp()">Import</button>
+    <p id="impSt" class="mu"></p>
+  </div>
+</section>
+
+<section id="p-reports" class="hidden">
+  <div class="cards">
+    <div class="card"><small>Records</small><b id="rT">0</b><br><button class="btn p" onclick="expX()">Export Excel</button></div>
+    <div class="card"><small>Backup</small><b>💾</b><br><button class="btn p" onclick="bk()">Download JSON</button></div>
+    <div class="card"><small>Restore</small><input type="file" id="rf" accept=".json"><br><br><button class="btn w" onclick="rst()">Restore</button></div>
+    <div class="card"><small>Danger</small><br><button class="btn r" onclick="wipe()">Delete all students</button></div>
+  </div>
+</section>
+
+<section id="p-users" class="hidden">
+  <div class="panel">
+    <h3>Accounts</h3>
+    <div class="tools">
+      <input id="nu" placeholder="Username"><input id="np" type="password" placeholder="Password">
+      <select id="nr"><option value="teacher">Teacher (remarks)</option><option value="admin">Admin (full)</option></select>
+      <button class="btn p" onclick="addU()">Save / Update</button>
+    </div>
+    <div class="sc"><table><thead><tr><th>Username</th><th>Role</th><th></th></tr></thead><tbody id="ut"></tbody></table></div>
+    <p class="mu">Change the default admin password now: save user <b>admin</b> with a new password.</p>
+  </div>
+</section>
+</main>
+
+<div class="modal" id="lm"><div class="box" style="width:380px">
+  <h2>Login</h2>
+  <p><input id="lu" placeholder="Username" style="width:100%"></p>
+  <p><input id="lp" type="password" placeholder="Password" style="width:100%"></p>
+  <p class="mu" style="font-size:12px">Default: admin / admin123, teacher / teacher123</p>
+  <button class="btn p" onclick="login()">Login</button> <button class="btn" onclick="sh('lm',0)">Cancel</button>
+</div></div>
+
+<div class="modal" id="sm"><div class="box">
+  <h2 id="mt"></h2>
+  <div class="dg" id="md"></div>
+  <div id="remBox"><b>📝 Remarks</b><textarea id="rm" placeholder="Enter remarks..."></textarea>
+  <p><button class="btn p" onclick="saveRem()">Save remark</button> <button class="btn" onclick="sh('sm',0)">Close</button></p></div>
+  <button class="btn hidden" id="closeOnly" onclick="sh('sm',0)">Close</button>
+</div></div>
+<div id="toast"></div>
+
+<script>
+const F=["Class","Section","Name","Gender","Initialised at SDMS","Student PEN","Student State Code","Father Name","Mother Name","Social Category","Minority Group","BPL beneficiary","CWSN","Type of Impairments","Is Repeater","Suspected Duplicate","Entry Status","AADHAAR No.","Name As per AADHAAR","AADHAAR Validation Status","MBU Status","APAAR ID","APAAR Status"];
+const PRIVATE=["AADHAAR No.","Name As per AADHAAR"];
+let S=[],R={},U=null,user=null,cur=null,db=null,page="dash";
+const CH=150;
+const $=id=>document.getElementById(id);
+const E=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const N=v=>String(v).toLowerCase().replace(/[^a-z0-9]/g,"");
+const nat=(a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true});
+function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(window._t);window._t=setTimeout(()=>t.style.display="none",3500)}
+function sh(id,on){$(id).classList.toggle("show",!!on)}
+const role=()=>user?user.role:"public";
+const isAdmin=()=>role()==="admin", canRem=()=>role()!=="public";
+const skey=s=>(s["Student PEN"]||s.Name+"|"+s.Class+"|"+s.Section).trim().toLowerCase();
+function hid(str){let h=5381;for(const c of str)h=((h<<5)+h+c.charCodeAt(0))>>>0;return "r"+h.toString(36)}
+async function sha(t){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+
+/* ---------- storage (shared db, falls back to this browser) ---------- */
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast("Browser storage full. Download a backup.");return false}}
+const dd=d=>typeof d.data==="function"?d.data():d.data;
+
+async function saveStudents(){
+  if(!db){return lsSet("udiseS",S)}
+  try{
+    const parts=[];for(let i=0;i<S.length;i+=CH)parts.push(S.slice(i,i+CH));
+    const col=db.collection("chunks"),old=await col.get();
+    for(let i=0;i<parts.length;i++)await col.doc("c"+String(i).padStart(4,"0")).set({i,rows:JSON.stringify(parts[i])});
+    for(const d of old.docs){const n=parseInt(d.id.slice(1),10);if(n>=parts.length)await col.doc(d.id).delete()}
+    return true;
+  }catch(e){console.error(e);toast("Could not save shared data. You may not have write permission.");return false}
+}
+async function saveUsers(){
+  if(!db)return lsSet("udiseU",U);
+  try{await db.doc("meta/users").set({list:JSON.stringify(U)});return true}catch(e){toast("Could not save accounts (no write permission).");return false}
+}
+async function saveRemark(s,text){
+  const id=hid(skey(s));R[id]=text;
+  if(!db)return lsSet("udiseR",R);
+  try{await db.collection("remarks").doc(id).set({text});return true}catch(e){toast("Could not save remark.");return false}
+}
+const remOf=s=>R[hid(skey(s))]||"";
+
+async function defaultUsers(){return [{u:"admin",h:await sha("admin123"),r:"admin"},{u:"teacher",h:await sha("teacher123"),r:"teacher"}]}
+
+async function init(){
+  U=await defaultUsers();
+  try{const c=await window.claude.use("db");db=c||null}catch(e){db=null}
+  if(db){
+    let cm={};
+    db.collection("chunks").onSnapshot(sn=>{cm={};sn.docs.forEach(d=>cm[d.id]=dd(d));
+      S=Object.keys(cm).sort().flatMap(k=>{try{return JSON.parse(cm[k].rows)}catch(e){return[]}});refresh()},()=>{});
+    db.collection("remarks").onSnapshot(sn=>{R={};sn.docs.forEach(d=>R[d.id]=(dd(d)||{}).text||"");refresh()},()=>{});
+    db.doc("meta/users").onSnapshot(d=>{try{const x=dd(d);if(x&&x.list)U=JSON.parse(x.list)}catch(e){}if(page==="users")ru()},()=>{});
+  }else{
+    S=lsGet("udiseS",[]);R=lsGet("udiseR",{});const u=lsGet("udiseU",null);if(u)U=u;
+  }
+  try{const su=JSON.parse(sessionStorage.getItem("udiseUser")||"null");if(su)user=su}catch(e){}
+  nav();refresh();
+}
+
+/* ---------- auth ---------- */
+async function login(){
+  const u=$("lu").value.trim(),h=await sha($("lp").value);
+  const f=U.find(x=>x.u===u&&x.h===h);
+  if(!f){toast("Invalid username or password.");return}
+  user={u:f.u,role:f.r};try{sessionStorage.setItem("udiseUser",JSON.stringify(user))}catch(e){}
+  $("lp").value="";$("lu").value="";sh("lm",0);nav();go("dash");toast("Welcome, "+f.u)
+}
+function logout(){user=null;try{sessionStorage.removeItem("udiseUser")}catch(e){}nav();go("dash")}
+
+/* ---------- navigation ---------- */
+function nav(){
+  const items=[["dash","📊 Dashboard"],["students","👨‍🎓 Students"],["classes","🏫 Classes"]];
+  if(isAdmin())items.push(["upload","📥 Upload Excel"],["reports","📈 Reports & Backup"],["users","👩‍🏫 Accounts"]);
+  $("nav").innerHTML=items.map(([k,l])=>`<button class="${k===page?"on":""}" onclick="go('${k}')">${l}</button>`).join("");
+  $("who").innerHTML=user?`${E(user.u)} (${user.role}) <button class="btn" onclick="logout()">Logout</button>`:`Viewing as public <button class="btn" onclick="sh('lm',1)">🔐 Login</button>`;
+  $("remOnlyW").classList.toggle("hidden",!canRem());
+  document.querySelectorAll(".rc").forEach(e=>e.classList.toggle("hidden",!canRem()));
+}
+function go(p){
+  if((["upload","reports","users"].includes(p))&&!isAdmin()){toast("Admin login required.");sh("lm",1);return}
+  page=p;["dash","students","classes","upload","reports","users"].forEach(k=>$("p-"+k).classList.toggle("hidden",k!==p));
+  nav();refresh();
+}
+function refresh(){
+  if(page==="dash")rd();if(page==="students")rs();if(page==="classes")rc();if(page==="reports")$("rT").textContent=S.length;if(page==="users")ru();
+}
+
+/* ---------- dashboard ---------- */
+function bars(map,limit){
+  const e=Object.entries(map).sort((a,b)=>nat(a[0],b[0])).slice(0,limit||99);if(!e.length)return "<span class='mu'>No data.</span>";
+  const mx=Math.max(...e.map(x=>x[1]));
+  return e.map(([k,v])=>`<div class="bar"><div class="t"><span>${E(k)}</span><b>${v}</b></div><div class="b"><i style="width:${v/mx*100}%"></i></div></div>`).join("");
+}
+function rd(){
+  const g=x=>String(x["Gender"]).toLowerCase().trim();
+  const boys=S.filter(s=>["male","boy","m"].includes(g(s))).length,girls=S.filter(s=>["female","girl","f"].includes(g(s))).length;
+  const val=S.filter(s=>{const v=String(s["AADHAAR Validation Status"]).toLowerCase().trim();return v.startsWith("valid")||v==="success"||v==="validated"}).length;
+  const cards=[["Total students",S.length],["Boys",boys],["Girls",girls],["Class-sections",new Set(S.map(s=>s.Class+"|"+s.Section)).size],["PEN available",S.filter(s=>s["Student PEN"].trim()).length],["APAAR available",S.filter(s=>s["APAAR ID"].trim()).length]];
+  if(canRem()){cards.push(["Aadhaar validated",val],["With remarks",S.filter(s=>remOf(s)).length])}
+  $("stats").innerHTML=cards.map(([l,v])=>`<div class="card"><small>${l}</small><b>${v}</b></div>`).join("");
+  const c={},gm={};S.forEach(s=>{c[s.Class||"?"]=(c[s.Class||"?"]||0)+1;gm[s.Gender||"Unknown"]=(gm[s.Gender||"Unknown"]||0)+1});
+  $("clsChart").innerHTML=bars(c,20);$("genChart").innerHTML=bars(gm);
+}
+
+/* ---------- students ---------- */
+function fillF(){
+  const cs=[...new Set(S.map(s=>s.Class).filter(Boolean))].sort(nat),ss=[...new Set(S.map(s=>s.Section).filter(Boolean))].sort(nat);
+  const oc=$("fc").value,os=$("fs").value;
+  $("fc").innerHTML='<option value="">All Classes</option>'+cs.map(c=>`<option>${E(c)}</option>`).join("");
+  $("fs").innerHTML='<option value="">All Sections</option>'+ss.map(c=>`<option>${E(c)}</option>`).join("");
+  if(cs.includes(oc))$("fc").value=oc;if(ss.includes(os))$("fs").value=os;
+}
+function rs(){
+  const fcSel=$("fc");if(fcSel.options.length<2||fcSel.options.length-1!==new Set(S.map(s=>s.Class).filter(Boolean)).size)fillF();
+  const q=$("q").value.toLowerCase().trim(),c=$("fc").value,sc=$("fs").value,g=$("fg").value,ro=canRem()&&$("ro").checked;
+  const pubCols=["Name","Student PEN","Father Name","Mother Name","Class","Section","APAAR ID"];
+  const L=[];S.forEach((s,i)=>{
+    if(c&&s.Class!==c)return;if(sc&&s.Section!==sc)return;
+    if(g&&String(s.Gender).toLowerCase().trim()!==g)return;
+    if(ro&&!remOf(s))return;
+    if(q&&!pubCols.map(k=>s[k]).join(" ").toLowerCase().includes(q))return;
+    L.push([s,i])});
+  const show=L.slice(0,300);
+  $("tb").innerHTML=show.length?show.map(([s,i])=>`<tr><td>${i+1}</td><td>${E(s.Class)}</td><td>${E(s.Section)}</td><td><b>${E(s.Name)}</b></td><td>${E(s.Gender)}</td><td>${E(s["Student PEN"])}</td><td>${E(s["Father Name"])}</td><td>${E(s["Mother Name"])}</td><td>${E(s["APAAR ID"])}</td>${canRem()?`<td>${remOf(s)?"📝 "+E(remOf(s).slice(0,30)):"<span class=mu>-</span>"}</td>`:""}<td><button class="btn" onclick="open1(${i})">View</button></td></tr>`).join(""):`<tr><td colspan="11" class="mu" style="text-align:center;padding:30px">No records found.</td></tr>`;
+  $("cnt").textContent=L.length>300?`Showing 300 of ${L.length}. Refine your search.`:`${L.length} record(s)`;
+}
+function clr(){$("q").value="";$("fc").value="";$("fs").value="";$("fg").value="";$("ro").checked=false;rs()}
+
+function open1(i){
+  cur=i;const s=S[i];$("mt").textContent=s.Name||"Student";
+  const fields=canRem()?F:F.filter(f=>!PRIVATE.includes(f));
+  $("md").innerHTML=fields.map(f=>`<div><small>${E(f)}</small>${E(s[f]||"—")}</div>`).join("");
+  $("remBox").classList.toggle("hidden",!canRem());$("closeOnly").classList.toggle("hidden",canRem());
+  $("rm").value=remOf(s);sh("sm",1);
+}
+async function saveRem(){
+  if(cur===null||!canRem())return;
+  if(await saveRemark(S[cur],$("rm").value.trim())){sh("sm",0);toast("Remark saved.");refresh()}
+}
+
+/* ---------- classes ---------- */
+function rc(){
+  const m={};S.forEach(s=>{const k=(s.Class||"?")+" - "+(s.Section||"-");m[k]=(m[k]||0)+1});
+  const e=Object.entries(m).sort((a,b)=>nat(a[0],b[0]));
+  $("clsCards").innerHTML=e.length?e.map(([k,v])=>`<div class="card"><small>Class / Section</small><b>${E(k)}</b><span class="mu">${v} students</span></div>`).join(""):"<p class='mu'>No data.</p>";
+}
+
+/* ---------- import ---------- */
+async function imp(){
+  if(!isAdmin())return;
+  const f=$("xf").files[0];if(!f){toast("Select an Excel file.");return}
+  const rd=new FileReader();
+  rd.onload=async e=>{
+    let rows;
+    try{
+      const wb=XLSX.read(e.target.result,{type:"array"});
+      const grid=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:"",raw:false});
+      const h=grid.findIndex(r=>{const n=r.map(N);return n.includes("name")&&n.includes("class")});
+      if(h<0){toast("Header row (Class, Name...) not found.");return}
+      const hd=grid[h].map(String);
+      rows=grid.slice(h+1).filter(r=>r.some(c=>String(c).trim())).map(r=>{
+        const s={};F.forEach(fl=>{const i=hd.findIndex(x=>N(x)===N(fl));s[fl]=i>=0?String(r[i]??"").trim():""});return s});
+    }catch(err){console.error(err);toast("Unable to read the Excel file.");return}
+    if(!rows.length){toast("No student rows found.");return}
+    if(S.length&&!confirm(`Replace ${S.length} existing students with ${rows.length}? Remarks are kept for matching PEN/Name.`))return;
+    S=rows;$("impSt").textContent="Saving "+rows.length+" records...";
+    if(await saveStudents()){$("impSt").innerHTML=`<b>${rows.length}</b> records imported.`;toast(rows.length+" records imported.")}
+    else $("impSt").textContent="Import failed to save.";
+  };
+  rd.readAsArrayBuffer(f);
+}
+
+/* ---------- export / backup ---------- */
+async function saveFile(name,data){
+  try{const d=await window.claude.use("downloads");if(!d){toast("Downloads not available in this view.");return}await d.save({filename:name,data})}
+  catch(e){if(!e||e.code!=="declined")toast("Could not save file.")}
+}
+function expX(){
+  if(!S.length){toast("No data.");return}
+  const ws=XLSX.utils.json_to_sheet(S.map(s=>{const o={};F.forEach(f=>o[f]=s[f]);o.Remarks=remOf(s);return o}));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"UDISE Students");
+  saveFile("UDISE_Student_Data.xlsx",new Uint8Array(XLSX.write(wb,{type:"array",bookType:"xlsx"})));
+}
+function bk(){saveFile("UDISE_Backup.json",JSON.stringify({at:new Date().toISOString(),students:S,remarks:R},null,1))}
+function rst(){
+  const f=$("rf").files[0];if(!f){toast("Select a backup file.");return}
+  const r=new FileReader();
+  r.onload=async e=>{
+    try{const d=JSON.parse(e.target.result);if(!Array.isArray(d.students))throw 0;
+      if(!confirm("Replace ALL current data with this backup?"))return;
+      S=d.students.map(s=>{const o={};F.forEach(k=>o[k]=String(s[k]??""));return o});R=d.remarks||{};
+      await saveStudents();
+      if(db){for(const k in R)await db.collection("remarks").doc(k).set({text:R[k]})}else lsSet("udiseR",R);
+      toast("Backup restored.");refresh()
+    }catch(err){toast("Invalid backup file.")}
+  };r.readAsText(f);
+}
+async function wipe(){
+  if(!confirm("Delete ALL students? This cannot be undone."))return;
+  S=[];await saveStudents();toast("All students deleted.");refresh()
+}
+
+/* ---------- accounts ---------- */
+function ru(){
+  $("ut").innerHTML=U.map((x,i)=>`<tr><td>${E(x.u)}</td><td>${E(x.r)}</td><td><button class="btn r" onclick="delU(${i})">Delete</button></td></tr>`).join("");
+}
+async function addU(){
+  const u=$("nu").value.trim(),p=$("np").value,r=$("nr").value;
+  if(!u||p.length<6){toast("Username required, password min 6 characters.");return}
+  const h=await sha(p),i=U.findIndex(x=>x.u===u);
+  if(i>=0)U[i]={u,h,r};else U.push({u,h,r});
+  if(await saveUsers()){$("nu").value="";$("np").value="";toast("Account saved.");ru()}
+}
+async function delU(i){
+  if(U[i].u===user.u){toast("You cannot delete your own account.");return}
+  if(U.filter(x=>x.r==="admin").length<2&&U[i].r==="admin"){toast("Keep at least one admin.");return}
+  if(!confirm("Delete "+U[i].u+"?"))return;
+  U.splice(i,1);await saveUsers();ru()
+}
+
+/* ---------- events ---------- */
+$("lp").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){sh("sm",0);sh("lm",0)}});
+["sm","lm"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target.id===id)sh(id,0)}));
+init();
+</script>
+</body>
+</html>
