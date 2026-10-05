@@ -13,12 +13,21 @@
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--tx)}
 button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .hidden{display:none!important}
-header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-header h1{font-size:18px;margin:0}
-nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--bd)}
-nav button{border:0;background:transparent;padding:8px 12px;border-radius:8px;color:var(--tx)}
-nav button.on{background:var(--pri);color:#fff}
-main{padding:16px;max-width:1300px;margin:auto}
+.top{background:var(--card);display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:8px 16px;border-bottom:1px solid var(--bd)}
+.lg{font-size:30px;font-weight:900;color:#1c5a8a;letter-spacing:-1px}.lg b{color:#e11d48}
+.tt{font-weight:bold;line-height:1.15;border-left:1px solid var(--bd);padding-left:12px;font-size:17px}
+#who{margin-left:auto;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.info{background:#1c5a8a;color:#fff;display:flex;flex-wrap:wrap;gap:6px 28px;padding:12px 16px;font-size:14px;justify-content:space-between}
+.lay{display:flex;min-height:70vh}
+nav{width:230px;flex:none;background:var(--card);border-right:4px solid #1c5a8a}
+nav button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--bd);background:transparent;padding:14px;font-size:14px;color:var(--tx)}
+nav button.on{background:#e8f0f9;font-weight:bold;color:#1c5a8a;outline:2px solid #1c5a8a;outline-offset:-2px}
+main{flex:1;min-width:0;padding:16px}
+@media(max-width:800px){.lay{flex-direction:column}nav{width:100%;display:flex;overflow-x:auto;border-right:0}nav button{white-space:nowrap;width:auto}}
+.pill{display:inline-block;border-radius:20px;padding:5px 12px;font-size:13px;color:#fff;font-weight:bold}
+.gt th{background:#1c5a8a;color:#fff;font-size:13px;text-transform:none;text-align:center}.gt th:first-child,.gt td:first-child{text-align:left}
+.gt td{font-size:14px;padding:14px 12px;text-align:center}.gt tr.gr{cursor:pointer}.gt tr.sub td{background:var(--hd);font-size:13px}.gt tr.sub td:first-child{padding-left:30px}
+.tot{display:flex;flex-wrap:wrap;gap:8px 26px;color:#1c5a8a;font-weight:bold;margin-bottom:12px;justify-content:space-between}.tot span.l{display:flex;gap:26px;flex-wrap:wrap}
 .btn{border:0;border-radius:8px;padding:9px 14px;font-weight:bold;background:#e5ecf6;color:#1b2b44}
 .p{background:var(--pri);color:#fff}.g{background:#15803d;color:#fff}.r{background:#dc2626;color:#fff}.w{background:#f59e0b;color:#fff}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
@@ -46,18 +55,17 @@ textarea{width:100%;min-height:90px}
 </style>
 </head>
 <body>
-<header>
-  <h1>🏫 UDISE Student Management</h1>
-  <div id="who"></div>
-</header>
-<nav id="nav"></nav>
+<div class="top"><div class="lg">UDISE<b>+</b></div><div class="tt">Student Database<br>Management System</div><div id="who"></div></div>
+<div class="info"><div>UDISE Code : <span id="sc"></span><br>Type : 3 - Co-educational</div><div>Category : 3 - Pr. with Up.Pr. sec. and H.Sec.<br>Class : Nursery/KG/PP3 - 12</div><div>Management : 5 - Private Unaided (Recognized)<br>School Name : <span id="sn"></span></div><div style="text-align:right;font-weight:bold">Current Academic Year: <span class="ay"></span><br><span id="clk" style="font-weight:normal;font-size:13px"></span></div></div>
+<div class="lay"><nav id="nav"></nav>
 <main>
 <section id="p-dash">
-  <div class="cards" id="stats"></div>
-  <div class="two">
-    <div class="panel"><h3>Class-wise students</h3><div id="clsChart"></div></div>
-    <div class="panel"><h3>Gender</h3><div id="genChart"></div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <h3 style="margin:0">School Details - Grade Wise (<span class="ay"></span>) <span class="pill" style="background:#6dc36d">Data Entry Active</span> <span class="pill" style="background:#e53935">Data Not Certified</span></h3>
+    <div><button class="btn" style="background:#0e9ac6;color:#fff" onclick="expSec()">Students Summary - Section Wise</button> <button class="btn" id="bc" onclick="dm='class';rd()">View Class Wise</button> <button class="btn" id="bs" onclick="dm='section';rd()">View Section Wise</button></div>
   </div>
+  <div class="panel"><div class="tot" id="tot"></div>
+  <div class="sc"><table class="gt"><thead><tr><th>Class/Grade</th><th>Boys</th><th>Girls</th><th>Transgender</th><th>Total Students</th><th>Incomplete Students</th><th></th></tr></thead><tbody id="gb"></tbody></table></div></div>
 </section>
 
 <section id="p-students" class="hidden">
@@ -106,7 +114,7 @@ textarea{width:100%;min-height:90px}
     <p class="mu">Change the default admin password now: save user <b>admin</b> with a new password.</p>
   </div>
 </section>
-</main>
+</main></div>
 
 <div class="modal" id="lm"><div class="box" style="width:380px">
   <h2>Login</h2>
@@ -198,10 +206,10 @@ function logout(){user=null;try{sessionStorage.removeItem("udiseUser")}catch(e){
 
 /* ---------- navigation ---------- */
 function nav(){
-  const items=[["dash","📊 Dashboard"],["students","👨‍🎓 Students"],["classes","🏫 Classes"]];
-  if(isAdmin())items.push(["upload","📥 Upload Excel"],["reports","📈 Reports & Backup"],["users","👩‍🏫 Accounts"]);
+  const items=[["dash","📊 School Dashboard"],["students","📋 List of All Students"],["classes","🏫 Class / Section"]];
+  if(isAdmin())items.push(["upload","📥 Upload Excel"],["reports","📑 Reporting & Backup"],["users","👩‍🏫 Accounts"]);
   $("nav").innerHTML=items.map(([k,l])=>`<button class="${k===page?"on":""}" onclick="go('${k}')">${l}</button>`).join("");
-  $("who").innerHTML=user?`${E(user.u)} (${user.role}) <button class="btn" onclick="logout()">Logout</button>`:`Viewing as public <button class="btn" onclick="sh('lm',1)">🔐 Login</button>`;
+  $("who").innerHTML=user?`👤 ${E(user.u)} (${user.role}) <button class="btn" onclick="logout()">Logout</button>`:`Public view <button class="btn" onclick="sh('lm',1)">🔐 Login</button>`;
   $("remOnlyW").classList.toggle("hidden",!canRem());
   document.querySelectorAll(".rc").forEach(e=>e.classList.toggle("hidden",!canRem()));
 }
@@ -220,15 +228,37 @@ function bars(map,limit){
   const mx=Math.max(...e.map(x=>x[1]));
   return e.map(([k,v])=>`<div class="bar"><div class="t"><span>${E(k)}</span><b>${v}</b></div><div class="b"><i style="width:${v/mx*100}%"></i></div></div>`).join("");
 }
+const SCHOOL={code:"05050301406",name:"HIMALAYAN INTERNATIONAL SCHOOL",year:"2026-27"};
+let dm="class",op={},cl=[];
+const rank=c=>{const v=String(c).toLowerCase().trim();if(v.includes("nursery"))return 0;if(v.startsWith("lkg"))return 1;if(v.startsWith("ukg"))return 2;
+  const r=["i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii"].indexOf(v.split(/[\s/(-]/)[0]);if(r>=0)return 3+r;const n=parseInt(v);return isNaN(n)?99:2+n};
+const cmp=(a,b)=>rank(a)-rank(b)||nat(a,b);
+const gk=s=>{const g=String(s.Gender).toLowerCase().trim();return ["male","boy","m"].includes(g)?"b":["female","girl","f"].includes(g)?"g":["transgender","other","t"].includes(g)?"t":"u"};
+const inc=s=>{const v=String(s["Entry Status"]).toLowerCase();return !v||v.includes("incomplete")};
+function agg(l){const a={b:0,g:0,t:0,n:l.length,i:0};l.forEach(s=>{const k=gk(s);if(a[k]!==undefined)a[k]++;if(inc(s))a.i++});return a}
+const tr1=(lab,a,cls,att,ch)=>`<tr class="${cls}" ${att}><td>${E(lab)}</td><td>${a.b}</td><td>${a.g}</td><td>${a.t}</td><td>${a.n}</td><td>${a.i}</td><td>${ch}</td></tr>`;
+function tg(i){op[i]=!op[i];rd()}
 function rd(){
-  const g=x=>String(x["Gender"]).toLowerCase().trim();
-  const boys=S.filter(s=>["male","boy","m"].includes(g(s))).length,girls=S.filter(s=>["female","girl","f"].includes(g(s))).length;
-  const val=S.filter(s=>{const v=String(s["AADHAAR Validation Status"]).toLowerCase().trim();return v.startsWith("valid")||v==="success"||v==="validated"}).length;
-  const cards=[["Total students",S.length],["Boys",boys],["Girls",girls],["Class-sections",new Set(S.map(s=>s.Class+"|"+s.Section)).size],["PEN available",S.filter(s=>s["Student PEN"].trim()).length],["APAAR available",S.filter(s=>s["APAAR ID"].trim()).length]];
-  if(canRem()){cards.push(["Aadhaar validated",val],["With remarks",S.filter(s=>remOf(s)).length])}
-  $("stats").innerHTML=cards.map(([l,v])=>`<div class="card"><small>${l}</small><b>${v}</b></div>`).join("");
-  const c={},gm={};S.forEach(s=>{c[s.Class||"?"]=(c[s.Class||"?"]||0)+1;gm[s.Gender||"Unknown"]=(gm[s.Gender||"Unknown"]||0)+1});
-  $("clsChart").innerHTML=bars(c,20);$("genChart").innerHTML=bars(gm);
+  const t=agg(S);
+  $("tot").innerHTML=`<span class="l"><span>Total Enrolments : ${t.n}</span><span>Total Boys : ${t.b}</span><span>Total Girls : ${t.g}</span><span>Total Transgender : ${t.t}</span></span><span style="color:#dc2626">Data Last Updated On : ${new Date().toLocaleString("en-GB")}</span>`;
+  $("bc").className="btn"+(dm==="class"?" p":"");$("bs").className="btn"+(dm==="section"?" p":"");
+  const by={};S.forEach(s=>{const c=s.Class||"?";(by[c]=by[c]||[]).push(s)});
+  cl=Object.keys(by).sort(cmp);let h="";
+  cl.forEach((c,i)=>{
+    const secs={};by[c].forEach(s=>{const k=s.Section||"-";(secs[k]=secs[k]||[]).push(s)});
+    const sk=Object.keys(secs).sort(nat);
+    if(dm==="class"){
+      h+=tr1(c,agg(by[c]),"gr",`onclick="tg(${i})"`,op[i]?"⌃":"⌄");
+      if(op[i])sk.forEach(k=>h+=tr1("Section "+k,agg(secs[k]),"sub","",""));
+    }else sk.forEach(k=>h+=tr1(c+" - "+k,agg(secs[k]),"","",""));
+  });
+  $("gb").innerHTML=h||`<tr><td colspan="7" class="mu" style="padding:30px">No data. Admin can upload an Excel file.</td></tr>`;
+}
+function expSec(){
+  if(!S.length){toast("No data.");return}
+  const o=[];Object.entries(S.reduce((m,s)=>{const k=(s.Class||"?")+"\u0001"+(s.Section||"-");(m[k]=m[k]||[]).push(s);return m},{})).sort((a,b)=>cmp(a[0].split("\u0001")[0],b[0].split("\u0001")[0])||nat(a[0],b[0])).forEach(([k,l])=>{const a=agg(l),[c,s]=k.split("\u0001");o.push({Class:c,Section:s,Boys:a.b,Girls:a.g,Transgender:a.t,Total:a.n,Incomplete:a.i})});
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(o),"Section Summary");
+  saveFile("UDISE_Section_Summary.xlsx",new Uint8Array(XLSX.write(wb,{type:"array",bookType:"xlsx"})));
 }
 
 /* ---------- students ---------- */
@@ -351,6 +381,8 @@ async function delU(i){
 $("lp").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){sh("sm",0);sh("lm",0)}});
 ["sm","lm"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target.id===id)sh(id,0)}));
+document.querySelectorAll(".ay").forEach(e=>e.textContent=SCHOOL.year);$("sc").textContent=SCHOOL.code;$("sn").textContent=SCHOOL.name;
+const tick=()=>$("clk").textContent=new Date().toLocaleString("en-GB");tick();setInterval(tick,30000);
 init();
 </script>
 </body>
