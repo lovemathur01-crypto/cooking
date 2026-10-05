@@ -1,59 +1,190 @@
-<!-- ================= EXAMINATION DASHBOARD ================= -->
-<section class="examination-dashboard-section" id="examination-dashboard">
+<!-- ================= DASHBOARD TABS ================= -->
+<div class="dash-tabs-wrap" id="dashTabs">
 
-  <!-- Animated background glow -->
-  <div class="exam-bg-glow exam-glow-1"></div>
-  <div class="exam-bg-glow exam-glow-2"></div>
-  <div class="exam-bg-glow exam-glow-3"></div>
-
-  <div class="exam-dashboard-card">
-
-    <!-- Left Icon -->
-    <div class="exam-dashboard-icon-wrap">
-      <div class="exam-dashboard-icon">
-        📝
-      </div>
-    </div>
-
-    <!-- Content -->
-    <div class="exam-dashboard-content">
-
-      <span class="exam-dashboard-badge">
-        <span class="badge-dot"></span>
-        STAFF PORTAL
-      </span>
-
-      <h2>
-        Examination Dashboard
-      </h2>
-
-      <p>
-        Access question paper checking, marking schemes, date sheets,
-        results and other examination-related services.
-      </p>
-
-      <div class="exam-dashboard-tags">
-        <span>📋 Marking Schemes</span>
-        <span>📅 Date Sheets</span>
-        <span>📊 Results</span>
-        <span>🔍 Paper Checking</span>
-      </div>
-
-    </div>
-
-    <!-- Button -->
-    <a href="exam_dash.html" class="exam-dashboard-btn">
-      <span>Open Dashboard</span>
-      <strong>→</strong>
-    </a>
-
-    <!-- Shine -->
-    <div class="exam-card-shine"></div>
-
+  <!-- Tab Buttons -->
+  <div class="dash-tab-bar" role="tablist" aria-label="Staff dashboards">
+    <button class="dash-tab active" role="tab" id="tab-exam"
+            aria-selected="true" aria-controls="panel-exam" data-target="panel-exam">
+      <span class="dash-tab-emoji">📝</span> Examination
+    </button>
+    <button class="dash-tab" role="tab" id="tab-arr"
+            aria-selected="false" aria-controls="panel-arr" data-target="panel-arr">
+      <span class="dash-tab-emoji">🗂️</span> Arrangement
+    </button>
   </div>
-</section>
+
+  <!-- ============ TAB 1: EXAMINATION DASHBOARD ============ -->
+  <div class="dash-panel active" id="panel-exam" role="tabpanel" aria-labelledby="tab-exam">
+    <section class="examination-dashboard-section" id="examination-dashboard">
+
+      <div class="exam-bg-glow exam-glow-1"></div>
+      <div class="exam-bg-glow exam-glow-2"></div>
+      <div class="exam-bg-glow exam-glow-3"></div>
+
+      <div class="exam-dashboard-card">
+
+        <div class="exam-dashboard-icon-wrap">
+          <div class="exam-dashboard-icon">📝</div>
+        </div>
+
+        <div class="exam-dashboard-content">
+          <span class="exam-dashboard-badge">
+            <span class="badge-dot"></span>
+            STAFF PORTAL
+          </span>
+
+          <h2>Examination Dashboard</h2>
+
+          <p>
+            Access question paper checking, marking schemes, date sheets,
+            results and other examination-related services.
+          </p>
+
+          <div class="exam-dashboard-tags">
+            <span>📋 Marking Schemes</span>
+            <span>📅 Date Sheets</span>
+            <span>📊 Results</span>
+            <span>🔍 Paper Checking</span>
+          </div>
+        </div>
+
+        <a href="exam_dash.html" class="exam-dashboard-btn">
+          <span>Open Dashboard</span>
+          <strong>→</strong>
+        </a>
+
+        <div class="exam-card-shine"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ TAB 2: ARRANGEMENT DASHBOARD ============ -->
+  <div class="dash-panel" id="panel-arr" role="tabpanel" aria-labelledby="tab-arr">
+    <section class="examination-dashboard-section arr-theme" id="arrangement-dashboard">
+
+      <div class="exam-bg-glow exam-glow-1"></div>
+      <div class="exam-bg-glow exam-glow-2"></div>
+      <div class="exam-bg-glow exam-glow-3"></div>
+
+      <div class="exam-dashboard-card">
+
+        <div class="exam-dashboard-icon-wrap">
+          <div class="exam-dashboard-icon">🗂️</div>
+        </div>
+
+        <div class="exam-dashboard-content">
+          <span class="exam-dashboard-badge">
+            <span class="badge-dot"></span>
+            STAFF PORTAL
+          </span>
+
+          <h2>Arrangement Dashboard</h2>
+
+          <p>
+            Manage daily substitute arrangements, period allocations,
+            teacher availability and class coverage in one place.
+          </p>
+
+          <div class="exam-dashboard-tags">
+            <span>🔄 Substitutions</span>
+            <span>🕒 Period Allocation</span>
+            <span>👩‍🏫 Teacher Availability</span>
+            <span>📆 Daily Arrangement</span>
+          </div>
+        </div>
+
+        <a href="Arr.html" class="exam-dashboard-btn">
+          <span>Open Arrangement</span>
+          <strong>→</strong>
+        </a>
+
+        <div class="exam-card-shine"></div>
+      </div>
+    </section>
+  </div>
+
+</div>
 
 <style>
+
+/* =========================================================
+   TABS
+   ========================================================= */
+
+.dash-tabs-wrap {
+  width: 100%;
+  padding-top: 30px;
+}
+
+.dash-tab-bar {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: calc(100% - 30px);
+  margin: 0 auto;
+  padding: 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(19,44,145,.85), rgba(71,37,157,.8));
+  border: 1px solid rgba(255,255,255,.25);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 12px 35px rgba(15,25,100,.28), inset 0 1px rgba(255,255,255,.25);
+}
+
+.dash-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 24px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255,255,255,.75);
+  font-size: 14px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .3s ease, color .3s ease, transform .25s ease, box-shadow .3s ease;
+}
+
+.dash-tab:hover {
+  color: #fff;
+  background: rgba(255,255,255,.12);
+}
+
+.dash-tab:focus-visible {
+  outline: 2px solid #39ffd5;
+  outline-offset: 2px;
+}
+
+.dash-tab.active {
+  color: #fff;
+  background: linear-gradient(135deg, #00eaff, #6670ff 55%, #b94cff);
+  box-shadow: 0 8px 22px rgba(0,234,255,.3), inset 0 1px rgba(255,255,255,.45);
+}
+
+/* Arrangement tab gets teal/green when active */
+.dash-tab[data-target="panel-arr"].active {
+  color: #04243a;
+  background: linear-gradient(135deg, #2dffb0, #00b7ff 55%, #5367ff);
+  box-shadow: 0 8px 22px rgba(45,255,176,.32), inset 0 1px rgba(255,255,255,.45);
+}
+
+/* Panels */
+.dash-panel {
+  display: none;
+}
+
+.dash-panel.active {
+  display: block;
+  animation: panelFade .45s ease;
+}
+
+@keyframes panelFade {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 /* =========================================================
    EXAMINATION DASHBOARD — GEN Z GLASSMORPHISM THEME
@@ -62,7 +193,7 @@
 .examination-dashboard-section {
   position: relative;
   width: 100%;
-  padding: 55px 20px;
+  padding: 35px 20px 55px;
   overflow: hidden;
 }
 
@@ -78,147 +209,90 @@
 }
 
 .exam-glow-1 {
-  width: 230px;
-  height: 230px;
-  left: 4%;
-  top: 15%;
+  width: 230px; height: 230px;
+  left: 4%; top: 15%;
   background: #ff4fd8;
   animation: examGlow1 10s ease-in-out infinite alternate;
 }
 
 .exam-glow-2 {
-  width: 260px;
-  height: 260px;
-  right: 7%;
-  top: 5%;
+  width: 260px; height: 260px;
+  right: 7%; top: 5%;
   background: #00eaff;
   animation: examGlow2 12s ease-in-out infinite alternate;
 }
 
 .exam-glow-3 {
-  width: 240px;
-  height: 240px;
-  right: 35%;
-  bottom: -100px;
+  width: 240px; height: 240px;
+  right: 35%; bottom: -100px;
   background: #7655ff;
   animation: examGlow3 14s ease-in-out infinite alternate;
 }
 
 @keyframes examGlow1 {
-  from {
-    transform: translate(0,0) scale(1);
-  }
-
-  to {
-    transform: translate(70px,-25px) scale(1.25);
-  }
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(70px,-25px) scale(1.25); }
 }
 
 @keyframes examGlow2 {
-  from {
-    transform: translate(0,0) scale(1);
-  }
-
-  to {
-    transform: translate(-60px,40px) scale(1.2);
-  }
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(-60px,40px) scale(1.2); }
 }
 
 @keyframes examGlow3 {
-  from {
-    transform: translate(0,0) scale(1);
-  }
-
-  to {
-    transform: translate(-50px,-35px) scale(.85);
-  }
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(-50px,-35px) scale(.85); }
 }
-
 
 /* ---------- Main Glass Card ---------- */
 
 .exam-dashboard-card {
   position: relative;
   z-index: 2;
-
   max-width: 1200px;
   margin: auto;
-
   min-height: 185px;
-
   display: flex;
   align-items: center;
   gap: 26px;
-
   padding: 28px 30px;
-
   border-radius: 28px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(19, 44, 145, .82),
-      rgba(71, 37, 157, .72)
-    );
-
+  background: linear-gradient(135deg, rgba(19,44,145,.82), rgba(71,37,157,.72));
   border: 1px solid rgba(255,255,255,.25);
-
   backdrop-filter: blur(22px) saturate(160%);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
-
   box-shadow:
     0 25px 65px rgba(15,25,100,.30),
     inset 0 1px rgba(255,255,255,.25);
-
   overflow: hidden;
-
-  transition:
-    transform .35s ease,
-    box-shadow .35s ease,
-    border-color .35s ease;
+  transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease;
 }
-
-
-/* Hover Card */
 
 .exam-dashboard-card:hover {
   transform: translateY(-6px);
-
   border-color: rgba(255,255,255,.5);
-
   box-shadow:
     0 35px 80px rgba(15,25,100,.40),
     0 0 45px rgba(76,180,255,.16),
     inset 0 1px rgba(255,255,255,.35);
 }
 
-
 /* ---------- Card Shine ---------- */
 
 .exam-card-shine {
   position: absolute;
-
-  width: 260px;
-  height: 260px;
-
-  right: -130px;
-  bottom: -160px;
-
+  width: 260px; height: 260px;
+  right: -130px; bottom: -160px;
   border-radius: 50%;
-
   background: rgba(0,234,255,.22);
-
   filter: blur(4px);
-
   transition: .5s ease;
-
   pointer-events: none;
 }
 
 .exam-dashboard-card:hover .exam-card-shine {
   transform: scale(1.5);
 }
-
 
 /* ---------- Icon ---------- */
 
@@ -227,46 +301,24 @@
 }
 
 .exam-dashboard-icon {
-  width: 78px;
-  height: 78px;
-
+  width: 78px; height: 78px;
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 22px;
-
   font-size: 38px;
-
-  background:
-    linear-gradient(
-      145deg,
-      #00eaff,
-      #5367ff 55%,
-      #b94cff
-    );
-
+  background: linear-gradient(145deg, #00eaff, #5367ff 55%, #b94cff);
   border: 1px solid rgba(255,255,255,.35);
-
   box-shadow:
     0 12px 30px rgba(0,234,255,.28),
     inset 0 1px rgba(255,255,255,.55);
-
   animation: iconFloat 4s ease-in-out infinite;
 }
 
 @keyframes iconFloat {
-
-  0%,100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-5px);
-  }
-
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-5px); }
 }
-
 
 /* ---------- Content ---------- */
 
@@ -275,210 +327,110 @@
   min-width: 0;
 }
 
-
-/* Badge */
-
 .exam-dashboard-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-
   margin-bottom: 8px;
-
   padding: 6px 11px;
-
   border-radius: 999px;
-
   background: rgba(255,255,255,.10);
-
   border: 1px solid rgba(255,255,255,.22);
-
   color: rgba(255,255,255,.9);
-
   font-size: 10px;
   font-weight: 800;
-
   letter-spacing: 1.4px;
-
-  box-shadow:
-    inset 0 1px rgba(255,255,255,.18);
+  box-shadow: inset 0 1px rgba(255,255,255,.18);
 }
 
-
-/* Badge Dot */
-
 .badge-dot {
-  width: 7px;
-  height: 7px;
-
+  width: 7px; height: 7px;
   border-radius: 50%;
-
   background: #39ffd5;
-
-  box-shadow:
-    0 0 10px #39ffd5;
-
+  box-shadow: 0 0 10px #39ffd5;
   animation: badgePulse 1.8s infinite;
 }
 
 @keyframes badgePulse {
-
-  0%,100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: .5;
-    transform: scale(.7);
-  }
-
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%     { opacity: .5; transform: scale(.7); }
 }
-
-
-/* Heading */
 
 .exam-dashboard-content h2 {
   margin: 0 0 7px;
-
   color: #fff;
-
   font-size: 29px;
-
   font-weight: 800;
-
   letter-spacing: -.7px;
-
-  text-shadow:
-    0 0 22px rgba(116,218,255,.25);
+  text-shadow: 0 0 22px rgba(116,218,255,.25);
 }
-
-
-/* Description */
 
 .exam-dashboard-content p {
   margin: 0;
-
   max-width: 700px;
-
   color: rgba(255,255,255,.72);
-
   line-height: 1.55;
-
   font-size: 13px;
 }
 
-
-/* ---------- Small Service Tags ---------- */
+/* ---------- Tags ---------- */
 
 .exam-dashboard-tags {
   display: flex;
   flex-wrap: wrap;
-
   gap: 7px;
-
   margin-top: 13px;
 }
 
 .exam-dashboard-tags span {
-
   padding: 5px 9px;
-
   border-radius: 999px;
-
   background: rgba(255,255,255,.08);
-
   border: 1px solid rgba(255,255,255,.13);
-
   color: rgba(255,255,255,.72);
-
   font-size: 10px;
-
   transition: .25s ease;
 }
 
 .exam-dashboard-tags span:hover {
-
   background: rgba(255,255,255,.18);
-
   color: #fff;
-
   transform: translateY(-2px);
 }
 
-
-/* ---------- Open Dashboard Button ---------- */
+/* ---------- Button ---------- */
 
 .exam-dashboard-btn {
-
   position: relative;
-
   flex-shrink: 0;
-
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
-
   gap: 13px;
-
   min-width: 195px;
-
   padding: 15px 20px;
-
   border-radius: 14px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #00eaff,
-      #6670ff 55%,
-      #b94cff
-    );
-
+  background: linear-gradient(135deg, #00eaff, #6670ff 55%, #b94cff);
   color: #fff;
-
   text-decoration: none;
-
   font-size: 13px;
-
   font-weight: 800;
-
   border: 1px solid rgba(255,255,255,.4);
-
   box-shadow:
     0 10px 25px rgba(0,0,0,.20),
     0 0 20px rgba(0,234,255,.18),
     inset 0 1px rgba(255,255,255,.45);
-
   overflow: hidden;
-
-  transition:
-    transform .3s ease,
-    box-shadow .3s ease;
+  transition: transform .3s ease, box-shadow .3s ease;
 }
 
-
-/* Button shine */
-
 .exam-dashboard-btn:before {
-
   content: "";
-
   position: absolute;
-
-  width: 70px;
-  height: 150%;
-
-  top: -25%;
-
-  left: -100px;
-
+  width: 70px; height: 150%;
+  top: -25%; left: -100px;
   background: rgba(255,255,255,.35);
-
   transform: rotate(25deg);
-
   transition: .6s ease;
 }
 
@@ -486,28 +438,17 @@
   left: 120%;
 }
 
-
-/* Button hover */
-
 .exam-dashboard-btn:hover {
-
   transform: translateY(-4px) scale(1.025);
-
   box-shadow:
     0 16px 35px rgba(0,0,0,.28),
     0 0 30px rgba(0,234,255,.35),
     inset 0 1px rgba(255,255,255,.6);
 }
 
-
-/* Arrow */
-
 .exam-dashboard-btn strong {
-
   font-size: 21px;
-
   line-height: 1;
-
   transition: transform .25s ease;
 }
 
@@ -515,91 +456,125 @@
   transform: translateX(5px);
 }
 
+/* =========================================================
+   ARRANGEMENT THEME OVERRIDES (teal / green)
+   ========================================================= */
+
+.arr-theme .exam-glow-1 { background: #2dffb0; }
+.arr-theme .exam-glow-2 { background: #00b7ff; }
+.arr-theme .exam-glow-3 { background: #14c8a0; }
+
+.arr-theme .exam-dashboard-card {
+  background: linear-gradient(135deg, rgba(8,82,110,.82), rgba(14,120,105,.72));
+}
+
+.arr-theme .exam-dashboard-card:hover {
+  box-shadow:
+    0 35px 80px rgba(5,60,80,.40),
+    0 0 45px rgba(45,255,176,.18),
+    inset 0 1px rgba(255,255,255,.35);
+}
+
+.arr-theme .exam-dashboard-icon {
+  background: linear-gradient(145deg, #2dffb0, #00b7ff 55%, #5367ff);
+  box-shadow:
+    0 12px 30px rgba(45,255,176,.28),
+    inset 0 1px rgba(255,255,255,.55);
+}
+
+.arr-theme .exam-dashboard-btn {
+  background: linear-gradient(135deg, #2dffb0, #00b7ff 55%, #5367ff);
+  color: #04243a;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.20),
+    0 0 20px rgba(45,255,176,.22),
+    inset 0 1px rgba(255,255,255,.45);
+}
+
+.arr-theme .exam-dashboard-btn:hover {
+  box-shadow:
+    0 16px 35px rgba(0,0,0,.28),
+    0 0 30px rgba(45,255,176,.4),
+    inset 0 1px rgba(255,255,255,.6);
+}
+
+.arr-theme .exam-card-shine {
+  background: rgba(45,255,176,.22);
+}
 
 /* =========================================================
    RESPONSIVE
    ========================================================= */
 
 @media (max-width: 900px) {
-
-  .exam-dashboard-card {
-    gap: 20px;
-    padding: 25px;
-  }
-
-  .exam-dashboard-content h2 {
-    font-size: 24px;
-  }
-
-  .exam-dashboard-btn {
-    min-width: 170px;
-  }
-
+  .exam-dashboard-card { gap: 20px; padding: 25px; }
+  .exam-dashboard-content h2 { font-size: 24px; }
+  .exam-dashboard-btn { min-width: 170px; }
 }
 
-
 @media (max-width: 750px) {
-
-  .examination-dashboard-section {
-    padding: 35px 15px;
-  }
+  .dash-tabs-wrap { padding-top: 22px; }
+  .examination-dashboard-section { padding: 25px 15px 35px; }
 
   .exam-dashboard-card {
-
     flex-direction: column;
-
     text-align: center;
-
     padding: 30px 22px;
-
     border-radius: 25px;
   }
 
-  .exam-dashboard-content p {
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .exam-dashboard-tags {
-    justify-content: center;
-  }
-
-  .exam-dashboard-btn {
-
-    width: 100%;
-
-    margin-top: 5px;
-  }
-
+  .exam-dashboard-content p { margin-left: auto; margin-right: auto; }
+  .exam-dashboard-tags { justify-content: center; }
+  .exam-dashboard-btn { width: 100%; margin-top: 5px; }
 }
 
-
 @media (max-width: 450px) {
-
-  .exam-dashboard-content h2 {
-    font-size: 22px;
-  }
-
-  .exam-dashboard-content p {
-    font-size: 12px;
-  }
+  .dash-tab { padding: 10px 16px; font-size: 13px; }
+  .exam-dashboard-content h2 { font-size: 22px; }
+  .exam-dashboard-content p { font-size: 12px; }
 
   .exam-dashboard-icon {
-    width: 68px;
-    height: 68px;
+    width: 68px; height: 68px;
     font-size: 32px;
   }
 
-  .exam-dashboard-icon-wrap {
-    flex-basis: 68px;
-  }
-
-  .exam-dashboard-tags span {
-    font-size: 9px;
-  }
-
+  .exam-dashboard-icon-wrap { flex-basis: 68px; }
+  .exam-dashboard-tags span { font-size: 9px; }
 }
 
 </style>
 
-<!-- ================= END EXAMINATION DASHBOARD ================= -->
+<script>
+(function () {
+  var wrap = document.getElementById('dashTabs');
+  if (!wrap) return;
+
+  var tabs = wrap.querySelectorAll('.dash-tab');
+  var panels = wrap.querySelectorAll('.dash-panel');
+
+  function activate(tab) {
+    tabs.forEach(function (t) {
+      var on = t === tab;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    panels.forEach(function (p) {
+      p.classList.toggle('active', p.id === tab.dataset.target);
+    });
+  }
+
+  tabs.forEach(function (tab, i) {
+    tab.addEventListener('click', function () { activate(tab); });
+
+    // Arrow-key navigation
+    tab.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        var next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus();
+        activate(next);
+      }
+    });
+  });
+})();
+</script>
+<!-- ================= END DASHBOARD TABS ================= -->
