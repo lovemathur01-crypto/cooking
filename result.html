@@ -33,7 +33,7 @@ body{min-height:100vh;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-
 
 /* TABS */
 .tabs-wrap{padding:20px 28px 0;background:#fff}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:8px;border-radius:20px;background:#f0f3f7;border:1px solid #e4e9f0}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:8px;border-radius:20px;background:#f0f3f7;border:1px solid #e4e9f0}
 .tab-btn{position:relative;border:0;border-radius:15px;padding:15px 12px;background:transparent;color:#53677d;font:700 .9rem Inter,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:.22s ease;-webkit-tap-highlight-color:transparent}
 .tab-btn:hover{background:#fff;color:var(--blue);transform:translateY(-1px)}
 .tab-btn.active{color:var(--navy);background:#fff;box-shadow:0 8px 20px rgba(20,42,72,.1)}
@@ -106,6 +106,7 @@ body{padding:14px}
 .brand-row{align-items:flex-start}
 .status{display:none}
 .tabs-wrap{padding:15px 15px 0}
+.tabs{grid-template-columns:repeat(2,1fr)}
 .content{padding:20px 15px}
 .result-card{grid-template-columns:72px 1fr;padding:22px}
 .result-icon{width:68px;height:68px;border-radius:20px;font-size:1.55rem}
@@ -126,9 +127,9 @@ body{padding:0}
 .hero-sub{font-size:.82rem;margin-top:8px}
 
 .tabs-wrap{position:sticky;top:0;z-index:20;padding:10px 10px 8px;box-shadow:0 6px 14px rgba(20,42,72,.06)}
-.tabs{grid-template-columns:repeat(3,1fr);gap:4px;padding:5px;border-radius:16px}
-.tab-btn{flex-direction:column;gap:5px;padding:10px 4px;min-height:58px;font-size:.7rem;line-height:1.2;text-align:center;border-radius:12px}
-.tab-btn i{font-size:1.1rem}
+.tabs{grid-template-columns:repeat(4,1fr);gap:3px;padding:4px;border-radius:16px}
+.tab-btn{flex-direction:column;gap:5px;padding:10px 2px;min-height:58px;font-size:.62rem;line-height:1.2;text-align:center;border-radius:12px}
+.tab-btn i{font-size:1.05rem}
 .tab-btn.active::after{left:25%;right:25%;bottom:3px}
 
 .content{padding:16px 12px calc(16px + env(safe-area-inset-bottom,0px))}
@@ -183,7 +184,7 @@ iframe{min-height:1300px;border-radius:12px}
       </div>
       <div class="status"><span class="status-dot"></span>Portal Active</div>
     </div>
-    <p class="hero-sub">Access published results, review grade‑wise remarks, and complete the declaration required before result printing.</p>
+    <p class="hero-sub">Access published results, review grade‑wise remarks, view attendance reports, and complete the declaration required before result printing.</p>
   </div>
 </header>
 
@@ -191,6 +192,7 @@ iframe{min-height:1300px;border-radius:12px}
   <nav class="tabs" aria-label="Portal sections">
     <button class="tab-btn active" data-tab="tab-results" aria-selected="true"><i class="fa-solid fa-chart-column"></i><span>View Results</span></button>
     <button class="tab-btn" data-tab="tab-remarks" aria-selected="false"><i class="fa-solid fa-lightbulb"></i><span>Grade‑Wise Remarks</span></button>
+    <button class="tab-btn" data-tab="tab-attendance" aria-selected="false"><i class="fa-solid fa-calendar-check"></i><span>Attendance Report</span></button>
     <button class="tab-btn" data-tab="tab-declaration" aria-selected="false"><i class="fa-solid fa-print"></i><span>Result Printing</span></button>
   </nav>
 </div>
@@ -258,6 +260,33 @@ iframe{min-height:1300px;border-radius:12px}
       </div>
     </div>
     <div class="remark-note"><i class="fa-solid fa-circle-info"></i> These remarks are suggestions based on academic indicators.</div>
+  </div>
+
+  <!-- ATTENDANCE REPORT -->
+  <div id="tab-attendance" class="tab-pane">
+    <div class="section-heading">
+      <div>
+        <h2>Attendance Report</h2>
+        <p>Open the shared folder to view available attendance report documents and PDFs.</p>
+      </div>
+      <span class="mini-badge"><i class="fa-solid fa-folder-open"></i> View Only</span>
+    </div>
+    <article class="result-card">
+      <div class="result-icon"><i class="fa-solid fa-calendar-check"></i></div>
+      <div>
+        <h3>Attendance Documents</h3>
+        <p>Access the attendance reports from the shared Google Drive folder. Documents and PDFs are available for viewing.</p>
+        <div class="meta">
+          <span><i class="fa-solid fa-file-pdf"></i> PDF Documents</span>
+          <span><i class="fa-solid fa-cloud"></i> Google Drive</span>
+          <span><i class="fa-solid fa-eye"></i> View Only</span>
+        </div>
+      </div>
+      <a class="primary-btn" href="https://drive.google.com/drive/folders/1lNE9F9RNGMCTtVEj7wwQKkmQpz-TFk1J?usp=sharing" target="_blank" rel="noopener noreferrer">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Drive Folder
+      </a>
+    </article>
+    <div class="access-note"><i class="fa-solid fa-circle-check"></i> Shared folder access is view‑only. Open the folder to locate the required attendance report.</div>
   </div>
 
   <!-- RESULT PRINTING -->
