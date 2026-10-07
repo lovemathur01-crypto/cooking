@@ -28,7 +28,7 @@ td.l,th.l{text-align:left}.stats{display:grid;grid-template-columns:repeat(auto-
 td.fail{background:var(--badbg)}.chip{display:inline-block;border:1px solid var(--bd);border-radius:6px;padding:1px 7px;margin:2px;font-size:12px}
 .tag{padding:2px 8px;border-radius:99px;font-size:12px}.tok{background:var(--okbg);color:var(--ok)}.twn{background:var(--wnbg);color:var(--wn)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.err{background:var(--badbg);color:var(--bad)}
-.tt th{background:#FFFFCC;color:#000;position:static;border-color:#000;font-weight:700}.tt th.sc{padding:6px 1px;vertical-align:bottom;width:30px;min-width:30px;font-size:12px}.tt .v{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;white-space:nowrap;line-height:1.15;text-align:center}.tt th.cl{font-size:15px}.tt .an td{background:#FFFFCC;font-weight:600;border-color:#999}.tt .an td.l{background:#FFFFCC}.tt .rd{color:#d00000;font-weight:700}.tt th.sch{font-size:18px;letter-spacing:.5px}.tt .pg{text-align:center;font-weight:700;border:0;padding-top:8px;background:transparent}.tt td{border-color:#999}
+.tt,.tt th,.tt td{font-family:Cambria,"Cambria Math",Georgia,"Times New Roman",serif}.tt th{background:#FFFFCC;color:#000;position:static;border-color:#000;font-weight:700}.tt th.sc{padding:6px 1px;vertical-align:bottom;width:30px;min-width:30px;font-size:12px}.tt .v{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;white-space:nowrap;line-height:1.15;text-align:center}.tt th.cl{font-size:15px}.tt .an td{background:#FFFFCC;font-weight:600;border-color:#999}.tt .an td.l{background:#FFFFCC}.tt .rd{color:#d00000;font-weight:700}.tt th.sch{font-size:18px;letter-spacing:.5px}.tt .pg{text-align:center;font-weight:700;border:0;padding-top:8px;background:transparent}.tt td{border-color:#999}
 </style></head><body><main>
 <h1>Marks Tabulator</h1>
 <div class="mu">Upload a result sheet (.xlsx / .xls). Subjects, components, totals and grades are detected automatically — nothing is uploaded anywhere; all processing happens in your browser.</div>
@@ -52,8 +52,13 @@ function parse(ws){
  // 1) header row = row containing "Student Name"
  let nr=-1;for(let r=0;r<Math.min(R,40)&&nr<0;r++)if(h[r].some(v=>/^(student'?s?\s*name|name( of student)?)$/i.test(clean(v))))nr=r;
  if(nr<1)throw Error('Could not find a "Student Name" header below a subject-name row.');
- // 2) subject row = header row above it with most distinct labels
- let sr=0,best=-1;for(let r=0;r<nr;r++){const n=new Set(h[r].filter(v=>clean(v)).map(clean)).size;if(n>best){best=n;sr=r}}
+ // 2) subject row = header row above it where the same label repeats across neighbouring columns
+ //    (a subject name sits over several sub-columns). Counting distinct labels is NOT reliable:
+ //    vertical merges (e.g. Grand Total / % / Pos spanning rows 1-3) copy labels into the sub-header row.
+ const runScore=r=>{let n=0,len=0,prev='';for(let c=0;c<=C;c++){const lb=c<C?clean(h[r][c]):'';
+   if(lb&&lb===prev)len++;else{if(len>=3)n++;len=lb?1:0}prev=lb}return n};
+ let sr=-1,best=0;for(let r=0;r<nr;r++){const n=runScore(r);if(n>best){best=n;sr=r}}
+ if(sr<0){best=-1;sr=0;for(let r=0;r<nr;r++){const n=new Set(h[r].filter(v=>clean(v)).map(clean)).size;if(n>best){best=n;sr=r}}}
  let cls='';for(let r=0;r<nr&&!cls;r++)if(r!==sr)cls=clean(h[r][0]);
  let term='';for(let r=0;r<nr&&!term;r++)for(let c=0;c<C;c++)if(/^term\b/i.test(clean(g[r][c]))){term=clean(g[r][c]);break}
  // 3) group consecutive columns sharing the same subject label
@@ -159,6 +164,10 @@ async function exp(){
  // column map
  let cc0=ni+1;const M=d.off.map(b=>{const m={b,start:cc0,comps:[],tot:null,grd:null};b.cols.forEach((c,k)=>{const n=cc0+k;if(c.type==='comp')m.comps.push(n);else if(c.type==='total'&&!m.tot)m.tot=n;else if(c.type==='grade'&&!m.grd)m.grd=n});cc0+=b.cols.length;return m});
  const GT=nc-3,PC=nc-2,PS=nc-1,R0=5,RL=4+st.length;
+ // S.No column + Name column (for the SUBTOTAL serial formula)
+ const snoI=d.ident.findIndex(x=>/^(s\.?\s*no\.?|sr\.?\s*no\.?|serial.*)$/i.test(x.name.trim())),
+  nmI=d.ident.findIndex(x=>/name/i.test(x.name)&&!/father|mother|parent/i.test(x.name)),
+  NM=A(nmI+1);
  // header rows (same as preview)
  const r1_=[d.term||'',...Array(ni-1).fill('')],r2_=[d.cls||'',...Array(ni-1).fill('')],r3_=d.ident.map(x=>x.name);
  d.off.forEach(b=>b.cols.forEach((c,k)=>{r1_.push(k?'':b.name);r2_.push(c.name+(c.max?'\n'+c.max:''));r3_.push(c.type==='grade'?'G':'C')}));
@@ -167,14 +176,15 @@ async function exp(){
  ws.mergeCells(1,1,1,nc);ws.mergeCells(2,1,2,ni);ws.mergeCells(3,1,3,ni);
  M.forEach(m=>{if(m.b.cols.length>1)ws.mergeCells(2,m.start,2,m.start+m.b.cols.length-1)});
  for(let q=0;q<4;q++)ws.mergeCells(2,GT+q,4,GT+q);
- for(let r=1;r<=4;r++)for(let c=1;c<=nc;c++){const x=ws.getCell(r,c);x.fill=YEL;x.border=box(BK);x.font={bold:true,size:r===1?16:r===4?10:11,color:{argb:'FF000000'}};x.alignment={horizontal:'center',vertical:'middle',wrapText:true};if(r===3&&c>ni&&c<=ni+sub.length)x.alignment={horizontal:'center',vertical:'middle',wrapText:true,textRotation:90};if(r===3&&c===1)x.font={bold:true,size:14}}
- ws.getRow(1).height=28;ws.getRow(2).height=22;ws.getRow(3).height=95;ws.getRow(4).height=26;
+ for(let r=1;r<=4;r++)for(let c=1;c<=nc;c++){const x=ws.getCell(r,c);x.fill=YEL;x.border=box(BK);x.font={name:'Cambria',bold:true,size:r===1?16:r===4?10:11,color:{argb:'FF000000'}};x.alignment={horizontal:'center',vertical:'middle',wrapText:true};if(r===3&&c>ni&&c<=ni+sub.length)x.alignment={horizontal:'center',vertical:'middle',wrapText:true,textRotation:90};if(r===3&&c===1)x.font={name:'Cambria',bold:true,size:14}}
  // data rows with formulas
  const totSet=new Set(M.map(m=>m.tot));
  st.forEach((s,i)=>{const r=R0+i,row=d.ident.map(x=>s.info[x.name]??'');
   M.forEach(m=>{const o=s.sub[m.b.name];let k=0;m.b.cols.forEach(c=>row.push(c.type==='comp'?(()=>{const v=o.comps[k++];return v==null?(o.ab?'Ab':''):v})():c.type==='total'?(o.total??''):o.grade))});
   row.push('','','',s.file.att??'');
   const rr=ws.addRow(row);
+  // serial number that renumbers itself when you filter
+  if(snoI>=0)rr.getCell(snoI+1).value={formula:`IF(${NM}${r}="","",SUBTOTAL(103,$${NM}$${R0}:${NM}${r}))`,result:i+1};
   M.forEach(m=>{const o=s.sub[m.b.name],n=o.comps.filter(v=>v!=null).length;
    if(!m.comps.length||!m.tot||!(n||o.ab||o.total==null))return;
    const refs=m.comps.map(c=>A(c)+r).join(',');
@@ -208,28 +218,59 @@ async function exp(){
    if(m.b.cols.length>1)ws.mergeCells(n,m.start,n,m.start+m.b.cols.length-1)});
   ws.mergeCells(n,nc-3,n,nc);
   for(let c=1;c<=nc;c++){const x=rr.getCell(c);x.border=box(GY);x.font={bold:true};x.alignment={horizontal:c===1?'left':'center',vertical:'middle'};x.fill=YEL}});
- // widths, freeze, print
- d.ident.forEach((x,k)=>{ws.getColumn(k+1).width=/name/i.test(x.name)?22:/s\.?\s*no/i.test(x.name)?6:12});
- for(let c=ni+1;c<=ni+sub.length;c++)ws.getColumn(c).width=5.5;
- ws.getColumn(GT).width=11;ws.getColumn(PC).width=8;ws.getColumn(PS).width=6;ws.getColumn(nc).width=12;
+
+ // ================= A4 AUTO-FIT LAYOUT =================
+ // 1) base widths (Excel character units): equal width for same kind of column
+ const PT=w=>(w*7+5)*.75;                         // column width -> points
+ const base=[];
+ d.ident.forEach((x,k)=>{const len=Math.max(...st.map(s=>String(s.info[x.name]??'').length),String(x.name).length*.6);
+  base.push(k===snoI?5:k===nmI?Math.min(30,Math.max(16,len+2)):Math.min(14,Math.max(6,len+2)))});
+ sub.forEach(({c})=>base.push(c.type==='total'?6:5));   // all components equal, all totals equal, all grades equal
+ base.push(8.5,6,5,11);                                  // Grand Total, %, Pos, Attendance
+ // 2) orientation: landscape for wide tables, portrait for narrow ones
+ const sw=base.reduce((a,b)=>a+b,0),nb=base.length;
+ const land=base.reduce((a,w)=>a+PT(w),0)>(8.27-.5)*72;
+ const PW=((land?11.69:8.27)-.5)*72,PH=((land?8.27:11.69)-.9)*72;   // printable width / height (points)
+ // 3) stretch every column by the same factor so the table fills the page width
+ const fx=Math.max(1,(PW/.75-5*nb)/(7*sw)*.995);
+ base.forEach((w,i)=>ws.getColumn(i+1).width=w*fx);
+ const wsum=base.reduce((a,w)=>a+PT(w*fx),0),sc=Math.min(1,PW/wsum);   // Excel shrinks only if still too wide
+ // 4) heights: header sized to the longest column name, data rows share the remaining page height equally
+ const lab=Math.max(...sub.map(({c})=>c.name.length));
+ const h1=28,h2=22,h3=Math.min(150,Math.max(60,lab*6+16)),h4=18;
+ ws.getRow(1).height=h1;ws.getRow(2).height=h2;ws.getRow(3).height=h3;ws.getRow(4).height=h4;
+ const tot=st.length+8;                                  // students + blank + title + 6 analysis rows
+ const avail=PH/sc*.97-(h1+h2+h3+h4);                    // usable height per page for body rows
+ const n=Math.max(5,Math.floor(avail/17));               // rows that fit at minimum height
+ const pages=Math.ceil(tot/n),per=Math.ceil(tot/pages);  // spread rows evenly across pages
+ const rh=Math.min(36,avail/per),fs=Math.round(Math.max(8,Math.min(12,rh*.55)));
+ for(let r=R0;r<R0+tot;r++){const row=ws.getRow(r);row.height=rh;row.eachCell({includeEmpty:true},x=>{x.font={...(x.font||{}),name:'Cambria',size:fs}})}
+ for(let k=1;k*per<tot;k++)ws.getRow(R0+k*per-1).addPageBreak();   // break exactly after each full page
+ // 5) freeze, filter, print setup (A4)
  ws.views=[{state:'frozen',xSplit:ni,ySplit:4}];
- ws.pageSetup={orientation:'landscape',paperSize:8,fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:'1:4'};
+ ws.autoFilter={from:{row:4,column:1},to:{row:RL,column:nc}};
+ ws.pageSetup={orientation:land?'landscape':'portrait',paperSize:9,fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:'1:4',horizontalCentered:true,
+  margins:{left:.25,right:.25,top:.4,bottom:.5,header:.2,footer:.25}};
  ws.headerFooter={oddFooter:'&C&BPage &P of &N'};
  await saveFile('Tabulation.xlsx',new Uint8Array(await wb.xlsx.writeBuffer()),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
 
 async function expPdf(){
  if(!window.jspdf)throw Error('PDF library did not load (check internet connection).');
  const d=D,st=ordered(),ni=d.ident.length,{jsPDF}=window.jspdf;
- const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a3'}),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),MG=8;
- const ncomp=d.off.reduce((a,b)=>a+b.cols.length,0),nall=ni+ncomp+4;
- const idw=d.ident.map(x=>/name/i.test(x.name)?32:/s\.?\s*no/i.test(x.name)?8:14),tail=[14,10,8,16];
- const cw=Math.max(3.4,Math.min(8,(W-2*MG-idw.reduce((a,b)=>a+b,0)-tail.reduce((a,b)=>a+b,0))/ncomp));
- doc.setFont('helvetica','bold');doc.setFontSize(6.5);
+ const ncomp=d.off.reduce((a,b)=>a+b.cols.length,0),nall=ni+ncomp+4,MG=8;
+ // base widths (mm): same kind of column = same width
+ const idb=d.ident.map(x=>/name/i.test(x.name)&&!/father|mother|parent/i.test(x.name)?32:/s\.?\s*no/i.test(x.name)?8:14),tb_=[14,10,8,16],cb=4.2;
+ const bsum=idb.reduce((a,b)=>a+b,0)+ncomp*cb+tb_.reduce((a,b)=>a+b,0);
+ const land=bsum>196;                                   // landscape for wide tables, portrait for narrow
+ const doc=new jsPDF({orientation:land?'landscape':'portrait',unit:'mm',format:'a4'}),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
+ const f=(W-2*MG)/bsum;                                  // one factor -> table fills the full page width
+ const idw=idb.map(w=>w*f),tail=tb_.map(w=>w*f),cw=cb*f,fs=Math.max(4.5,Math.min(8,6.5*f));
+ doc.setFont('times','bold');doc.setFontSize(fs);
  const RH=Math.max(...d.off.flatMap(b=>b.cols.map(c=>doc.getTextWidth(c.name))))+5;
  const ctype=[...d.ident.map(()=>({t:'id'})),...d.off.flatMap(b=>b.cols.map(c=>({t:c.type,b:b.name}))),{t:'grand'},{t:'pct'},{t:'pos'},{t:'att'}];
  const cs={};[...idw,...Array(ncomp).fill(cw),...tail].forEach((w,i)=>cs[i]={cellWidth:w});
  const head=[[{content:SCHOOL,colSpan:nall,styles:{fontSize:14,cellPadding:1.5}}],
-  [{content:d.term||'',colSpan:ni},...d.off.map(b=>({content:b.name,colSpan:b.cols.length,styles:{fontSize:8}})),{content:'Grand\nTotal\n('+d.max+')',rowSpan:3},{content:'%',rowSpan:3},{content:'Pos',rowSpan:3},{content:'Attendance',rowSpan:3}],
+  [{content:d.term||'',colSpan:ni},...d.off.map(b=>({content:b.name,colSpan:b.cols.length,styles:{fontSize:fs+1.5}})),{content:'Grand\nTotal\n('+d.max+')',rowSpan:3},{content:'%',rowSpan:3},{content:'Pos',rowSpan:3},{content:'Attendance',rowSpan:3}],
   [{content:d.cls||'',colSpan:ni,styles:{fontSize:10}},...d.off.flatMap(b=>b.cols.map(c=>({content:'',_rot:[c.name,c.max?String(c.max):''],styles:{minCellHeight:RH}})))],
   [...d.ident.map(x=>x.name),...d.off.flatMap(b=>b.cols.map(c=>c.type==='grade'?'G':'C'))]];
  const body=st.map(s=>{const row=d.ident.map(x=>String(s.info[x.name]??''));
@@ -238,8 +279,8 @@ async function expPdf(){
  body.push([{content:'SUBJECT ANALYSIS',colSpan:nall,title:true}]);
  anRows().forEach(r=>body.push([{content:r.label,colSpan:ni},...r.vals.map((v,i)=>({content:String(v),colSpan:d.off[i].cols.length})),{content:'',colSpan:4}]));
  const GC={A:[23,112,58],B:[31,95,191],C:[138,90,0],D:[179,38,30],E:[179,38,30]};
- doc.autoTable({head,body,theme:'grid',startY:MG,margin:{top:MG,left:MG,right:MG,bottom:14},columnStyles:cs,
-  styles:{fontSize:6.5,cellPadding:0.6,lineColor:[153,153,153],lineWidth:0.1,halign:'center',valign:'middle',textColor:[0,0,0],overflow:'hidden'},
+ const common={theme:'grid',margin:{top:MG,left:MG,right:MG,bottom:14},columnStyles:cs,
+  styles:{font:'times',fontSize:fs,cellPadding:0.6,lineColor:[153,153,153],lineWidth:0.1,halign:'center',valign:'middle',textColor:[0,0,0],overflow:'hidden'},
   headStyles:{fillColor:[255,255,204],textColor:[0,0,0],fontStyle:'bold',lineColor:[0,0,0],lineWidth:0.2},
   didParseCell:h=>{if(h.section!=='body')return;const i=h.row.index,c=h.cell.styles;
    if(i>=st.length){c.fillColor=[255,255,204];c.fontStyle='bold';c.lineColor=[0,0,0];const rw=h.cell.raw;c.halign=(rw&&rw.title)?'center':(h.column.index<ni?'left':'center');return}
@@ -250,10 +291,17 @@ async function expPdf(){
    if(t.t==='grade'&&txt){c.textColor=GC[txt[0]]||[0,0,0];c.fontStyle='bold'}
    if(t.t==='grand')c.fontStyle='bold';
    if(['grand','pct','pos'].includes(t.t)&&s.pct<33){c.textColor=[208,0,0];c.fontStyle='bold'}},
-  didDrawCell:h=>{const r=h.cell.raw;if(h.section==='head'&&r&&r._rot){const ls=r._rot.filter(Boolean),c=h.cell,lh=2.8;
-   doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(0,0,0);
-   const x0=c.x+c.width/2-(ls.length-1)*lh/2+0.8;ls.forEach((t,k)=>doc.text(t,x0+k*lh,c.y+c.height-1.5,{angle:90}))}}});
- const n=doc.getNumberOfPages();for(let p=1;p<=n;p++){doc.setPage(p);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);doc.text(`Page ${p} of ${n}`,W/2,H-6,{align:'center'})}
+  didDrawCell:h=>{const r=h.cell.raw;if(h.section==='head'&&r&&r._rot){const ls=r._rot.filter(Boolean),c=h.cell,lh=fs*.43;
+   doc.setFont('times','bold');doc.setFontSize(fs);doc.setTextColor(0,0,0);
+   const x0=c.x+c.width/2-(ls.length-1)*lh/2+0.8;ls.forEach((t,k)=>doc.text(t,x0+k*lh,c.y+c.height-1.5,{angle:90}))}}};
+ // measure the real header height with a head-only dry run, then discard that page
+ doc.autoTable({...common,head,body:[],startY:MG});
+ const hh=doc.lastAutoTable.finalY-MG;doc.addPage();doc.deletePage(1);
+ // rows per page -> equal row height so rows fill the page exactly
+ const avail=H-MG-14-hh,total=body.length,minRow=fs*.3528*1.15+2.4;
+ const n=Math.max(5,Math.floor(avail*.99/minRow)),pages=Math.ceil(total/n),per=Math.ceil(total/pages),rh=avail*.985/per;
+ doc.autoTable({...common,head,body,startY:MG,bodyStyles:{minCellHeight:rh}});
+ const np=doc.getNumberOfPages();for(let p=1;p<=np;p++){doc.setPage(p);doc.setFont('times','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);doc.text(`Page ${p} of ${np}`,W/2,H-6,{align:'center'})}
  await saveFile('Tabulation.pdf',new Uint8Array(doc.output('arraybuffer')),'application/pdf')}
 
 // ---------- upload ----------
