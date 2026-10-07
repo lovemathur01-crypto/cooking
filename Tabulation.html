@@ -4,6 +4,8 @@
 <title>Marks Tabulator</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root{--bg:#f5f6f8;--card:#fff;--tx:#1b1f24;--mu:#5d6773;--bd:#dfe3e8;--ac:#1f5fbf;--ac2:#e6effc;--bad:#b3261e;--badbg:#fde8e7;--ok:#17703a;--okbg:#e3f4e8;--wn:#8a5a00;--wnbg:#fff3d6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171b;--card:#1d2127;--tx:#e8ebee;--mu:#9aa5b1;--bd:#333a43;--ac:#6ea3f5;--ac2:#203049;--bad:#ff8a80;--badbg:#3b1f1e;--ok:#79d49a;--okbg:#17301f;--wn:#f0c36a;--wnbg:#3a2e12}}
@@ -26,7 +28,7 @@ td.l,th.l{text-align:left}.stats{display:grid;grid-template-columns:repeat(auto-
 td.fail{background:var(--badbg)}.chip{display:inline-block;border:1px solid var(--bd);border-radius:6px;padding:1px 7px;margin:2px;font-size:12px}
 .tag{padding:2px 8px;border-radius:99px;font-size:12px}.tok{background:var(--okbg);color:var(--ok)}.twn{background:var(--wnbg);color:var(--wn)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.err{background:var(--badbg);color:var(--bad)}
-.tt th{background:#ffff00;color:#000;position:static;border-color:#000;font-weight:700}.tt th.sc{white-space:normal;word-break:break-all;min-width:34px;max-width:46px;font-size:12px}.tt td{border-color:#999}
+.tt th{background:#FFFFCC;color:#000;position:static;border-color:#000;font-weight:700}.tt th.sc{padding:6px 1px;vertical-align:bottom;width:30px;min-width:30px;font-size:12px}.tt .v{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;white-space:nowrap;line-height:1.15;text-align:center}.tt th.cl{font-size:15px}.tt .an td{background:#FFFFCC;font-weight:600;border-color:#999}.tt .an td.l{background:#FFFFCC}.tt .rd{color:#d00000;font-weight:700}.tt th.sch{font-size:18px;letter-spacing:.5px}.tt .pg{text-align:center;font-weight:700;border:0;padding-top:8px;background:transparent}.tt td{border-color:#999}
 </style></head><body><main>
 <h1>Marks Tabulator</h1>
 <div class="mu">Upload a result sheet (.xlsx / .xls). Subjects, components, totals and grades are detected automatically — nothing is uploaded anywhere; all processing happens in your browser.</div>
@@ -92,8 +94,8 @@ function parse(ws){
 // ---------- views ----------
 function setTab(t){tab=t;render()}
 function render(){
- $('#nav').innerHTML=['Columns','Tabulation','Subjects','Student','Checks'].map(t=>`<button class="${t===tab?'on':''}" onclick="setTab('${t}')">${t==='Columns'?'Detected columns':t==='Tabulation'?'Tabulation':t==='Subjects'?'Subject analysis':t==='Student'?'Student report':'Data checks'}</button>`).join('')+'<button class="p" onclick="exp()" style="margin-left:auto">Export to Excel</button>';
- $('#view').innerHTML=({Columns:vCols,Tabulation:vTab,Subjects:vSub,Student:vStu,Checks:vChk})[tab]()}
+ $('#nav').innerHTML=['Columns','Tabulation','Subjects','Checks'].map(t=>`<button class="${t===tab?'on':''}" onclick="setTab('${t}')">${t==='Columns'?'Detected columns':t==='Tabulation'?'Tabulation':t==='Subjects'?'Subject analysis':'Data checks'}</button>`).join('')+'<button class="p" onclick="run(exp)" style="margin-left:auto">Export Excel</button><button class="p" onclick="run(expPdf)">Export PDF</button>';
+ $('#view').innerHTML=({Columns:vCols,Tabulation:vTab,Subjects:vSub,Checks:vChk})[tab]()}
 const gcell=(v,g)=>`${v==null?'–':r1(v)} <span class="${gc(g)}">${esc(g||'')}</span>`;
 function vCols(){const d=D;
  return`<div class="card"><b>Auto-detection result</b><div class="mu">Sheet “${esc(d.sheet)}” · Class ${esc(d.cls||'—')} · Subject names in row ${d.sr} · column headings in row ${d.nr} · ${d.st.length} students in rows ${d.first}–${d.last}</div></div>
@@ -110,28 +112,26 @@ function vTab(){const d=D,n=d.st.length,pass=d.st.filter(s=>!s.fails.length).len
  <div class="st">Class average<b>${r1(avg(d.st.map(s=>s.pct)))}%</b></div><div class="st">No “E” grade<b>${pass}/${n}</b></div><div class="st">Toppers<b style="font-size:14px">${top.map(s=>esc(s.name)+' ('+r1(s.pct)+'%)').join('<br>')}</b></div></div>
  <div class="card"><div class="row"><input id="q" type="search" placeholder="Search student…" oninput="tb()"><select id="sort" onchange="tb()"><option value="rank">Sort: Rank</option><option value="sno">Sort: Roll order</option><option value="name">Sort: Name</option></select></div><div class="w" id="tbl" style="margin-top:10px"></div></div>`}
 function tb(){const d=D,id=d.ident,ni=id.length;
- const head=`<table class="tt"><tr><th colspan="${ni}">${esc(d.term||'')}</th>${d.off.map(b=>`<th colspan="${b.cols.length}">${esc(b.name)}</th>`).join('')}<th rowspan="3">Grand<br>Total<br>(${d.max})</th><th rowspan="3">%</th><th rowspan="3">Pos</th><th rowspan="3">Attendance</th></tr>
- <tr><th colspan="${ni}">${esc(d.cls||'')}</th>${d.off.map(b=>b.cols.map(c=>`<th class="sc">${esc(c.name)}${c.max?' '+c.max:''}</th>`).join('')).join('')}</tr>
+ const nall=ni+d.off.reduce((a,b)=>a+b.cols.length,0)+4,head=`<table class="tt"><tr><th class="sch" colspan="${nall}">THE HIMALAYAN INTERNATIONAL SCHOOL</th></tr><tr><th colspan="${ni}">${esc(d.term||'')}</th>${d.off.map(b=>`<th colspan="${b.cols.length}">${esc(b.name)}</th>`).join('')}<th rowspan="3">Grand<br>Total<br>(${d.max})</th><th rowspan="3">%</th><th rowspan="3">Pos</th><th rowspan="3">Attendance</th></tr>
+ <tr><th class="cl" colspan="${ni}">${esc(d.cls||'')}</th>${d.off.map(b=>b.cols.map(c=>`<th class="sc"><span class="v">${esc(c.name)}${c.max?'<br>'+c.max:''}</span></th>`).join('')).join('')}</tr>
  <tr>${id.map(x=>`<th>${esc(x.name)}</th>`).join('')}${d.off.map(b=>b.cols.map(c=>`<th>${c.type==='grade'?'G':'C'}</th>`).join('')).join('')}</tr>`;
  const body=sorted().map(s=>`<tr>${id.map(x=>`<td class="${/name/i.test(x.name)?'l':''}">${esc(s.info[x.name])}</td>`).join('')}${d.off.map(b=>{const o=s.sub[b.name];let k=0;return b.cols.map(c=>{
    if(c.type==='comp'){const v=o.comps[k++];return`<td>${v==null?(o.ab?'<span class="bad">Ab</span>':'–'):v}</td>`}
    if(c.type==='total')return`<td class="${o.grade==='E'?'fail':''}"><b>${o.total==null?'–':r1(o.total)}</b></td>`;
    return`<td class="${gc(o.grade)}">${esc(o.grade)}</td>`}).join('')}).join('')}
-  <td><b>${r1(s.grand)}</b></td><td>${r1(s.pct)}</td><td>${s.rank}</td><td>${esc(s.file.att??'')}</td></tr>`).join('');
- $('#tbl').innerHTML=head+body+'</table>'}
+  <td class="${s.pct<33?'rd':''}"><b>${r1(s.grand)}</b></td><td class="${s.pct<33?'rd':''}">${r1(s.pct)}</td><td class="${s.pct<33?'rd':''}">${s.rank}</td><td>${esc(s.file.att??'')}</td></tr>`).join('');
+ const AR=anRows(),tot=ni+d.off.reduce((a,b)=>a+b.cols.length,0)+4;
+ const an=`<tr><th colspan="${tot}">SUBJECT ANALYSIS</th></tr>`+AR.map(r=>`<tr class="an"><td class="l" colspan="${ni}">${esc(r.label)}</td>${r.vals.map((v,i)=>`<td colspan="${d.off[i].cols.length}">${esc(v)}</td>`).join('')}<td colspan="4"></td></tr>`).join('');
+ $('#tbl').innerHTML=head+body+an+`<tr><td class="pg" colspan="${nall}">Page 1 of 1</td></tr></table>`}
+function anRows(){const S=D.off.map(subStats),f=g=>S.map(g);
+ return[{label:'Appeared',vals:f(s=>s.n)},{label:'Absent / Ab marks',vals:f(s=>s.ab)},{label:'Average',vals:f(s=>r1(s.avg))},{label:'Highest',vals:f(s=>s.hi)},{label:'Lowest',vals:f(s=>s.lo)},{label:'Pass %',vals:f(s=>r1(s.pp)+'%')}]}
 function subStats(sb){const v=D.st.filter(s=>s.sub[sb.name].total!=null),t=v.map(s=>s.sub[sb.name].total),hi=Math.max(...t),lo=Math.min(...t),dist={};GR.forEach(g=>dist[g[1]]=0);v.forEach(s=>dist[s.sub[sb.name].grade]=(dist[s.sub[sb.name].grade]||0)+1);
  const f=v.filter(s=>s.sub[sb.name].grade==='E').length;return{n:v.length,ab:D.st.filter(s=>s.sub[sb.name].ab).length,avg:avg(t),hi,lo,hiN:v.filter(s=>s.sub[sb.name].total===hi).map(s=>s.name),loN:v.filter(s=>s.sub[sb.name].total===lo).map(s=>s.name),f,pp:(v.length-f)/v.length*100,dist,
   comp:sb.cols.filter(c=>c.type==='comp').map((c,i)=>({n:c.name,max:c.max,a:avg(D.st.map(s=>s.sub[sb.name].comps[i]).filter(x=>x!=null))}))}}
-function vSub(){return`<div class="card w"><table><tr><th class="l">Subject</th><th>Max</th><th>Appeared</th><th>With Ab</th><th>Average</th><th>Highest</th><th>Lowest</th><th>Pass %</th>${GR.map(g=>`<th>${g[1]}</th>`).join('')}</tr>
- ${D.off.map(sb=>{const s=subStats(sb);return`<tr><td class="l"><b>${esc(sb.name)}</b></td><td>${sb.max}</td><td>${s.n}</td><td>${s.ab}</td><td>${r1(s.avg)}</td><td title="${esc(s.hiN.join(', '))}">${s.hi}<br><small>${esc(s.hiN[0])}${s.hiN.length>1?' +'+(s.hiN.length-1):''}</small></td><td title="${esc(s.loN.join(', '))}">${s.lo}<br><small>${esc(s.loN[0])}${s.loN.length>1?' +'+(s.loN.length-1):''}</small></td><td>${r1(s.pp)}%</td>${GR.map(g=>`<td>${s.dist[g[1]]||0}</td>`).join('')}</tr>`}).join('')}</table></div>
+function vSub(){return`<div class="card w"><table><tr><th class="l">Subject</th><th>Max</th><th>Appeared</th><th>With Ab</th><th>Average</th><th>Highest</th><th>Lowest</th><th>Pass %</th></tr>
+ ${D.off.map(sb=>{const s=subStats(sb);return`<tr><td class="l"><b>${esc(sb.name)}</b></td><td>${sb.max}</td><td>${s.n}</td><td>${s.ab}</td><td>${r1(s.avg)}</td><td title="${esc(s.hiN.join(', '))}">${s.hi}<br><small>${esc(s.hiN[0])}${s.hiN.length>1?' +'+(s.hiN.length-1):''}</small></td><td title="${esc(s.loN.join(', '))}">${s.lo}<br><small>${esc(s.loN[0])}${s.loN.length>1?' +'+(s.loN.length-1):''}</small></td><td>${r1(s.pp)}%</td></tr>`}).join('')}</table></div>
  <div class="card w"><b>Average per component</b><table style="margin-top:8px"><tr><th class="l">Subject</th>${D.off[0].cols.filter(c=>c.type==='comp').map(c=>`<th>${esc(c.name)}</th>`).join('')}</tr>
  ${D.off.map(sb=>`<tr><td class="l">${esc(sb.name)}</td>${subStats(sb).comp.map(c=>`<td>${r1(c.a)} <small class="mu">/${c.max??'?'}</small></td>`).join('')}</tr>`).join('')}</table></div>`}
-function vStu(){const o=[...D.st].sort((a,b)=>a.row-b.row);return`<div class="card"><select id="ss" onchange="sd()">${o.map(s=>`<option value="${s.row}">${esc(s.name)}</option>`).join('')}</select><div id="sdv" class="w" style="margin-top:10px"></div></div>`}
-function sd(){const s=D.st.find(x=>x.row==$('#ss').value),cn=D.off[0].cols.filter(c=>c.type==='comp');
- $('#sdv').innerHTML=`<p><b>${esc(s.name)}</b> ${Object.entries(s.info).filter(([k,v])=>v!=null&&k!==Object.keys(s.info).find(x=>/^name|student/i.test(x))).map(([k,v])=>`<span class="chip">${esc(k)}: ${esc(v)}</span>`).join('')}</p>
- <p>Rank <b>${s.rank}</b> of ${D.st.length} · Total <b>${r1(s.grand)}/${D.max}</b> · <b>${r1(s.pct)}%</b> · Grade <b class="${gc(s.grade)}">${s.grade}</b> · Attendance ${esc(s.file.att??'—')}</p>
- <table><tr><th class="l">Subject</th>${cn.map(c=>`<th>${esc(c.name)}<br><small>/${c.max??''}</small></th>`).join('')}<th>Total</th><th>Grade</th></tr>
- ${D.off.map(b=>{const o=s.sub[b.name];return`<tr><td class="l">${esc(b.name)}</td>${o.comps.map(v=>`<td>${v==null?(o.ab?'<span class="bad">Ab</span>':'–'):v}</td>`).join('')}<td><b>${o.total??'–'}</b>/${b.max}</td><td class="${gc(o.grade)}">${o.grade}</td></tr>`}).join('')}</table>`}
 function issues(){const a=[];D.st.forEach(s=>{
  D.off.forEach(b=>{const o=s.sub[b.name];if(o.mis)a.push([s.name,b.name,'Total in file '+o.fileTotal+' ≠ sum of components '+o.sum]);
   b.cols.filter(c=>c.type==='comp').forEach((c,i)=>{const v=o.comps[i];if(v!=null&&c.max&&v>c.max)a.push([s.name,b.name,c.name+' = '+v+' exceeds max '+c.max])})});
@@ -143,45 +143,118 @@ function vChk(){const a=issues(),h=D.summ.grand&&/\((\d+)\)/.exec(D.summ.grand.n
  ${a.length?`<div class="w"><table><tr><th class="l">Student</th><th class="l">Item</th><th class="l">Issue</th></tr>${a.map(x=>`<tr>${x.map(y=>`<td class="l">${esc(y)}</td>`).join('')}</tr>`).join('')}</table></div>`:''}</div>`}
 
 // ---------- export ----------
+const SCHOOL='THE HIMALAYAN INTERNATIONAL SCHOOL',ordered=()=>[...D.st].sort((a,b)=>a.rank-b.rank||a.row-b.row);
+const run=f=>f().catch(e=>{$('#msg').innerHTML=`<div class="card err">Export failed: ${esc(e.message)}</div>`});
+async function saveFile(name,data,type){let dl=null;try{dl=await window.claude?.use('downloads')}catch(e){}
+ if(dl){try{await dl.save({filename:name,data})}catch(e){}return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
+const gF=(t,m)=>{const p=`${t}/${m}*100`;let f='"'+GR[GR.length-1][1]+'"';for(let i=GR.length-2;i>=0;i--)f=`IF(${p}>=${GR[i][0]},"${GR[i][1]}",${f})`;return`IF(${t}="","",${f})`};
+
 async function exp(){
- const d=D,wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Tabulation'),ni=d.ident.length;
- const sub=d.off.flatMap(b=>b.cols.map(c=>({b,c}))),nc=ni+sub.length+4;
- const YEL={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFF00'}},BK={style:'thin',color:{argb:'FF000000'}},GY={style:'thin',color:{argb:'FF999999'}};
+ const d=D,st=ordered(),ni=d.ident.length,wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Tabulation');
+ wb.calcProperties={fullCalcOnLoad:true};
+ const sub=d.off.flatMap(b=>b.cols.map(c=>({b,c}))),nc=ni+sub.length+4,A=n=>L(n-1);
+ const YEL={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFFCC'}},BK={style:'thin',color:{argb:'FF000000'}},GY={style:'thin',color:{argb:'FF999999'}};
  const box=c=>({top:c,left:c,bottom:c,right:c});
+ // column map
+ let cc0=ni+1;const M=d.off.map(b=>{const m={b,start:cc0,comps:[],tot:null,grd:null};b.cols.forEach((c,k)=>{const n=cc0+k;if(c.type==='comp')m.comps.push(n);else if(c.type==='total'&&!m.tot)m.tot=n;else if(c.type==='grade'&&!m.grd)m.grd=n});cc0+=b.cols.length;return m});
+ const GT=nc-3,PC=nc-2,PS=nc-1,R0=5,RL=4+st.length;
  // header rows (same as preview)
  const r1_=[d.term||'',...Array(ni-1).fill('')],r2_=[d.cls||'',...Array(ni-1).fill('')],r3_=d.ident.map(x=>x.name);
- d.off.forEach(b=>b.cols.forEach((c,k)=>{r1_.push(k?'':b.name);r2_.push(c.name+(c.max?' '+c.max:''));r3_.push(c.type==='grade'?'G':'C')}));
+ d.off.forEach(b=>b.cols.forEach((c,k)=>{r1_.push(k?'':b.name);r2_.push(c.name+(c.max?'\n'+c.max:''));r3_.push(c.type==='grade'?'G':'C')}));
  r1_.push('Grand Total ('+d.max+')','%','Pos','Attendance');r2_.push('','','','');r3_.push('','','','');
- ws.addRows([r1_,r2_,r3_]);
- // merges
- ws.mergeCells(1,1,1,ni);ws.mergeCells(2,1,2,ni);let col=ni+1;
- d.off.forEach(b=>{if(b.cols.length>1)ws.mergeCells(1,col,1,col+b.cols.length-1);col+=b.cols.length});
- for(let q=0;q<4;q++)ws.mergeCells(1,col+q,3,col+q);
- // header styling
- for(let r=1;r<=3;r++)for(let c=1;c<=nc;c++){const x=ws.getCell(r,c);x.fill=YEL;x.border=box(BK);x.font={bold:true,size:r===3?10:11,color:{argb:'FF000000'}};x.alignment={horizontal:'center',vertical:'middle',wrapText:true}}
- ws.getRow(1).height=22;ws.getRow(2).height=78;ws.getRow(3).height=26;
- // data rows
- [...d.st].sort((a,b)=>a.rank-b.rank).forEach(s=>{
-  const row=[...d.ident.map(x=>s.info[x.name]??'')];
-  d.off.forEach(b=>{let i=0;const o=s.sub[b.name];b.cols.forEach(c=>row.push(c.type==='comp'?(o.comps[i]==null?(o.ab?'Ab':''):o.comps[i++]):c.type==='total'?o.total:o.grade))});
-  row.push(r1(s.grand),r1(s.pct),s.rank,s.file.att??'');
+ ws.addRows([[SCHOOL],r1_,r2_,r3_]);
+ ws.mergeCells(1,1,1,nc);ws.mergeCells(2,1,2,ni);ws.mergeCells(3,1,3,ni);
+ M.forEach(m=>{if(m.b.cols.length>1)ws.mergeCells(2,m.start,2,m.start+m.b.cols.length-1)});
+ for(let q=0;q<4;q++)ws.mergeCells(2,GT+q,4,GT+q);
+ for(let r=1;r<=4;r++)for(let c=1;c<=nc;c++){const x=ws.getCell(r,c);x.fill=YEL;x.border=box(BK);x.font={bold:true,size:r===1?16:r===4?10:11,color:{argb:'FF000000'}};x.alignment={horizontal:'center',vertical:'middle',wrapText:true};if(r===3&&c>ni&&c<=ni+sub.length)x.alignment={horizontal:'center',vertical:'middle',wrapText:true,textRotation:90};if(r===3&&c===1)x.font={bold:true,size:14}}
+ ws.getRow(1).height=28;ws.getRow(2).height=22;ws.getRow(3).height=95;ws.getRow(4).height=26;
+ // data rows with formulas
+ const totSet=new Set(M.map(m=>m.tot));
+ st.forEach((s,i)=>{const r=R0+i,row=d.ident.map(x=>s.info[x.name]??'');
+  M.forEach(m=>{const o=s.sub[m.b.name];let k=0;m.b.cols.forEach(c=>row.push(c.type==='comp'?(()=>{const v=o.comps[k++];return v==null?(o.ab?'Ab':''):v})():c.type==='total'?(o.total??''):o.grade))});
+  row.push('','','',s.file.att??'');
   const rr=ws.addRow(row);
-  rr.eachCell({includeEmpty:true},(x,c)=>{x.border=box(GY);const nm=c<=ni&&/name/i.test(d.ident[c-1].name);x.alignment={horizontal:nm?'left':'center',vertical:'middle'};if(x.value==='E')x.font={bold:true,color:{argb:'FFB3261E'}}});
- });
- // widths + freeze
+  M.forEach(m=>{const o=s.sub[m.b.name],n=o.comps.filter(v=>v!=null).length;
+   if(!m.comps.length||!m.tot||!(n||o.ab||o.total==null))return;
+   const refs=m.comps.map(c=>A(c)+r).join(',');
+   rr.getCell(m.tot).value={formula:`IF(COUNT(${refs})=0,"",SUM(${refs}))`,result:n?o.sum:''};
+   if(m.grd)rr.getCell(m.grd).value={formula:gF(A(m.tot)+r,m.b.max),result:n?grade(o.sum/m.b.max*100):''}});
+  const tr=M.filter(m=>m.tot).map(m=>A(m.tot)+r).join(',');
+  rr.getCell(GT).value={formula:`SUM(${tr})`,result:r1(s.grand)};
+  rr.getCell(PC).value={formula:`ROUND(${A(GT)}${r}/${d.max}*100,1)`,result:r1(s.pct)};
+  rr.getCell(PS).value={formula:`SUMPRODUCT((${'$'+A(GT)}$${R0}:${'$'+A(GT)}$${RL}>${A(GT)}${r})/COUNTIF(${'$'+A(GT)}$${R0}:${'$'+A(GT)}$${RL},${'$'+A(GT)}$${R0}:${'$'+A(GT)}$${RL}))+1`,result:s.rank};
+  rr.getCell(PC).numFmt='0.0';rr.getCell(GT).numFmt='0.0';
+  rr.eachCell({includeEmpty:true},(x,c)=>{x.border=box(GY);const nm=c<=ni&&/name/i.test(d.ident[c-1].name);x.alignment={horizontal:nm?'left':'center',vertical:'middle'};if(totSet.has(c)||c===GT)x.font={bold:true}})});
+ // conditional formatting (same colours as preview)
+ const fnt=a=>({font:{bold:true,color:{argb:a}}});
+ M.forEach(m=>{if(m.tot){const t=A(m.tot)+R0;ws.addConditionalFormatting({ref:`${A(m.tot)}${R0}:${A(m.tot)}${RL}`,rules:[{type:'expression',formulae:[`AND(ISNUMBER(${t}),${t}/${m.b.max}*100<32)`],style:{font:{bold:true,color:{argb:'FFB3261E'}},fill:{type:'pattern',pattern:'solid',bgColor:{argb:'FFFDE8E7'}}}}]})}
+  if(m.grd){const g=A(m.grd)+R0;ws.addConditionalFormatting({ref:`${A(m.grd)}${R0}:${A(m.grd)}${RL}`,rules:[
+   {type:'expression',formulae:[`LEFT(${g},1)="A"`],style:fnt('FF17703A')},{type:'expression',formulae:[`LEFT(${g},1)="B"`],style:fnt('FF1F5FBF')},
+   {type:'expression',formulae:[`LEFT(${g},1)="C"`],style:fnt('FF8A5A00')},{type:'expression',formulae:[`OR(LEFT(${g},1)="D",LEFT(${g},1)="E")`],style:fnt('FFB3261E')}]})}
+  m.comps.forEach(c=>ws.addConditionalFormatting({ref:`${A(c)}${R0}:${A(c)}${RL}`,rules:[{type:'cellIs',operator:'equal',formulae:['"Ab"'],style:fnt('FFB3261E')}]}))});
+ ws.addConditionalFormatting({ref:`${A(GT)}${R0}:${A(PS)}${RL}`,rules:[{type:'expression',formulae:[`$${A(PC)}${R0}<33`],style:fnt('FFFF0000')}]});
+ // subject analysis at the bottom (formulas)
+ ws.addRow([]);
+ const tr=ws.addRow(['SUBJECT ANALYSIS']);ws.mergeCells(tr.number,1,tr.number,nc);
+ for(let c=1;c<=nc;c++){const x=tr.getCell(c);x.fill=YEL;x.border=box(BK);x.font={bold:true};x.alignment={horizontal:'center',vertical:'middle'}}
+ const S=d.off.map(subStats),labels=['Appeared','Absent / Ab marks','Average','Highest','Lowest','Pass %'];let apRow=0;
+ labels.forEach((lb,li)=>{const row=[lb,...Array(ni-1).fill('')];d.off.forEach(b=>{row.push('');for(let k=1;k<b.cols.length;k++)row.push('')});row.push('','','','');
+  const rr=ws.addRow(row),n=rr.number;if(li===0)apRow=n;ws.mergeCells(n,1,n,ni);
+  M.forEach((m,i)=>{if(!m.tot)return;const T=`${A(m.tot)}${R0}:${A(m.tot)}${RL}`,s=S[i],ap=A(m.start)+apRow;
+   const f=[`COUNT(${T})`,`SUMPRODUCT(--((${m.comps.map(c=>`${A(c)}${R0}:${A(c)}${RL}="Ab"`).join(')+(')})>0))`,`IFERROR(ROUND(AVERAGE(${T}),1),0)`,`MAX(${T})`,`MIN(${T})`,`IFERROR(ROUND((${ap}-COUNTIF(${T},"<"&${m.b.max*0.32}))/${ap}*100,1),0)`][li];
+   const res=[s.n,s.ab,r1(s.avg),s.hi,s.lo,r1(s.pp)][li];
+   rr.getCell(m.start).value={formula:f,result:res};if(li===5)rr.getCell(m.start).numFmt='0.0"%"';
+   if(m.b.cols.length>1)ws.mergeCells(n,m.start,n,m.start+m.b.cols.length-1)});
+  ws.mergeCells(n,nc-3,n,nc);
+  for(let c=1;c<=nc;c++){const x=rr.getCell(c);x.border=box(GY);x.font={bold:true};x.alignment={horizontal:c===1?'left':'center',vertical:'middle'};x.fill=YEL}});
+ // widths, freeze, print
  d.ident.forEach((x,k)=>{ws.getColumn(k+1).width=/name/i.test(x.name)?22:/s\.?\s*no/i.test(x.name)?6:12});
- for(let c=ni+1;c<=ni+sub.length;c++)ws.getColumn(c).width=7.5;
- ws.getColumn(nc-3).width=11;ws.getColumn(nc-2).width=8;ws.getColumn(nc-1).width=6;ws.getColumn(nc).width=12;
- ws.views=[{state:'frozen',xSplit:ni,ySplit:3}];
- // other sheets (plain)
- const B=[['Subject','Max','Appeared','Average','Highest','Lowest','Pass %',...GR.map(g=>g[1])]];
- d.off.forEach(b=>{const s=subStats(b);B.push([b.name,b.max,s.n,r1(s.avg),s.hi,s.lo,r1(s.pp),...GR.map(g=>s.dist[g[1]]||0)])});
- const Cc=[['Student',...d.off.flatMap(b=>b.cols.map(c=>b.name+' - '+c.name))]];
- d.st.forEach(s=>Cc.push([s.name,...d.off.flatMap(b=>{let i=0;return b.cols.map(c=>c.type==='comp'?(s.sub[b.name].comps[i++]):c.type==='total'?s.sub[b.name].total:s.sub[b.name].grade)})]));
- [['Subject Analysis',B],['Detailed Marks',Cc]].forEach(([n,x])=>{const w=wb.addWorksheet(n);w.addRows(x);w.getRow(1).font={bold:true};w.columns.forEach(c=>c.width=16)});
- const out=new Uint8Array(await wb.xlsx.writeBuffer());let dl=null;try{dl=await window.claude?.use('downloads')}catch(e){}
- if(dl){try{await dl.save({filename:'Tabulation.xlsx',data:out});return}catch(e){}}
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download='Tabulation.xlsx';document.body.appendChild(a);a.click();a.remove()}
+ for(let c=ni+1;c<=ni+sub.length;c++)ws.getColumn(c).width=5.5;
+ ws.getColumn(GT).width=11;ws.getColumn(PC).width=8;ws.getColumn(PS).width=6;ws.getColumn(nc).width=12;
+ ws.views=[{state:'frozen',xSplit:ni,ySplit:4}];
+ ws.pageSetup={orientation:'landscape',paperSize:8,fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:'1:4'};
+ ws.headerFooter={oddFooter:'&C&BPage &P of &N'};
+ await saveFile('Tabulation.xlsx',new Uint8Array(await wb.xlsx.writeBuffer()),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+
+async function expPdf(){
+ if(!window.jspdf)throw Error('PDF library did not load (check internet connection).');
+ const d=D,st=ordered(),ni=d.ident.length,{jsPDF}=window.jspdf;
+ const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a3'}),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),MG=8;
+ const ncomp=d.off.reduce((a,b)=>a+b.cols.length,0),nall=ni+ncomp+4;
+ const idw=d.ident.map(x=>/name/i.test(x.name)?32:/s\.?\s*no/i.test(x.name)?8:14),tail=[14,10,8,16];
+ const cw=Math.max(3.4,Math.min(8,(W-2*MG-idw.reduce((a,b)=>a+b,0)-tail.reduce((a,b)=>a+b,0))/ncomp));
+ doc.setFont('helvetica','bold');doc.setFontSize(6.5);
+ const RH=Math.max(...d.off.flatMap(b=>b.cols.map(c=>doc.getTextWidth(c.name))))+5;
+ const ctype=[...d.ident.map(()=>({t:'id'})),...d.off.flatMap(b=>b.cols.map(c=>({t:c.type,b:b.name}))),{t:'grand'},{t:'pct'},{t:'pos'},{t:'att'}];
+ const cs={};[...idw,...Array(ncomp).fill(cw),...tail].forEach((w,i)=>cs[i]={cellWidth:w});
+ const head=[[{content:SCHOOL,colSpan:nall,styles:{fontSize:14,cellPadding:1.5}}],
+  [{content:d.term||'',colSpan:ni},...d.off.map(b=>({content:b.name,colSpan:b.cols.length,styles:{fontSize:8}})),{content:'Grand\nTotal\n('+d.max+')',rowSpan:3},{content:'%',rowSpan:3},{content:'Pos',rowSpan:3},{content:'Attendance',rowSpan:3}],
+  [{content:d.cls||'',colSpan:ni,styles:{fontSize:10}},...d.off.flatMap(b=>b.cols.map(c=>({content:'',_rot:[c.name,c.max?String(c.max):''],styles:{minCellHeight:RH}})))],
+  [...d.ident.map(x=>x.name),...d.off.flatMap(b=>b.cols.map(c=>c.type==='grade'?'G':'C'))]];
+ const body=st.map(s=>{const row=d.ident.map(x=>String(s.info[x.name]??''));
+  d.off.forEach(b=>{const o=s.sub[b.name];let k=0;b.cols.forEach(c=>row.push(c.type==='comp'?(()=>{const v=o.comps[k++];return v==null?(o.ab?'Ab':''):String(v)})():c.type==='total'?(o.total==null?'':String(r1(o.total))):o.grade))});
+  row.push(String(r1(s.grand)),String(r1(s.pct)),String(s.rank),String(s.file.att??''));return row});
+ body.push([{content:'SUBJECT ANALYSIS',colSpan:nall,title:true}]);
+ anRows().forEach(r=>body.push([{content:r.label,colSpan:ni},...r.vals.map((v,i)=>({content:String(v),colSpan:d.off[i].cols.length})),{content:'',colSpan:4}]));
+ const GC={A:[23,112,58],B:[31,95,191],C:[138,90,0],D:[179,38,30],E:[179,38,30]};
+ doc.autoTable({head,body,theme:'grid',startY:MG,margin:{top:MG,left:MG,right:MG,bottom:14},columnStyles:cs,
+  styles:{fontSize:6.5,cellPadding:0.6,lineColor:[153,153,153],lineWidth:0.1,halign:'center',valign:'middle',textColor:[0,0,0],overflow:'hidden'},
+  headStyles:{fillColor:[255,255,204],textColor:[0,0,0],fontStyle:'bold',lineColor:[0,0,0],lineWidth:0.2},
+  didParseCell:h=>{if(h.section!=='body')return;const i=h.row.index,c=h.cell.styles;
+   if(i>=st.length){c.fillColor=[255,255,204];c.fontStyle='bold';c.lineColor=[0,0,0];const rw=h.cell.raw;c.halign=(rw&&rw.title)?'center':(h.column.index<ni?'left':'center');return}
+   const s=st[i],t=ctype[h.column.index],txt=h.cell.text.join('');
+   if(t.t==='id'&&/name/i.test(d.ident[h.column.index].name))c.halign='left';
+   if(t.t==='comp'&&txt==='Ab'){c.textColor=[179,38,30];c.fontStyle='bold'}
+   if(t.t==='total'){c.fontStyle='bold';if(s.sub[t.b].grade==='E'){c.fillColor=[253,232,231];c.textColor=[179,38,30]}}
+   if(t.t==='grade'&&txt){c.textColor=GC[txt[0]]||[0,0,0];c.fontStyle='bold'}
+   if(t.t==='grand')c.fontStyle='bold';
+   if(['grand','pct','pos'].includes(t.t)&&s.pct<33){c.textColor=[208,0,0];c.fontStyle='bold'}},
+  didDrawCell:h=>{const r=h.cell.raw;if(h.section==='head'&&r&&r._rot){const ls=r._rot.filter(Boolean),c=h.cell,lh=2.8;
+   doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(0,0,0);
+   const x0=c.x+c.width/2-(ls.length-1)*lh/2+0.8;ls.forEach((t,k)=>doc.text(t,x0+k*lh,c.y+c.height-1.5,{angle:90}))}}});
+ const n=doc.getNumberOfPages();for(let p=1;p<=n;p++){doc.setPage(p);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);doc.text(`Page ${p} of ${n}`,W/2,H-6,{align:'center'})}
+ await saveFile('Tabulation.pdf',new Uint8Array(doc.output('arraybuffer')),'application/pdf')}
 
 // ---------- upload ----------
 async function load(file){const m=$('#msg');m.innerHTML='';$('#fn').textContent=file.name;
@@ -192,5 +265,5 @@ async function load(file){const m=$('#msg');m.innerHTML='';$('#fn').textContent=
 const dz=$('#drop'),fi=$('#f');dz.onclick=()=>fi.click();fi.onchange=()=>fi.files[0]&&load(fi.files[0]);
 dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};dz.ondragleave=()=>dz.classList.remove('on');
 dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');e.dataTransfer.files[0]&&load(e.dataTransfer.files[0])};
-new MutationObserver(()=>{if(tab==='Tabulation'&&$('#tbl'))tb();if(tab==='Student'&&$('#ss')&&!$('#sdv').innerHTML)sd()}).observe($('#view'),{childList:true});
+new MutationObserver(()=>{if(tab==='Tabulation'&&$('#tbl'))tb();}).observe($('#view'),{childList:true});
 </script></main></body></html>
