@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Marks Tabulator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--tx:#1b1f24;--mu:#5d6773;--bd:#dfe3e8;--ac:#1f5fbf;--ac2:#e6effc;--bad:#b3261e;--badbg:#fde8e7;--ok:#17703a;--okbg:#e3f4e8;--wn:#8a5a00;--wnbg:#fff3d6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171b;--card:#1d2127;--tx:#e8ebee;--mu:#9aa5b1;--bd:#333a43;--ac:#6ea3f5;--ac2:#203049;--bad:#ff8a80;--badbg:#3b1f1e;--ok:#79d49a;--okbg:#17301f;--wn:#f0c36a;--wnbg:#3a2e12}}
+:root[data-theme="dark"]{--bg:#14171b;--card:#1d2127;--tx:#e8ebee;--mu:#9aa5b1;--bd:#333a43;--ac:#6ea3f5;--ac2:#203049;--bad:#ff8a80;--badbg:#3b1f1e;--ok:#79d49a;--okbg:#17301f;--wn:#f0c36a;--wnbg:#3a2e12}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 2px}.mu{color:var(--mu)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px;margin:12px 0}
+#drop{border:2px dashed var(--bd);text-align:center;padding:26px 12px;cursor:pointer}
+#drop.on{border-color:var(--ac);background:var(--ac2)}
+button,select,input[type=search]{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 12px}
+button{cursor:pointer}button.p{background:var(--ac);color:#fff;border-color:var(--ac)}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}nav button.on{background:var(--ac2);border-color:var(--ac);color:var(--ac);font-weight:600}
+.w{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border:1px solid var(--bd);padding:5px 8px;text-align:center;white-space:nowrap}th{background:var(--ac2);position:sticky;top:0}
+td.l,th.l{text-align:left}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.st{border:1px solid var(--bd);border-radius:8px;padding:8px 10px}.st b{display:block;font-size:20px}
+.gA{color:var(--ok);font-weight:600}.gB{color:var(--ac);font-weight:600}.gC{color:var(--wn);font-weight:600}.gD,.gE,.bad{color:var(--bad);font-weight:600}
+td.fail{background:var(--badbg)}.chip{display:inline-block;border:1px solid var(--bd);border-radius:6px;padding:1px 7px;margin:2px;font-size:12px}
+.tag{padding:2px 8px;border-radius:99px;font-size:12px}.tok{background:var(--okbg);color:var(--ok)}.twn{background:var(--wnbg);color:var(--wn)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.err{background:var(--badbg);color:var(--bad)}
+.tt th{background:#ffff00;color:#000;position:static;border-color:#000;font-weight:700}.tt th.sc{white-space:normal;word-break:break-all;min-width:34px;max-width:46px;font-size:12px}.tt td{border-color:#999}
+</style></head><body><main>
+<h1>Marks Tabulator</h1>
+<div class="mu">Upload a result sheet (.xlsx / .xls). Subjects, components, totals and grades are detected automatically — nothing is uploaded anywhere; all processing happens in your browser.</div>
+<div id="drop" class="card"><b>Click or drop your Excel file here</b><div class="mu" id="fn">No file selected</div>
+<input id="f" type="file" accept=".xlsx,.xls,.xlsm,.csv" hidden></div>
+<div id="msg"></div><div id="app" hidden>
+<nav id="nav"></nav><div id="view"></div></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clean=s=>String(s??'').replace(/\s+/g,' ').trim(),L=c=>XLSX.utils.encode_col(c);
+const GR=[[91,'A1'],[81,'A2'],[71,'B1'],[61,'B2'],[51,'C1'],[41,'C2'],[32,'D'],[0,'E']],grade=p=>GR.find(g=>p>=g[0])[1];
+const gc=g=>'g'+(g||'?')[0],r1=x=>Math.round(x*10)/10,avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+const pv=v=>{if(typeof v==='number')return{v,ab:0};const s=clean(v);if(s!==''&&!isNaN(s))return{v:+s,ab:0};return{v:null,ab:/^(ab|abs|absent|a)$/i.test(s)?1:0}};
+let D=null,tab='Columns';
+
+function parse(ws){
+ const rg=XLSX.utils.decode_range(ws['!ref']),R=rg.e.r+1,C=rg.e.c+1;
+ const g=[...Array(R)].map((_,r)=>[...Array(C)].map((_,c)=>{const x=ws[XLSX.utils.encode_cell({r,c})];return x?x.v:null}));
+ const h=g.map(r=>r.slice());           // header copy with merged cells expanded
+ (ws['!merges']||[]).forEach(m=>{const v=g[m.s.r][m.s.c];for(let r=m.s.r;r<=m.e.r;r++)for(let c=m.s.c;c<=m.e.c;c++)h[r][c]=v});
+ // 1) header row = row containing "Student Name"
+ let nr=-1;for(let r=0;r<Math.min(R,40)&&nr<0;r++)if(h[r].some(v=>/^(student'?s?\s*name|name( of student)?)$/i.test(clean(v))))nr=r;
+ if(nr<1)throw Error('Could not find a "Student Name" header below a subject-name row.');
+ // 2) subject row = header row above it with most distinct labels
+ let sr=0,best=-1;for(let r=0;r<nr;r++){const n=new Set(h[r].filter(v=>clean(v)).map(clean)).size;if(n>best){best=n;sr=r}}
+ let cls='';for(let r=0;r<nr&&!cls;r++)if(r!==sr)cls=clean(h[r][0]);
+ let term='';for(let r=0;r<nr&&!term;r++)for(let c=0;c<C;c++)if(/^term\b/i.test(clean(g[r][c]))){term=clean(g[r][c]);break}
+ // 3) group consecutive columns sharing the same subject label
+ const ident=[],groups=[];
+ for(let c=0;c<C;c++){const lb=clean(h[sr][c]);
+  if(!lb){if(clean(g[nr][c]))ident.push({c,name:clean(g[nr][c])});continue}
+  const last=groups[groups.length-1];if(last&&last.name===lb&&last.end===c-1)last.end=c;else groups.push({name:lb,start:c,end:c})}
+ const subjects=[],summ={};
+ groups.forEach(gp=>{
+  const cols=[];for(let c=gp.start;c<=gp.end;c++){
+   const raw=[];for(let r=sr+1;r<nr;r++)if(h[r][c]!=null)raw.push(String(h[r][c]));
+   const t=(raw.join(' ').trim()||clean(g[nr][c]))+'',m=t.match(/\s(\d+(?:\.\d+)?)\s*$/);
+   cols.push({c,letter:L(c),max:m?+m[1]:null,name:clean(m?t.slice(0,m.index):t)||('Col '+L(c)),type:/grade/i.test(t)?'grade':/total/i.test(t)?'total':'comp'})}
+  if(gp.end-gp.start>=2&&cols.some(x=>x.type==='total'))subjects.push({name:gp.name,cols,range:L(gp.start)+'–'+L(gp.end)});
+  else{const n=gp.name,k=/pos|rank/i.test(n)?'pos':/attend/i.test(n)?'att':/%|percent/i.test(n)?'pct':/total/i.test(n)?'grand':n;summ[k]={c:gp.start,name:n,letter:L(gp.start)}}});
+ if(!subjects.length)throw Error('No subject groups detected.');
+ const ni=ident.find(x=>/name/i.test(x.name)&&!/father|mother|parent/i.test(x.name)).c;
+ // 4) read students
+ const st=[];
+ for(let r=nr+1;r<R;r++){if(!clean(g[r][ni])||/^(total|average|max|highest)/i.test(clean(g[r][ni])))continue;
+  const s={row:r+1,info:{},sub:{},file:{}};ident.forEach(x=>s.info[x.name]=g[r][x.c]);s.name=clean(g[r][ni]);
+  subjects.forEach(sb=>{const o={comps:[],ab:0,total:null,fileTotal:null,grade:'',mis:false};
+   sb.cols.forEach(cl=>{const x=g[r][cl.c];if(cl.type==='comp'){const p=pv(x);o.comps.push(p.v);o.ab+=p.ab}else if(cl.type==='total')o.fileTotal=pv(x).v;else o.grade=clean(x)==='-'?'':clean(x)});
+   const nums=o.comps.filter(v=>v!=null),sum=nums.reduce((a,b)=>a+b,0);
+   o.total=o.fileTotal!=null?o.fileTotal:(nums.length?sum:null);o.mis=o.fileTotal!=null&&nums.length>0&&Math.abs(sum-o.fileTotal)>.01;o.sum=sum;s.sub[sb.name]=o});
+  Object.entries(summ).forEach(([k,v])=>s.file[k]=g[r][v.c]);st.push(s)}
+ // 5) which subjects are actually offered (any numeric marks)
+ subjects.forEach(sb=>{sb.offered=st.some(s=>s.sub[sb.name].total!=null);
+  const t=sb.cols.find(x=>x.type==='total');sb.max=t&&t.max?t.max:sb.cols.filter(x=>x.type==='comp').reduce((a,b)=>a+(b.max||0),0)});
+ const off=subjects.filter(s=>s.offered),max=off.reduce((a,b)=>a+b.max,0);
+ st.forEach(s=>{off.forEach(sb=>{const o=s.sub[sb.name];o.pct=o.total==null?null:o.total/sb.max*100;if(!o.grade&&o.pct!=null)o.grade=grade(o.pct)});
+  s.grand=off.reduce((a,sb)=>a+(s.sub[sb.name].total||0),0);s.pct=max?s.grand/max*100:0;s.grade=grade(s.pct);
+  s.fails=off.filter(sb=>s.sub[sb.name].grade==='E').map(sb=>sb.name)});
+ const dv=[...new Set(st.map(s=>s.grand))];   // dense ranking: ties share a rank, next rank has no gap
+ st.forEach(s=>s.rank=1+dv.filter(x=>x>s.grand).length);
+ return{sheet:'',cls,term,nr:nr+1,sr:sr+1,first:nr+2,last:st.length?st[st.length-1].row:0,ident,summ,subjects,off,max,st}}
+
+// ---------- views ----------
+function setTab(t){tab=t;render()}
+function render(){
+ $('#nav').innerHTML=['Columns','Tabulation','Subjects','Student','Checks'].map(t=>`<button class="${t===tab?'on':''}" onclick="setTab('${t}')">${t==='Columns'?'Detected columns':t==='Tabulation'?'Tabulation':t==='Subjects'?'Subject analysis':t==='Student'?'Student report':'Data checks'}</button>`).join('')+'<button class="p" onclick="exp()" style="margin-left:auto">Export to Excel</button>';
+ $('#view').innerHTML=({Columns:vCols,Tabulation:vTab,Subjects:vSub,Student:vStu,Checks:vChk})[tab]()}
+const gcell=(v,g)=>`${v==null?'–':r1(v)} <span class="${gc(g)}">${esc(g||'')}</span>`;
+function vCols(){const d=D;
+ return`<div class="card"><b>Auto-detection result</b><div class="mu">Sheet “${esc(d.sheet)}” · Class ${esc(d.cls||'—')} · Subject names in row ${d.sr} · column headings in row ${d.nr} · ${d.st.length} students in rows ${d.first}–${d.last}</div></div>
+ <div class="card w"><table><tr><th class="l">Subject</th><th>Columns</th><th>Status</th><th class="l">Detected sub-columns (max marks · column)</th></tr>
+ ${d.subjects.map(s=>`<tr><td class="l"><b>${esc(s.name)}</b></td><td>${s.range}</td><td><span class="tag ${s.offered?'tok':'twn'}">${s.offered?'Offered · /'+s.max:'No marks (skipped)'}</span></td>
+ <td class="l">${s.cols.map(c=>`<span class="chip">${esc(c.name)}${c.max?' /'+c.max:''} · ${c.letter}${c.type!=='comp'?' ('+c.type+')':''}</span>`).join('')}</td></tr>`).join('')}</table></div>
+ <div class="card"><b>Student details columns:</b> ${d.ident.map(i=>`<span class="chip">${esc(i.name)} · ${L(i.c)}</span>`).join('')}<br>
+ <b>Summary columns in file:</b> ${Object.values(d.summ).map(i=>`<span class="chip">${esc(i.name)} · ${i.letter}</span>`).join('')||'none'}</div>`}
+function sorted(){const m=$('#sort')?.value||'rank',q=($('#q')?.value||'').toLowerCase();
+ let a=D.st.filter(s=>s.name.toLowerCase().includes(q));
+ return a.sort(m==='name'?(x,y)=>x.name.localeCompare(y.name):m==='sno'?(x,y)=>x.row-y.row:(x,y)=>x.rank-y.rank||x.row-y.row)}
+function vTab(){const d=D,n=d.st.length,pass=d.st.filter(s=>!s.fails.length).length,top=[...d.st].sort((a,b)=>a.rank-b.rank).slice(0,3);
+ return`<div class="card stats"><div class="st">Students<b>${n}</b></div><div class="st">Subjects<b>${d.off.length}</b></div><div class="st">Max marks<b>${d.max}</b></div>
+ <div class="st">Class average<b>${r1(avg(d.st.map(s=>s.pct)))}%</b></div><div class="st">No “E” grade<b>${pass}/${n}</b></div><div class="st">Toppers<b style="font-size:14px">${top.map(s=>esc(s.name)+' ('+r1(s.pct)+'%)').join('<br>')}</b></div></div>
+ <div class="card"><div class="row"><input id="q" type="search" placeholder="Search student…" oninput="tb()"><select id="sort" onchange="tb()"><option value="rank">Sort: Rank</option><option value="sno">Sort: Roll order</option><option value="name">Sort: Name</option></select></div><div class="w" id="tbl" style="margin-top:10px"></div></div>`}
+function tb(){const d=D,id=d.ident,ni=id.length;
+ const head=`<table class="tt"><tr><th colspan="${ni}">${esc(d.term||'')}</th>${d.off.map(b=>`<th colspan="${b.cols.length}">${esc(b.name)}</th>`).join('')}<th rowspan="3">Grand<br>Total<br>(${d.max})</th><th rowspan="3">%</th><th rowspan="3">Pos</th><th rowspan="3">Attendance</th></tr>
+ <tr><th colspan="${ni}">${esc(d.cls||'')}</th>${d.off.map(b=>b.cols.map(c=>`<th class="sc">${esc(c.name)}${c.max?' '+c.max:''}</th>`).join('')).join('')}</tr>
+ <tr>${id.map(x=>`<th>${esc(x.name)}</th>`).join('')}${d.off.map(b=>b.cols.map(c=>`<th>${c.type==='grade'?'G':'C'}</th>`).join('')).join('')}</tr>`;
+ const body=sorted().map(s=>`<tr>${id.map(x=>`<td class="${/name/i.test(x.name)?'l':''}">${esc(s.info[x.name])}</td>`).join('')}${d.off.map(b=>{const o=s.sub[b.name];let k=0;return b.cols.map(c=>{
+   if(c.type==='comp'){const v=o.comps[k++];return`<td>${v==null?(o.ab?'<span class="bad">Ab</span>':'–'):v}</td>`}
+   if(c.type==='total')return`<td class="${o.grade==='E'?'fail':''}"><b>${o.total==null?'–':r1(o.total)}</b></td>`;
+   return`<td class="${gc(o.grade)}">${esc(o.grade)}</td>`}).join('')}).join('')}
+  <td><b>${r1(s.grand)}</b></td><td>${r1(s.pct)}</td><td>${s.rank}</td><td>${esc(s.file.att??'')}</td></tr>`).join('');
+ $('#tbl').innerHTML=head+body+'</table>'}
+function subStats(sb){const v=D.st.filter(s=>s.sub[sb.name].total!=null),t=v.map(s=>s.sub[sb.name].total),hi=Math.max(...t),lo=Math.min(...t),dist={};GR.forEach(g=>dist[g[1]]=0);v.forEach(s=>dist[s.sub[sb.name].grade]=(dist[s.sub[sb.name].grade]||0)+1);
+ const f=v.filter(s=>s.sub[sb.name].grade==='E').length;return{n:v.length,ab:D.st.filter(s=>s.sub[sb.name].ab).length,avg:avg(t),hi,lo,hiN:v.filter(s=>s.sub[sb.name].total===hi).map(s=>s.name),loN:v.filter(s=>s.sub[sb.name].total===lo).map(s=>s.name),f,pp:(v.length-f)/v.length*100,dist,
+  comp:sb.cols.filter(c=>c.type==='comp').map((c,i)=>({n:c.name,max:c.max,a:avg(D.st.map(s=>s.sub[sb.name].comps[i]).filter(x=>x!=null))}))}}
+function vSub(){return`<div class="card w"><table><tr><th class="l">Subject</th><th>Max</th><th>Appeared</th><th>With Ab</th><th>Average</th><th>Highest</th><th>Lowest</th><th>Pass %</th>${GR.map(g=>`<th>${g[1]}</th>`).join('')}</tr>
+ ${D.off.map(sb=>{const s=subStats(sb);return`<tr><td class="l"><b>${esc(sb.name)}</b></td><td>${sb.max}</td><td>${s.n}</td><td>${s.ab}</td><td>${r1(s.avg)}</td><td title="${esc(s.hiN.join(', '))}">${s.hi}<br><small>${esc(s.hiN[0])}${s.hiN.length>1?' +'+(s.hiN.length-1):''}</small></td><td title="${esc(s.loN.join(', '))}">${s.lo}<br><small>${esc(s.loN[0])}${s.loN.length>1?' +'+(s.loN.length-1):''}</small></td><td>${r1(s.pp)}%</td>${GR.map(g=>`<td>${s.dist[g[1]]||0}</td>`).join('')}</tr>`}).join('')}</table></div>
+ <div class="card w"><b>Average per component</b><table style="margin-top:8px"><tr><th class="l">Subject</th>${D.off[0].cols.filter(c=>c.type==='comp').map(c=>`<th>${esc(c.name)}</th>`).join('')}</tr>
+ ${D.off.map(sb=>`<tr><td class="l">${esc(sb.name)}</td>${subStats(sb).comp.map(c=>`<td>${r1(c.a)} <small class="mu">/${c.max??'?'}</small></td>`).join('')}</tr>`).join('')}</table></div>`}
+function vStu(){const o=[...D.st].sort((a,b)=>a.row-b.row);return`<div class="card"><select id="ss" onchange="sd()">${o.map(s=>`<option value="${s.row}">${esc(s.name)}</option>`).join('')}</select><div id="sdv" class="w" style="margin-top:10px"></div></div>`}
+function sd(){const s=D.st.find(x=>x.row==$('#ss').value),cn=D.off[0].cols.filter(c=>c.type==='comp');
+ $('#sdv').innerHTML=`<p><b>${esc(s.name)}</b> ${Object.entries(s.info).filter(([k,v])=>v!=null&&k!==Object.keys(s.info).find(x=>/^name|student/i.test(x))).map(([k,v])=>`<span class="chip">${esc(k)}: ${esc(v)}</span>`).join('')}</p>
+ <p>Rank <b>${s.rank}</b> of ${D.st.length} · Total <b>${r1(s.grand)}/${D.max}</b> · <b>${r1(s.pct)}%</b> · Grade <b class="${gc(s.grade)}">${s.grade}</b> · Attendance ${esc(s.file.att??'—')}</p>
+ <table><tr><th class="l">Subject</th>${cn.map(c=>`<th>${esc(c.name)}<br><small>/${c.max??''}</small></th>`).join('')}<th>Total</th><th>Grade</th></tr>
+ ${D.off.map(b=>{const o=s.sub[b.name];return`<tr><td class="l">${esc(b.name)}</td>${o.comps.map(v=>`<td>${v==null?(o.ab?'<span class="bad">Ab</span>':'–'):v}</td>`).join('')}<td><b>${o.total??'–'}</b>/${b.max}</td><td class="${gc(o.grade)}">${o.grade}</td></tr>`}).join('')}</table>`}
+function issues(){const a=[];D.st.forEach(s=>{
+ D.off.forEach(b=>{const o=s.sub[b.name];if(o.mis)a.push([s.name,b.name,'Total in file '+o.fileTotal+' ≠ sum of components '+o.sum]);
+  b.cols.filter(c=>c.type==='comp').forEach((c,i)=>{const v=o.comps[i];if(v!=null&&c.max&&v>c.max)a.push([s.name,b.name,c.name+' = '+v+' exceeds max '+c.max])})});
+ const fg=parseFloat(String(s.file.grand??'').split('/')[0]);if(!isNaN(fg)&&Math.abs(fg-s.grand)>.01)a.push([s.name,'Grand total','File '+fg+' vs calculated '+r1(s.grand)]);
+ if(typeof s.file.pct==='number'&&Math.abs(s.file.pct-s.pct)>.11)a.push([s.name,'Percentage','File '+s.file.pct+' vs calculated '+r1(s.pct)]);
+ if(typeof s.file.pos==='number'&&s.file.pos!==s.rank)a.push([s.name,'Position','File '+s.file.pos+' vs calculated '+s.rank])});return a}
+function vChk(){const a=issues(),h=D.summ.grand&&/\((\d+)\)/.exec(D.summ.grand.name),n=h&&+h[1]!==D.max?`<p class="tag twn">Header says total ${h[1]}, but offered subjects add up to ${D.max}. The calculation uses ${D.max}.</p>`:'';
+ return`<div class="card"><b>Re-calculation vs. values in your file</b>${n}<p>${a.length?`${a.length} difference(s) found:`:'<span class="tag tok">All totals, percentages and positions match the file.</span>'}</p>
+ ${a.length?`<div class="w"><table><tr><th class="l">Student</th><th class="l">Item</th><th class="l">Issue</th></tr>${a.map(x=>`<tr>${x.map(y=>`<td class="l">${esc(y)}</td>`).join('')}</tr>`).join('')}</table></div>`:''}</div>`}
+
+// ---------- export ----------
+async function exp(){
+ const d=D,wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Tabulation'),ni=d.ident.length;
+ const sub=d.off.flatMap(b=>b.cols.map(c=>({b,c}))),nc=ni+sub.length+4;
+ const YEL={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFFF00'}},BK={style:'thin',color:{argb:'FF000000'}},GY={style:'thin',color:{argb:'FF999999'}};
+ const box=c=>({top:c,left:c,bottom:c,right:c});
+ // header rows (same as preview)
+ const r1_=[d.term||'',...Array(ni-1).fill('')],r2_=[d.cls||'',...Array(ni-1).fill('')],r3_=d.ident.map(x=>x.name);
+ d.off.forEach(b=>b.cols.forEach((c,k)=>{r1_.push(k?'':b.name);r2_.push(c.name+(c.max?' '+c.max:''));r3_.push(c.type==='grade'?'G':'C')}));
+ r1_.push('Grand Total ('+d.max+')','%','Pos','Attendance');r2_.push('','','','');r3_.push('','','','');
+ ws.addRows([r1_,r2_,r3_]);
+ // merges
+ ws.mergeCells(1,1,1,ni);ws.mergeCells(2,1,2,ni);let col=ni+1;
+ d.off.forEach(b=>{if(b.cols.length>1)ws.mergeCells(1,col,1,col+b.cols.length-1);col+=b.cols.length});
+ for(let q=0;q<4;q++)ws.mergeCells(1,col+q,3,col+q);
+ // header styling
+ for(let r=1;r<=3;r++)for(let c=1;c<=nc;c++){const x=ws.getCell(r,c);x.fill=YEL;x.border=box(BK);x.font={bold:true,size:r===3?10:11,color:{argb:'FF000000'}};x.alignment={horizontal:'center',vertical:'middle',wrapText:true}}
+ ws.getRow(1).height=22;ws.getRow(2).height=78;ws.getRow(3).height=26;
+ // data rows
+ [...d.st].sort((a,b)=>a.rank-b.rank).forEach(s=>{
+  const row=[...d.ident.map(x=>s.info[x.name]??'')];
+  d.off.forEach(b=>{let i=0;const o=s.sub[b.name];b.cols.forEach(c=>row.push(c.type==='comp'?(o.comps[i]==null?(o.ab?'Ab':''):o.comps[i++]):c.type==='total'?o.total:o.grade))});
+  row.push(r1(s.grand),r1(s.pct),s.rank,s.file.att??'');
+  const rr=ws.addRow(row);
+  rr.eachCell({includeEmpty:true},(x,c)=>{x.border=box(GY);const nm=c<=ni&&/name/i.test(d.ident[c-1].name);x.alignment={horizontal:nm?'left':'center',vertical:'middle'};if(x.value==='E')x.font={bold:true,color:{argb:'FFB3261E'}}});
+ });
+ // widths + freeze
+ d.ident.forEach((x,k)=>{ws.getColumn(k+1).width=/name/i.test(x.name)?22:/s\.?\s*no/i.test(x.name)?6:12});
+ for(let c=ni+1;c<=ni+sub.length;c++)ws.getColumn(c).width=7.5;
+ ws.getColumn(nc-3).width=11;ws.getColumn(nc-2).width=8;ws.getColumn(nc-1).width=6;ws.getColumn(nc).width=12;
+ ws.views=[{state:'frozen',xSplit:ni,ySplit:3}];
+ // other sheets (plain)
+ const B=[['Subject','Max','Appeared','Average','Highest','Lowest','Pass %',...GR.map(g=>g[1])]];
+ d.off.forEach(b=>{const s=subStats(b);B.push([b.name,b.max,s.n,r1(s.avg),s.hi,s.lo,r1(s.pp),...GR.map(g=>s.dist[g[1]]||0)])});
+ const Cc=[['Student',...d.off.flatMap(b=>b.cols.map(c=>b.name+' - '+c.name))]];
+ d.st.forEach(s=>Cc.push([s.name,...d.off.flatMap(b=>{let i=0;return b.cols.map(c=>c.type==='comp'?(s.sub[b.name].comps[i++]):c.type==='total'?s.sub[b.name].total:s.sub[b.name].grade)})]));
+ [['Subject Analysis',B],['Detailed Marks',Cc]].forEach(([n,x])=>{const w=wb.addWorksheet(n);w.addRows(x);w.getRow(1).font={bold:true};w.columns.forEach(c=>c.width=16)});
+ const out=new Uint8Array(await wb.xlsx.writeBuffer());let dl=null;try{dl=await window.claude?.use('downloads')}catch(e){}
+ if(dl){try{await dl.save({filename:'Tabulation.xlsx',data:out});return}catch(e){}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));a.download='Tabulation.xlsx';document.body.appendChild(a);a.click();a.remove()}
+
+// ---------- upload ----------
+async function load(file){const m=$('#msg');m.innerHTML='';$('#fn').textContent=file.name;
+ try{const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});let err='';
+  for(const n of wb.SheetNames){try{D=parse(wb.Sheets[n]);D.sheet=n;break}catch(e){D=null;err=e.message}}
+  if(!D)throw Error(err);tab='Columns';$('#app').hidden=false;render()}
+ catch(e){$('#app').hidden=true;m.innerHTML=`<div class="card err">Could not read this file: ${esc(e.message)}</div>`}}
+const dz=$('#drop'),fi=$('#f');dz.onclick=()=>fi.click();fi.onchange=()=>fi.files[0]&&load(fi.files[0]);
+dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};dz.ondragleave=()=>dz.classList.remove('on');
+dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');e.dataTransfer.files[0]&&load(e.dataTransfer.files[0])};
+new MutationObserver(()=>{if(tab==='Tabulation'&&$('#tbl'))tb();if(tab==='Student'&&$('#ss')&&!$('#sdv').innerHTML)sd()}).observe($('#view'),{childList:true});
+</script></main></body></html>
