@@ -3,313 +3,298 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>UDISE Student Management</title>
+<title>APAAR ID Helper</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
-:root{--pri:#1f4f8f;--bg:#f4f7fb;--card:#fff;--tx:#172033;--mu:#6b7280;--bd:#e2e8f0;--hd:#f7f9fc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--card:#1e293b;--tx:#e5e7eb;--mu:#94a3b8;--bd:#334155;--hd:#273449}}
-:root[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--tx:#e5e7eb;--mu:#94a3b8;--bd:#334155;--hd:#273449}
+:root{--pri:#1c5a8a;--bg:#f8fafc;--card:#fff;--tx:#172033;--mu:#64748b;--bd:#e2e8f0;--ok:#166534;--okb:#dcfce7;--yb:#fde047;--yl:#fefce8;--yt:#713f12;--yd:#eab308;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--card:#1e293b;--tx:#e5e7eb;--mu:#94a3b8;--bd:#334155;--okb:#14532d;--ok:#86efac;--yl:#422006;--yt:#fef08a}}
+:root[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--tx:#e5e7eb;--mu:#94a3b8;--bd:#334155;--okb:#14532d;--ok:#86efac;--yl:#422006;--yt:#fef08a}
 *{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--tx)}
-button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--tx);font-size:16px;padding-bottom:84px}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .hidden{display:none!important}
-.top{background:var(--card);display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:8px 16px;border-bottom:1px solid var(--bd)}
-.lg{font-size:30px;font-weight:900;color:#1c5a8a;letter-spacing:-1px}.lg b{color:#e11d48}
-.tt{font-weight:bold;line-height:1.15;border-left:1px solid var(--bd);padding-left:12px;font-size:17px}
-#who{margin-left:auto;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.info{background:#1c5a8a;color:#fff;display:flex;flex-wrap:wrap;gap:6px 28px;padding:12px 16px;font-size:14px;justify-content:space-between}
-.lay{display:flex;min-height:70vh}
-nav{width:230px;flex:none;background:var(--card);border-right:4px solid #1c5a8a}
-nav button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--bd);background:transparent;padding:14px;font-size:14px;color:var(--tx)}
-nav button.on{background:#e8f0f9;font-weight:bold;color:#1c5a8a;outline:2px solid #1c5a8a;outline-offset:-2px}
-main{flex:1;min-width:0;padding:16px}
-@media(max-width:800px){.lay{flex-direction:column}nav{width:100%;display:flex;overflow-x:auto;border-right:0}nav button{white-space:nowrap;width:auto}}
-.pill{display:inline-block;border-radius:20px;padding:5px 12px;font-size:13px;color:#fff;font-weight:bold}
-.gt th{background:#1c5a8a;color:#fff;font-size:13px;text-transform:none;text-align:center}.gt th:first-child,.gt td:first-child{text-align:left}
-.gt td{font-size:14px;padding:14px 12px;text-align:center}.gt tr.gr{cursor:pointer}.gt tr.sub td{background:var(--hd);font-size:13px}.gt tr.sub td:first-child{padding-left:30px}
-.tot{display:flex;flex-wrap:wrap;gap:8px 26px;color:#1c5a8a;font-weight:bold;margin-bottom:12px;justify-content:space-between}.tot span.l{display:flex;gap:26px;flex-wrap:wrap}
-.btn{border:0;border-radius:8px;padding:9px 14px;font-weight:bold;background:#e5ecf6;color:#1b2b44}
-.p{background:var(--pri);color:#fff}.g{background:#15803d;color:#fff}.r{background:#dc2626;color:#fff}.w{background:#f59e0b;color:#fff}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
-.card,.panel{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px}
-.card small{color:var(--mu);font-size:11px;text-transform:uppercase}.card b{display:block;font-size:26px;margin-top:4px}
-.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
-.bar{margin-bottom:10px;font-size:12px}.bar div.t{display:flex;justify-content:space-between;margin-bottom:3px}
-.bar div.b{height:8px;background:var(--bd);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pri)}
-.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-input,select,textarea{border:1px solid var(--bd);border-radius:8px;padding:9px;background:var(--card)}
-.sc{overflow:auto;max-height:68vh;border:1px solid var(--bd);border-radius:12px;background:var(--card)}
-table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}
-th{position:sticky;top:0;background:var(--hd);text-transform:uppercase;font-size:11px}
-th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--bd)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
-.modal.show{display:flex}
-.box{background:var(--card);border-radius:14px;width:820px;max-width:100%;max-height:90vh;overflow:auto;padding:18px}
-.dg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:12px 0}
-.dg div{border:1px solid var(--bd);border-radius:8px;padding:8px;font-size:13px;word-break:break-word}
-.dg small{display:block;color:var(--mu);font-size:10px;text-transform:uppercase;margin-bottom:3px}
-textarea{width:100%;min-height:90px}
-.drop{border:2px dashed var(--bd);border-radius:12px;padding:30px;text-align:center;background:var(--card)}
-#toast{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));background:#172033;color:#fff;padding:11px 15px;border-radius:9px;display:none;z-index:99;max-width:320px;font-size:13px}
+.hd{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--pri);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.hd b{font-size:17px;line-height:1.2;flex:1}.hd small{display:block;font-weight:normal;opacity:.85;font-size:12px}
+.hd button{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:8px 12px}
+.wrap{max-width:720px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+h3{margin:4px 0 10px}
+.btn{display:block;width:100%;min-height:50px;border:0;border-radius:12px;padding:12px;font-weight:bold;font-size:16px;background:#e5ecf6;color:#1b2b44;text-align:center;text-decoration:none}
+.p{background:var(--pri);color:#fff}.g{background:#16a34a;color:#fff}.r{background:#dc2626;color:#fff}.y{background:var(--yb);color:#422006}
+.btn:disabled{opacity:.6}
+.row{display:flex;gap:8px}.row>*{flex:1}
+input,select{width:100%;min-height:48px;border:1px solid var(--bd);border-radius:12px;padding:10px;background:var(--card);margin-bottom:8px}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.sum div{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;text-align:center}
+.sum b{display:block;font-size:28px}.sum span{font-size:12px;color:var(--mu)}
+.sum .w{background:var(--yb);border-color:var(--yd)}.sum .w b,.sum .w span{color:#422006}
+.cls{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:10px}
+.cls.pend{background:var(--yl);border-color:var(--yd)}
+.cls .t{display:flex;justify-content:space-between;align-items:center;font-weight:bold;font-size:17px}
+.cls .m{color:var(--mu);font-size:13px;margin:4px 0 8px}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:#16a34a}
+.bdg{display:inline-block;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:bold;white-space:nowrap}
+.bo{background:var(--okb);color:var(--ok)}.bw{background:var(--yb);color:#422006}
+.st{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:8px}
+.st.pend{background:var(--yl);border-color:var(--yd)}
+.st .n{font-weight:bold;font-size:16px;margin-bottom:3px;display:flex;justify-content:space-between;gap:8px}
+.st .m{color:var(--mu);font-size:13px;line-height:1.4}
+.chips{display:flex;gap:8px;margin-bottom:8px}.chips button{flex:1;min-height:44px;border:1px solid var(--bd);border-radius:22px;background:var(--card)}
+.chips button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.chips button.on.yy{background:var(--yb);color:#422006;border-color:var(--yd)}
+.bn{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
+.bn button{flex:1;border:0;background:transparent;padding:10px 4px;font-size:12px;min-height:60px;color:var(--mu)}
+.bn button span{display:block;font-size:22px}.bn button.on{color:var(--pri);font-weight:bold}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.sheet.show{display:flex}
+.sp{background:var(--bg);width:100%;max-width:640px;max-height:94%;overflow:auto;border-radius:18px 18px 0 0;padding:14px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.sp .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.sp .top b{font-size:18px}.x{width:44px;flex:none!important;min-height:44px;border:0;border-radius:50%;background:var(--bd)}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.dg div{border:1px solid var(--bd);border-radius:8px;padding:6px 8px;font-size:13px;word-break:break-word}
+.dg small{display:block;color:var(--mu);font-size:10px;text-transform:uppercase}
+summary{padding:8px 0;font-weight:bold;color:var(--pri)}
+.fb{display:flex;align-items:center;gap:10px;min-height:56px;border:2px dashed var(--bd);border-radius:12px;padding:10px;margin-bottom:8px;background:var(--card);cursor:pointer;font-size:15px}
+.fb.ok{border-style:solid;border-color:#16a34a;background:var(--okb)}.fb input{display:none}.fb em{display:block;font-size:12px;color:var(--mu);font-style:normal}
+.fb span.i{font-size:24px}
+.steps{font-size:14px;line-height:1.7;margin:6px 0 10px}
 .mu{color:var(--mu)}
+#toast{position:fixed;left:14px;right:14px;bottom:calc(86px + env(safe-area-inset-bottom,0px));background:#172033;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:99;font-size:14px;text-align:center}
 </style>
 </head>
 <body>
-<div class="top"><div class="lg">UDISE<b>+</b></div><div class="tt">Student Database<br>Management System</div><div id="who"></div></div>
-<div class="info"><div>UDISE Code : <span id="sc"></span><br>Type : 3 - Co-educational</div><div>Category : 3 - Pr. with Up.Pr. sec. and H.Sec.<br>Class : Nursery/KG/PP3 - 12</div><div>Management : 5 - Private Unaided (Recognized)<br>School Name : <span id="sn"></span></div><div style="text-align:right;font-weight:bold">Current Academic Year: <span class="ay"></span><br><span id="clk" style="font-weight:normal;font-size:13px"></span></div></div>
-<div class="lay"><nav id="nav"></nav>
-<main>
-<section id="p-dash">
-  <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px">
-    <h3 style="margin:0">School Details - Grade Wise (<span class="ay"></span>) <span class="pill" style="background:#6dc36d">Data Entry Active</span> <span class="pill" style="background:#e53935">Data Not Certified</span></h3>
-    <div><button class="btn" style="background:#0e9ac6;color:#fff" onclick="expSec()">Students Summary - Section Wise</button> <button class="btn" id="bc" onclick="dm='class';rd()">View Class Wise</button> <button class="btn" id="bs" onclick="dm='section';rd()">View Section Wise</button></div>
+<div class="hd"><b>APAAR ID Helper<small id="sn"></small></b><span id="who"></span></div>
+
+<div class="wrap hidden" id="login">
+  <div class="card">
+    <h3>🔐 Admin Login</h3>
+    <p class="mu" style="font-size:13px;margin-top:0">Only admin can load Excel data. Teachers do not need to login.</p>
+    <input id="lu" placeholder="Admin ID" autocomplete="username" autocapitalize="none">
+    <input id="lp" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn p" style="margin-bottom:8px" onclick="login()">Login</button>
+    <button class="btn" onclick="closeLogin()">Cancel</button>
   </div>
-  <div class="panel"><div class="tot" id="tot"></div>
-  <div class="sc"><table class="gt"><thead><tr><th>Class/Grade</th><th>Boys</th><th>Girls</th><th>Transgender</th><th>Total Students</th><th>Incomplete Students</th><th></th></tr></thead><tbody id="gb"></tbody></table></div></div>
-</section>
+</div>
 
-<section id="p-students" class="hidden">
-  <div class="tools">
-    <input id="q" placeholder="Search name, PEN, parent..." oninput="rs()">
-    <select id="fc" onchange="rs()"></select>
-    <select id="fs" onchange="rs()"></select>
-    <select id="fg" onchange="rs()"><option value="">All Gender</option><option>male</option><option>female</option><option>other</option></select>
-    <label id="remOnlyW" class="hidden"><input type="checkbox" id="ro" onchange="rs()"> With remarks</label>
-    <button class="btn" onclick="clr()">Clear</button>
-  </div>
-  <div class="sc"><table><thead><tr><th>#</th><th>Class</th><th>Sec</th><th>Name</th><th>Gender</th><th>PEN</th><th>Father</th><th>Mother</th><th>APAAR</th><th class="rc">Remark</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
-  <p class="mu" id="cnt"></p>
-</section>
+<div class="wrap" id="app">
+  <section id="v-home">
+    <div class="sum" id="sum"></div>
+    <button class="btn y" style="margin-bottom:14px" onclick="goLeft('')">⏳ Show all students who need APAAR ID</button>
+    <h3>Select your Class</h3>
+    <div id="cl"></div>
+  </section>
 
-<section id="p-classes" class="hidden"><div class="cards" id="clsCards"></div></section>
+  <section id="v-list" class="hidden">
+    <select id="fc" onchange="rl()"></select>
+    <input id="q" placeholder="🔍 Search name / PEN / father" oninput="rl()">
+    <div class="chips"><button id="c1" onclick="onlyLeft=false;rl()">All</button><button id="c2" onclick="onlyLeft=true;rl()">⏳ Need APAAR</button></div>
+    <p class="mu" id="cnt" style="margin:4px 0 10px"></p>
+    <div id="sl"></div>
+  </section>
 
-<section id="p-upload" class="hidden">
-  <div class="drop">
-    <h2>📊 Upload UDISE Excel</h2>
-    <p class="mu">.xlsx / .xls. Header row (Class, Name...) is detected automatically.</p>
-    <input type="file" id="xf" accept=".xlsx,.xls"><br><br>
-    <button class="btn p" onclick="imp()">Import</button>
-    <p id="impSt" class="mu"></p>
-  </div>
-</section>
-
-<section id="p-reports" class="hidden">
-  <div class="cards">
-    <div class="card"><small>Records</small><b id="rT">0</b><br><button class="btn p" onclick="expX()">Export Excel</button></div>
-    <div class="card"><small>Backup</small><b>💾</b><br><button class="btn p" onclick="bk()">Download JSON</button></div>
-    <div class="card"><small>Restore</small><input type="file" id="rf" accept=".json"><br><br><button class="btn w" onclick="rst()">Restore</button></div>
-    <div class="card"><small>Danger</small><br><button class="btn r" onclick="wipe()">Delete all students</button></div>
-  </div>
-</section>
-
-<section id="p-users" class="hidden">
-  <div class="panel">
-    <h3>Accounts</h3>
-    <div class="tools">
-      <input id="nu" placeholder="Username"><input id="np" type="password" placeholder="Password">
-      <select id="nr"><option value="teacher">Teacher (remarks)</option><option value="admin">Admin (full)</option></select>
-      <button class="btn p" onclick="addU()">Save / Update</button>
+  <section id="v-data" class="hidden">
+    <div class="card">
+      <h3>📥 Load Student Data (Excel)</h3>
+      <p class="mu" style="font-size:13px">.xlsx / .xls. Header row (Class, Name...) is found automatically. Data stays only in this open page (nothing is stored). APAAR ID “NA” or blank = not generated.</p>
+      <input type="file" id="xf" accept=".xlsx,.xls">
+      <button class="btn p" onclick="imp()">Load</button>
+      <p id="impSt" class="mu"></p>
     </div>
-    <div class="sc"><table><thead><tr><th>Username</th><th>Role</th><th></th></tr></thead><tbody id="ut"></tbody></table></div>
-    <p class="mu">Change the default admin password now: save user <b>admin</b> with a new password.</p>
-  </div>
-</section>
-</main></div>
+    <div class="card">
+      <h3>📤 Reports</h3>
+      <button class="btn" style="margin-bottom:8px" onclick="expAll()">Download all students (Excel)</button>
+      <button class="btn y" onclick="expLeft()">Download students who need APAAR (Excel)</button>
+    </div>
+    <div class="card">
+      <h3>📌 Keep data inside this file</h3>
+      <p class="mu" style="font-size:13px">Tap the button, then in <b>index.html</b> replace <code>const EMBED=[];</code> with the copied text and upload to GitHub again. Then data loads automatically for every teacher.</p>
+      <button class="btn" onclick="copyData()">Copy data code</button>
+    </div>
+    <div class="card">
+      <h3>🔑 Create / change Admin ID &amp; password</h3>
+      <p class="mu" style="font-size:13px">Enter new ID and password, tap the button, then in <b>index.html</b> replace the line starting <code>const ADMINS=</code> with the copied text. Upload to GitHub again.</p>
+      <input id="nu" placeholder="New Admin ID" autocapitalize="none"><input id="np" type="password" placeholder="New password (min 6)">
+      <button class="btn" onclick="mkAdmin()">Copy admin code</button>
+    </div>
+  </section>
+</div>
 
-<div class="modal" id="lm"><div class="box" style="width:380px">
-  <h2>Login</h2>
-  <p><input id="lu" placeholder="Username" style="width:100%"></p>
-  <p><input id="lp" type="password" placeholder="Password" style="width:100%"></p>
-  <p class="mu" style="font-size:12px">Default: admin / admin123, teacher / teacher123</p>
-  <button class="btn p" onclick="login()">Login</button> <button class="btn" onclick="sh('lm',0)">Cancel</button>
-</div></div>
+<nav class="bn" id="bn"></nav>
 
-<div class="modal" id="sm"><div class="box">
-  <h2 id="mt"></h2>
-  <div class="dg" id="md"></div>
-  <div id="remBox"><b>📝 Remarks</b><textarea id="rm" placeholder="Enter remarks..."></textarea>
-  <p><button class="btn p" onclick="saveRem()">Save remark</button> <button class="btn" onclick="sh('sm',0)">Close</button></p></div>
-  <button class="btn hidden" id="closeOnly" onclick="sh('sm',0)">Close</button>
-</div></div>
+<div class="sheet" id="sheet"><div class="sp" id="sp"></div></div>
 <div id="toast"></div>
 
 <script>
+/* PASTE STUDENT DATA HERE (optional): replace [] with the copied data */
+const EMBED=[];
+
+/* ADMINS: ID + SHA-256 password hash. Default login: admin / admin123 — change it from the Data tab! */
+const ADMINS=[{u:"admin",h:"240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"}];
+let adm=null;
+
+const WA="918279840446"; /* WhatsApp number: +91 8279840446 */
 const F=["Class","Section","Name","Gender","Initialised at SDMS","Student PEN","Student State Code","Father Name","Mother Name","Social Category","Minority Group","BPL beneficiary","CWSN","Type of Impairments","Is Repeater","Suspected Duplicate","Entry Status","AADHAAR No.","Name As per AADHAAR","AADHAAR Validation Status","MBU Status","APAAR ID","APAAR Status"];
-const PRIVATE=["AADHAAR No.","Name As per AADHAAR"];
-let S=[],R={},U=null,user=null,cur=null,db=null,page="dash";
-const CH=150;
+const DOCS=["Consent Form","Student Aadhaar Card","Birth Certificate","Parents Aadhaar Card"];
+const DOCS_HI=["सहमति पत्र","बच्चे का आधार कार्ड","जन्म प्रमाण पत्र","माता-पिता का आधार कार्ड"];
+const SCHOOL="HIMALAYAN INTERNATIONAL SCHOOL";
+let S=Array.isArray(EMBED)?EMBED:[],vw="home",onlyLeft=false,CL=[],cur=null,out=null,selCls="";
 const $=id=>document.getElementById(id);
 const E=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const N=v=>String(v).toLowerCase().replace(/[^a-z0-9]/g,"");
 const nat=(a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true});
-function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(window._t);window._t=setTimeout(()=>t.style.display="none",3500)}
-function sh(id,on){$(id).classList.toggle("show",!!on)}
-const role=()=>user?user.role:"public";
-const isAdmin=()=>role()==="admin", canRem=()=>role()!=="public";
-const skey=s=>(s["Student PEN"]||s.Name+"|"+s.Class+"|"+s.Section).trim().toLowerCase();
-function hid(str){let h=5381;for(const c of str)h=((h<<5)+h+c.charCodeAt(0))>>>0;return "r"+h.toString(36)}
-async function sha(t){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(window._t);window._t=setTimeout(()=>t.style.display="none",3800)}
 
-/* ---------- storage (shared db, falls back to this browser) ---------- */
-function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast("Browser storage full. Download a backup.");return false}}
-const dd=d=>typeof d.data==="function"?d.data():d.data;
-
-async function saveStudents(){
-  if(!db){return lsSet("udiseS",S)}
-  try{
-    const parts=[];for(let i=0;i<S.length;i+=CH)parts.push(S.slice(i,i+CH));
-    const col=db.collection("chunks"),old=await col.get();
-    for(let i=0;i<parts.length;i++)await col.doc("c"+String(i).padStart(4,"0")).set({i,rows:JSON.stringify(parts[i])});
-    for(const d of old.docs){const n=parseInt(d.id.slice(1),10);if(n>=parts.length)await col.doc(d.id).delete()}
-    return true;
-  }catch(e){console.error(e);toast("Could not save shared data. You may not have write permission.");return false}
-}
-async function saveUsers(){
-  if(!db)return lsSet("udiseU",U);
-  try{await db.doc("meta/users").set({list:JSON.stringify(U)});return true}catch(e){toast("Could not save accounts (no write permission).");return false}
-}
-async function saveRemark(s,text){
-  const id=hid(skey(s));R[id]=text;
-  if(!db)return lsSet("udiseR",R);
-  try{await db.collection("remarks").doc(id).set({text});return true}catch(e){toast("Could not save remark.");return false}
-}
-const remOf=s=>R[hid(skey(s))]||"";
-
-async function defaultUsers(){return [{u:"admin",h:await sha("admin123"),r:"admin"},{u:"teacher",h:await sha("teacher123"),r:"teacher"}]}
-
-async function init(){
-  U=await defaultUsers();
-  try{const c=await window.claude.use("db");db=c||null}catch(e){db=null}
-  if(db){
-    let cm={};
-    db.collection("chunks").onSnapshot(sn=>{cm={};sn.docs.forEach(d=>cm[d.id]=dd(d));
-      S=Object.keys(cm).sort().flatMap(k=>{try{return JSON.parse(cm[k].rows)}catch(e){return[]}});refresh()},()=>{});
-    db.collection("remarks").onSnapshot(sn=>{R={};sn.docs.forEach(d=>R[d.id]=(dd(d)||{}).text||"");refresh()},()=>{});
-    db.doc("meta/users").onSnapshot(d=>{try{const x=dd(d);if(x&&x.list)U=JSON.parse(x.list)}catch(e){}if(page==="users")ru()},()=>{});
-  }else{
-    S=lsGet("udiseS",[]);R=lsGet("udiseR",{});const u=lsGet("udiseU",null);if(u)U=u;
-  }
-  try{const su=JSON.parse(sessionStorage.getItem("udiseUser")||"null");if(su)user=su}catch(e){}
-  nav();refresh();
-}
-
-/* ---------- auth ---------- */
-async function login(){
-  const u=$("lu").value.trim(),h=await sha($("lp").value);
-  const f=U.find(x=>x.u===u&&x.h===h);
-  if(!f){toast("Invalid username or password.");return}
-  user={u:f.u,role:f.r};try{sessionStorage.setItem("udiseUser",JSON.stringify(user))}catch(e){}
-  $("lp").value="";$("lu").value="";sh("lm",0);nav();go("dash");toast("Welcome, "+f.u)
-}
-function logout(){user=null;try{sessionStorage.removeItem("udiseUser")}catch(e){}nav();go("dash")}
-
-/* ---------- navigation ---------- */
-function nav(){
-  const items=[["dash","📊 School Dashboard"],["students","📋 List of All Students"],["classes","🏫 Class / Section"]];
-  if(isAdmin())items.push(["upload","📥 Upload Excel"],["reports","📑 Reporting & Backup"],["users","👩‍🏫 Accounts"]);
-  $("nav").innerHTML=items.map(([k,l])=>`<button class="${k===page?"on":""}" onclick="go('${k}')">${l}</button>`).join("");
-  $("who").innerHTML=user?`👤 ${E(user.u)} (${user.role}) <button class="btn" onclick="logout()">Logout</button>`:`Public view <button class="btn" onclick="sh('lm',1)">🔐 Login</button>`;
-  $("remOnlyW").classList.toggle("hidden",!canRem());
-  document.querySelectorAll(".rc").forEach(e=>e.classList.toggle("hidden",!canRem()));
-}
-function go(p){
-  if((["upload","reports","users"].includes(p))&&!isAdmin()){toast("Admin login required.");sh("lm",1);return}
-  page=p;["dash","students","classes","upload","reports","users"].forEach(k=>$("p-"+k).classList.toggle("hidden",k!==p));
-  nav();refresh();
-}
-function refresh(){
-  if(page==="dash")rd();if(page==="students")rs();if(page==="classes")rc();if(page==="reports")$("rT").textContent=S.length;if(page==="users")ru();
-}
-
-/* ---------- dashboard ---------- */
-function bars(map,limit){
-  const e=Object.entries(map).sort((a,b)=>nat(a[0],b[0])).slice(0,limit||99);if(!e.length)return "<span class='mu'>No data.</span>";
-  const mx=Math.max(...e.map(x=>x[1]));
-  return e.map(([k,v])=>`<div class="bar"><div class="t"><span>${E(k)}</span><b>${v}</b></div><div class="b"><i style="width:${v/mx*100}%"></i></div></div>`).join("");
-}
-const SCHOOL={code:"05050301406",name:"HIMALAYAN INTERNATIONAL SCHOOL",year:"2026-27"};
-let dm="class",op={},cl=[];
 const rank=c=>{const v=String(c).toLowerCase().trim();if(v.includes("nursery"))return 0;if(v.startsWith("lkg"))return 1;if(v.startsWith("ukg"))return 2;
   const r=["i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii"].indexOf(v.split(/[\s/(-]/)[0]);if(r>=0)return 3+r;const n=parseInt(v);return isNaN(n)?99:2+n};
 const cmp=(a,b)=>rank(a)-rank(b)||nat(a,b);
-const gk=s=>{const g=String(s.Gender).toLowerCase().trim();return ["male","boy","m"].includes(g)?"b":["female","girl","f"].includes(g)?"g":["transgender","other","t"].includes(g)?"t":"u"};
-const inc=s=>{const v=String(s["Entry Status"]).toLowerCase();return !v||v.includes("incomplete")};
-function agg(l){const a={b:0,g:0,t:0,n:l.length,i:0};l.forEach(s=>{const k=gk(s);if(a[k]!==undefined)a[k]++;if(inc(s))a.i++});return a}
-const tr1=(lab,a,cls,att,ch)=>`<tr class="${cls}" ${att}><td>${E(lab)}</td><td>${a.b}</td><td>${a.g}</td><td>${a.t}</td><td>${a.n}</td><td>${a.i}</td><td>${ch}</td></tr>`;
-function tg(i){op[i]=!op[i];rd()}
-function rd(){
+const gk=s=>{const g=String(s.Gender).toLowerCase().trim();return ["male","boy","m"].includes(g)?"b":["female","girl","f"].includes(g)?"g":"t"};
+/* APAAR ID blank, "-", "NA", "N/A", "Nil" etc. = NOT generated */
+const noApaar=s=>["","na","nil","null","none","notgenerated"].includes(N(s["APAAR ID"]??""));
+const clsKey=s=>(s.Class||"?")+"|"+(s.Section||"");
+const clsLab=k=>{const [c,s]=k.split("|");return c+(s?" - "+s:"")};
+function agg(l){const a={n:l.length,b:0,g:0,t:0,left:0};l.forEach(s=>{a[gk(s)]++;if(noApaar(s))a.left++});return a}
+
+async function sha(t){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function init(){$("sn").textContent=SCHOOL;shell()}
+function shell(show){
+  $("login").classList.toggle("hidden",!show);$("app").classList.toggle("hidden",!!show);$("bn").classList.toggle("hidden",!!show);
+  $("who").innerHTML=adm?`<button onclick="logout()">${E(adm)} ⎋ Logout</button>`:`<button onclick="openLogin()">🔐 Admin</button>`;
+  if(!show)setView(vw)
+}
+function openLogin(){shell(true);setTimeout(()=>$("lu").focus(),50)}
+function closeLogin(){shell(false)}
+async function login(){
+  const u=$("lu").value.trim(),h=await sha($("lp").value);
+  if(!ADMINS.some(a=>a.u===u&&a.h===h)){toast("Wrong Admin ID or password.");return}
+  adm=u;$("lp").value="";vw="data";shell(false)
+}
+function logout(){adm=null;closeS();vw="home";shell(false)}
+async function mkAdmin(){
+  const u=$("nu").value.trim(),p=$("np").value;
+  if(!u||p.length<6){toast("ID required, password min 6 characters.");return}
+  const t="const ADMINS=[{u:"+JSON.stringify(u)+",h:\""+await sha(p)+"\"}];";
+  try{await navigator.clipboard.writeText(t);toast("Copied. Replace the const ADMINS line in index.html with it.")}catch(e){prompt("Copy this code:",t)}
+}
+function setView(v){
+  if(v==="data"&&!adm)v="home";
+  vw=v;["home","list","data"].forEach(k=>$("v-"+k).classList.toggle("hidden",k!==v));
+  const t=[["home","🏠","Home"],["list","👩‍🎓","Students"]];if(adm)t.push(["data","📥","Data"]);
+  $("bn").innerHTML=t.map(([k,i,l])=>`<button class="${k===v?"on":""}" onclick="${k==="list"?"goLeft(null)":"setView('"+k+"')"}"><span>${i}</span>${l}</button>`).join("");
+  draw();window.scrollTo(0,0)
+}
+function draw(){if(vw==="home")rh();if(vw==="list")rl()}
+function goLeft(c){if(c!==null){$("fc").value=c;onlyLeft=true}setView("list")}
+function openCls(i){selCls=CL[i];onlyLeft=false;setView("list");$("fc").value=selCls;rl()}
+
+function rh(){
   const t=agg(S);
-  $("tot").innerHTML=`<span class="l"><span>Total Enrolments : ${t.n}</span><span>Total Boys : ${t.b}</span><span>Total Girls : ${t.g}</span><span>Total Transgender : ${t.t}</span></span><span style="color:#dc2626">Data Last Updated On : ${new Date().toLocaleString("en-GB")}</span>`;
-  $("bc").className="btn"+(dm==="class"?" p":"");$("bs").className="btn"+(dm==="section"?" p":"");
-  const by={};S.forEach(s=>{const c=s.Class||"?";(by[c]=by[c]||[]).push(s)});
-  cl=Object.keys(by).sort(cmp);let h="";
-  cl.forEach((c,i)=>{
-    const secs={};by[c].forEach(s=>{const k=s.Section||"-";(secs[k]=secs[k]||[]).push(s)});
-    const sk=Object.keys(secs).sort(nat);
-    if(dm==="class"){
-      h+=tr1(c,agg(by[c]),"gr",`onclick="tg(${i})"`,op[i]?"⌃":"⌄");
-      if(op[i])sk.forEach(k=>h+=tr1("Section "+k,agg(secs[k]),"sub","",""));
-    }else sk.forEach(k=>h+=tr1(c+" - "+k,agg(secs[k]),"","",""));
-  });
-  $("gb").innerHTML=h||`<tr><td colspan="7" class="mu" style="padding:30px">No data. Admin can upload an Excel file.</td></tr>`;
-}
-function expSec(){
-  if(!S.length){toast("No data.");return}
-  const o=[];Object.entries(S.reduce((m,s)=>{const k=(s.Class||"?")+"\u0001"+(s.Section||"-");(m[k]=m[k]||[]).push(s);return m},{})).sort((a,b)=>cmp(a[0].split("\u0001")[0],b[0].split("\u0001")[0])||nat(a[0],b[0])).forEach(([k,l])=>{const a=agg(l),[c,s]=k.split("\u0001");o.push({Class:c,Section:s,Boys:a.b,Girls:a.g,Transgender:a.t,Total:a.n,Incomplete:a.i})});
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(o),"Section Summary");
-  saveFile("UDISE_Section_Summary.xlsx",new Uint8Array(XLSX.write(wb,{type:"array",bookType:"xlsx"})));
+  $("sum").innerHTML=`<div><b>${t.n}</b><span>Total Students</span></div><div class="w"><b>${t.left}</b><span>APAAR ID to generate</span></div><div><b>${t.b}</b><span>Boys</span></div><div><b>${t.g}</b><span>Girls</span></div>`;
+  const by={};S.forEach(s=>(by[clsKey(s)]=by[clsKey(s)]||[]).push(s));
+  CL=Object.keys(by).sort((a,b)=>cmp(a.split("|")[0],b.split("|")[0])||nat(a,b));
+  $("cl").innerHTML=CL.length?CL.map((k,i)=>{const a=agg(by[k]),done=a.n-a.left;
+    return `<button class="cls ${a.left?"pend":""}" onclick="openCls(${i})"><div class="t"><span>${E(clsLab(k))}</span><span class="bdg ${a.left?"bw":"bo"}">${a.left?a.left+" need APAAR":"✅ All done"}</span></div><div class="m">${a.n} students · ${a.b} boys · ${a.g} girls</div><div class="bar"><i style="width:${a.n?done/a.n*100:0}%"></i></div></button>`}).join(""):`<div class="card"><p class="mu" style="margin-top:0">No student data loaded yet.</p><button class="btn y" onclick="adm?setView('data'):openLogin()">🔐 Admin: load Excel file</button></div>`;
 }
 
-/* ---------- students ---------- */
-function fillF(){
-  const cs=[...new Set(S.map(s=>s.Class).filter(Boolean))].sort(nat),ss=[...new Set(S.map(s=>s.Section).filter(Boolean))].sort(nat);
-  const oc=$("fc").value,os=$("fs").value;
-  $("fc").innerHTML='<option value="">All Classes</option>'+cs.map(c=>`<option>${E(c)}</option>`).join("");
-  $("fs").innerHTML='<option value="">All Sections</option>'+ss.map(c=>`<option>${E(c)}</option>`).join("");
-  if(cs.includes(oc))$("fc").value=oc;if(ss.includes(os))$("fs").value=os;
-}
-function rs(){
-  const fcSel=$("fc");if(fcSel.options.length<2||fcSel.options.length-1!==new Set(S.map(s=>s.Class).filter(Boolean)).size)fillF();
-  const q=$("q").value.toLowerCase().trim(),c=$("fc").value,sc=$("fs").value,g=$("fg").value,ro=canRem()&&$("ro").checked;
-  const pubCols=["Name","Student PEN","Father Name","Mother Name","Class","Section","APAAR ID"];
-  const L=[];S.forEach((s,i)=>{
-    if(c&&s.Class!==c)return;if(sc&&s.Section!==sc)return;
-    if(g&&String(s.Gender).toLowerCase().trim()!==g)return;
-    if(ro&&!remOf(s))return;
-    if(q&&!pubCols.map(k=>s[k]).join(" ").toLowerCase().includes(q))return;
-    L.push([s,i])});
-  const show=L.slice(0,300);
-  $("tb").innerHTML=show.length?show.map(([s,i])=>`<tr><td>${i+1}</td><td>${E(s.Class)}</td><td>${E(s.Section)}</td><td><b>${E(s.Name)}</b></td><td>${E(s.Gender)}</td><td>${E(s["Student PEN"])}</td><td>${E(s["Father Name"])}</td><td>${E(s["Mother Name"])}</td><td>${E(s["APAAR ID"])}</td>${canRem()?`<td>${remOf(s)?"📝 "+E(remOf(s).slice(0,30)):"<span class=mu>-</span>"}</td>`:""}<td><button class="btn" onclick="open1(${i})">View</button></td></tr>`).join(""):`<tr><td colspan="11" class="mu" style="text-align:center;padding:30px">No records found.</td></tr>`;
-  $("cnt").textContent=L.length>300?`Showing 300 of ${L.length}. Refine your search.`:`${L.length} record(s)`;
-}
-function clr(){$("q").value="";$("fc").value="";$("fs").value="";$("fg").value="";$("ro").checked=false;rs()}
-
-function open1(i){
-  cur=i;const s=S[i];$("mt").textContent=s.Name||"Student";
-  const fields=canRem()?F:F.filter(f=>!PRIVATE.includes(f));
-  $("md").innerHTML=fields.map(f=>`<div><small>${E(f)}</small>${E(s[f]||"—")}</div>`).join("");
-  $("remBox").classList.toggle("hidden",!canRem());$("closeOnly").classList.toggle("hidden",canRem());
-  $("rm").value=remOf(s);sh("sm",1);
-}
-async function saveRem(){
-  if(cur===null||!canRem())return;
-  if(await saveRemark(S[cur],$("rm").value.trim())){sh("sm",0);toast("Remark saved.");refresh()}
+function rl(){
+  const keys=[...new Set(S.map(clsKey))].sort((a,b)=>cmp(a.split("|")[0],b.split("|")[0])||nat(a,b)),fc=$("fc"),old=fc.value;
+  if(fc.options.length!==keys.length+1){fc.innerHTML='<option value="">All Classes</option>'+keys.map(k=>`<option value="${E(k)}">${E(clsLab(k))}</option>`).join("");fc.value=keys.includes(old)?old:""}
+  $("c1").className=onlyLeft?"":"on";$("c2").className=onlyLeft?"on yy":"";
+  const q=$("q").value.toLowerCase().trim(),c=fc.value,L=[];
+  S.forEach((s,i)=>{if(c&&clsKey(s)!==c)return;if(onlyLeft&&!noApaar(s))return;
+    if(q&&![s.Name,s["Student PEN"],s["Father Name"],s["Mother Name"]].join(" ").toLowerCase().includes(q))return;L.push([s,i])});
+  const a=agg(L.map(x=>x[0]));
+  $("cnt").textContent=`${L.length} student(s) · ${a.left} need APAAR ID`+(L.length>100?" (showing first 100)":"");
+  $("sl").innerHTML=L.length?L.slice(0,100).map(([s,i])=>`<button class="st ${noApaar(s)?"pend":""}" onclick="openS(${i})"><div class="n"><span>${E(s.Name)}</span><span class="bdg ${noApaar(s)?"bw":"bo"}">${noApaar(s)?"⏳ Need APAAR":"✅ Done"}</span></div><div class="m">Class ${E(clsLab(clsKey(s)))} · ${E(s.Gender)}<br>Father: ${E(s["Father Name"]||"—")} · PEN: ${E(s["Student PEN"]||"—")}</div></button>`).join(""):`<p class="mu">No students found.</p>`;
 }
 
-/* ---------- classes ---------- */
-function rc(){
-  const m={};S.forEach(s=>{const k=(s.Class||"?")+" - "+(s.Section||"-");m[k]=(m[k]||0)+1});
-  const e=Object.entries(m).sort((a,b)=>nat(a[0],b[0]));
-  $("clsCards").innerHTML=e.length?e.map(([k,v])=>`<div class="card"><small>Class / Section</small><b>${E(k)}</b><span class="mu">${v} students</span></div>`).join(""):"<p class='mu'>No data.</p>";
+function openS(i){
+  cur=S[i];out=null;const s=cur,need=noApaar(s);
+  $("sp").innerHTML=`<div class="top"><b>${E(s.Name)}</b><button class="x" onclick="closeS()">✕</button></div>
+  <p style="margin:0 0 8px">Class ${E(clsLab(clsKey(s)))} · PEN ${E(s["Student PEN"]||"—")}<br><span class="bdg ${need?"bw":"bo"}" style="margin-top:6px">${need?"⏳ APAAR ID not generated (NA)":"✅ APAAR ID: "+E(s["APAAR ID"])}</span></p>
+  <details class="card"><summary>All student details</summary><div class="dg">${F.map(f=>`<div><small>${E(f)}</small>${E(s[f]||"—")}</div>`).join("")}</div></details>
+  <div class="card">
+    <h3>📎 Documents → PDF</h3>
+    <div class="steps"><b>1.</b> Add the 4 documents (photo or PDF)<br><b>2.</b> Tap “Make PDF”<br><b>3.</b> Save PDF<br><b>4.</b> Send merged PDF + student data on WhatsApp<br><span class="mu">4 दस्तावेज़ जोड़ें → PDF बनाएं → PDF सेव करें → WhatsApp पर भेजें</span></div>
+    ${DOCS.map((d,k)=>`<label class="fb" id="fb${k}"><span class="i">📄</span><span><b>${k+1}. ${d}</b><em id="fn${k}">${DOCS_HI[k]} — tap to add${k===3?" (can add 2 files)":""}</em></span><input type="file" id="f${k}" accept="image/*,application/pdf" ${k===3?"multiple":""} onchange="pick(${k})"></label>`).join("")}
+    <button class="btn g" id="mk" onclick="makePdf()">✅ Make PDF</button>
+    <p class="mu" id="ms" style="margin:8px 0 0"></p>
+  </div>
+  <div class="card hidden" id="res">
+    <h3>🎉 PDF is ready</h3>
+    <button class="btn p" style="margin-bottom:8px" onclick="savePdf()">⬇ Step 3: Save PDF</button>
+    <button class="btn g" onclick="sendWA()">💬 Step 4: Send PDF + Student Data on WhatsApp</button>
+    <button class="btn" style="margin-top:8px" onclick="openWA()">Open chat of 8279840446 (data message only)</button>
+    <p class="mu" style="font-size:12px;margin-bottom:0">Step 4 attaches the merged PDF and student data. In the share list choose <b>WhatsApp</b>, then the contact <b>8279840446</b>. If sharing is not supported, the PDF is saved and the chat opens; tap 📎 and attach the PDF. The PDF's first page has the student data. Nothing is stored in this app.<br>WhatsApp चुनें → नंबर 8279840446 चुनें → भेजें। PDF के पहले पेज पर बच्चे की जानकारी है।</p>
+  </div>`;
+  $("sheet").classList.add("show");
+}
+function closeS(){$("sheet").classList.remove("show");cur=null;out=null}
+function pick(k){
+  const fl=[...$("f"+k).files];$("fb"+k).classList.toggle("ok",fl.length>0);$("fn"+k).textContent=fl.length?"✅ "+fl.map(f=>f.name).join(", ").slice(0,45):DOCS_HI[k]+" — tap to add";
+  $("res").classList.add("hidden");out=null;
+}
+function readDU(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(f)})}
+async function imgJpeg(f){
+  const im=await new Promise(async(ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=await readDU(f)});
+  const sc=Math.min(1,1800/Math.max(im.width,im.height)),c=document.createElement("canvas");
+  c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
+  const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+  const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.8));
+  return{bytes:new Uint8Array(await b.arrayBuffer()),w:c.width,h:c.height};
+}
+async function makePdf(){
+  if(!cur)return;const files=[];
+  for(let k=0;k<4;k++){const fl=[...$("f"+k).files];if(!fl.length){toast("Please add: "+DOCS[k]);$("fb"+k).scrollIntoView({block:"center"});return}files.push(...fl)}
+  const b=$("mk");b.disabled=true;$("ms").textContent="⏳ Making PDF, please wait...";
+  try{
+    const {PDFDocument,StandardFonts,rgb}=PDFLib,doc=await PDFDocument.create();
+    {const pg=doc.addPage([595,842]),fb=await doc.embedFont(StandardFonts.HelveticaBold),fr=await doc.embedFont(StandardFonts.Helvetica),cl=t=>String(t??"").replace(/[^\x20-\x7E]/g,"?");
+      let y=800;pg.drawText(cl(SCHOOL),{x:40,y,size:16,font:fb});y-=22;pg.drawText("APAAR ID - Student Data & Documents",{x:40,y,size:12,font:fr});y-=26;
+      [["Name","Name"],["Class","Class"],["Section","Section"],["Gender","Gender"],["Student PEN","Student PEN"],["Student State Code","State Code"],["Father Name","Father Name"],["Mother Name","Mother Name"],["Social Category","Social Category"],["AADHAAR No.","Aadhaar No."],["Name As per AADHAAR","Name as per Aadhaar"],["APAAR ID","APAAR ID"]].forEach(([k,l])=>{
+        const v=String(cur[k]||"").trim()||"-";pg.drawText(l+":",{x:40,y,size:12,font:fb});pg.drawText(cl(v).slice(0,60),{x:190,y,size:12,font:fr});y-=22;
+        pg.drawLine({start:{x:40,y:y+16},end:{x:555,y:y+16},thickness:.4,color:rgb(.8,.8,.8)})});
+      pg.drawText("Documents attached on the following pages.",{x:40,y:y-10,size:11,font:fr,color:rgb(.4,.4,.4)})}
+    for(const f of files){
+      if(f.type==="application/pdf"||/\.pdf$/i.test(f.name)){
+        const src=await PDFDocument.load(await f.arrayBuffer(),{ignoreEncryption:true});
+        (await doc.copyPages(src,src.getPageIndices())).forEach(p=>doc.addPage(p));
+      }else{
+        const m=await imgJpeg(f),img=await doc.embedJpg(m.bytes),W=595,H=842,k=Math.min((W-40)/m.w,(H-40)/m.h),w=m.w*k,h=m.h*k;
+        doc.addPage([W,H]).drawImage(img,{x:(W-w)/2,y:(H-h)/2,width:w,height:h});
+      }
+    }
+    const bytes=await doc.save(),name=((cur.Name||"student")+"_"+(cur["Student PEN"]||"noPEN")+"_APAAR.pdf").replace(/[^\w.\-]+/g,"_");
+    out={bytes,name};
+    $("ms").textContent="✅ Done ("+(bytes.length>1048576?(bytes.length/1048576).toFixed(1)+" MB":Math.round(bytes.length/1024)+" KB")+")";
+    $("res").classList.remove("hidden");$("res").scrollIntoView({behavior:"smooth",block:"center"});
+  }catch(e){console.error(e);$("ms").textContent="";toast("Could not make PDF. Check the files are clear photos or PDFs (not password-protected).")}
+  b.disabled=false;
+}
+function dl(name,data,type){
+  const a=document.createElement("a"),u=URL.createObjectURL(new Blob([data],{type}));
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)
+}
+function savePdf(){if(!out)return;dl(out.name,out.bytes,"application/pdf");toast("PDF saved. Now tap Step 4 to send on WhatsApp.")}
+function waText(){
+  const s=cur;return `*APAAR Documents*\nStudent: ${s.Name}\nClass: ${clsLab(clsKey(s))}\nGender: ${s.Gender||"-"}\nPEN: ${s["Student PEN"]||"-"}\nFather: ${s["Father Name"]||"-"}\nMother: ${s["Mother Name"]||"-"}\nAadhaar: ${s["AADHAAR No."]||"-"}\nAPAAR ID: ${noApaar(s)?"Not generated (NA)":s["APAAR ID"]}\n(Merged PDF attached)`
+}
+function openWA(){if(cur)window.open("https://wa.me/"+WA+"?text="+encodeURIComponent(waText()),"_blank","noopener")}
+async function sendWA(){
+  if(!cur||!out)return;
+  const f=new File([out.bytes],out.name,{type:"application/pdf"});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){
+    try{await navigator.share({files:[f],text:waText(),title:out.name});toast("Choose WhatsApp, then contact 8279840446");return}
+    catch(e){if(e&&e.name==="AbortError")return}
+  }
+  dl(out.name,out.bytes,"application/pdf");toast("PDF saved. In WhatsApp tap 📎 and attach it.");
+  setTimeout(openWA,600);
 }
 
-/* ---------- import ---------- */
-async function imp(){
-  if(!isAdmin())return;
+function imp(){
+  if(!adm){toast("Admin login required.");return}
   const f=$("xf").files[0];if(!f){toast("Select an Excel file.");return}
-  const rd=new FileReader();
-  rd.onload=async e=>{
+  const r=new FileReader();
+  r.onload=e=>{
     let rows;
     try{
       const wb=XLSX.read(e.target.result,{type:"array"});
@@ -317,72 +302,30 @@ async function imp(){
       const h=grid.findIndex(r=>{const n=r.map(N);return n.includes("name")&&n.includes("class")});
       if(h<0){toast("Header row (Class, Name...) not found.");return}
       const hd=grid[h].map(String);
-      rows=grid.slice(h+1).filter(r=>r.some(c=>String(c).trim())).map(r=>{
-        const s={};F.forEach(fl=>{const i=hd.findIndex(x=>N(x)===N(fl));s[fl]=i>=0?String(r[i]??"").trim():""});return s});
+      rows=grid.slice(h+1).filter(r=>r.some(c=>String(c).trim())).map(r=>{const s={};F.forEach(fl=>{const i=hd.findIndex(x=>N(x)===N(fl));s[fl]=i>=0?String(r[i]??"").trim():""});return s});
     }catch(err){console.error(err);toast("Unable to read the Excel file.");return}
     if(!rows.length){toast("No student rows found.");return}
-    if(S.length&&!confirm(`Replace ${S.length} existing students with ${rows.length}? Remarks are kept for matching PEN/Name.`))return;
-    S=rows;$("impSt").textContent="Saving "+rows.length+" records...";
-    if(await saveStudents()){$("impSt").innerHTML=`<b>${rows.length}</b> records imported.`;toast(rows.length+" records imported.")}
-    else $("impSt").textContent="Import failed to save.";
+    S=rows;$("impSt").textContent=rows.length+" students loaded ✅";toast(rows.length+" students loaded.");
   };
-  rd.readAsArrayBuffer(f);
+  r.readAsArrayBuffer(f);
+}
+function xl(list,sheet,name){
+  if(!list.length){toast("No data.");return}
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(list.map(s=>{const o={};F.forEach(f=>o[f]=s[f]);return o})),sheet);
+  dl(name,new Uint8Array(XLSX.write(wb,{type:"array",bookType:"xlsx"})),"application/octet-stream");
+}
+const expAll=()=>xl(S,"Students","All_Students.xlsx");
+const expLeft=()=>xl(S.filter(noApaar),"Need APAAR","Need_APAAR.xlsx");
+async function copyData(){
+  if(!S.length){toast("Load the Excel file first.");return}
+  const t="const EMBED="+JSON.stringify(S)+";";
+  try{await navigator.clipboard.writeText(t);toast("Copied. Paste it in index.html in place of: const EMBED=[];")}
+  catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copied.")}catch(_){toast("Copy failed.")}ta.remove()}
 }
 
-/* ---------- export / backup ---------- */
-async function saveFile(name,data){
-  try{const d=await window.claude.use("downloads");if(!d){toast("Downloads not available in this view.");return}await d.save({filename:name,data})}
-  catch(e){if(!e||e.code!=="declined")toast("Could not save file.")}
-}
-function expX(){
-  if(!S.length){toast("No data.");return}
-  const ws=XLSX.utils.json_to_sheet(S.map(s=>{const o={};F.forEach(f=>o[f]=s[f]);o.Remarks=remOf(s);return o}));
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"UDISE Students");
-  saveFile("UDISE_Student_Data.xlsx",new Uint8Array(XLSX.write(wb,{type:"array",bookType:"xlsx"})));
-}
-function bk(){saveFile("UDISE_Backup.json",JSON.stringify({at:new Date().toISOString(),students:S,remarks:R},null,1))}
-function rst(){
-  const f=$("rf").files[0];if(!f){toast("Select a backup file.");return}
-  const r=new FileReader();
-  r.onload=async e=>{
-    try{const d=JSON.parse(e.target.result);if(!Array.isArray(d.students))throw 0;
-      if(!confirm("Replace ALL current data with this backup?"))return;
-      S=d.students.map(s=>{const o={};F.forEach(k=>o[k]=String(s[k]??""));return o});R=d.remarks||{};
-      await saveStudents();
-      if(db){for(const k in R)await db.collection("remarks").doc(k).set({text:R[k]})}else lsSet("udiseR",R);
-      toast("Backup restored.");refresh()
-    }catch(err){toast("Invalid backup file.")}
-  };r.readAsText(f);
-}
-async function wipe(){
-  if(!confirm("Delete ALL students? This cannot be undone."))return;
-  S=[];await saveStudents();toast("All students deleted.");refresh()
-}
-
-/* ---------- accounts ---------- */
-function ru(){
-  $("ut").innerHTML=U.map((x,i)=>`<tr><td>${E(x.u)}</td><td>${E(x.r)}</td><td><button class="btn r" onclick="delU(${i})">Delete</button></td></tr>`).join("");
-}
-async function addU(){
-  const u=$("nu").value.trim(),p=$("np").value,r=$("nr").value;
-  if(!u||p.length<6){toast("Username required, password min 6 characters.");return}
-  const h=await sha(p),i=U.findIndex(x=>x.u===u);
-  if(i>=0)U[i]={u,h,r};else U.push({u,h,r});
-  if(await saveUsers()){$("nu").value="";$("np").value="";toast("Account saved.");ru()}
-}
-async function delU(i){
-  if(U[i].u===user.u){toast("You cannot delete your own account.");return}
-  if(U.filter(x=>x.r==="admin").length<2&&U[i].r==="admin"){toast("Keep at least one admin.");return}
-  if(!confirm("Delete "+U[i].u+"?"))return;
-  U.splice(i,1);await saveUsers();ru()
-}
-
-/* ---------- events ---------- */
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeS()});
 $("lp").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){sh("sm",0);sh("lm",0)}});
-["sm","lm"].forEach(id=>$(id).addEventListener("click",e=>{if(e.target.id===id)sh(id,0)}));
-document.querySelectorAll(".ay").forEach(e=>e.textContent=SCHOOL.year);$("sc").textContent=SCHOOL.code;$("sn").textContent=SCHOOL.name;
-const tick=()=>$("clk").textContent=new Date().toLocaleString("en-GB");tick();setInterval(tick,30000);
+$("sheet").addEventListener("click",e=>{if(e.target.id==="sheet")closeS()});
 init();
 </script>
 </body>
