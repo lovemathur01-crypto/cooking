@@ -1,263 +1,321 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HIS - Daily Coordinator Monitoring Report</title>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Coordinator Monitoring Report (A4)</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
-:root{--navy:#0d2f70;--blue:#1a56b8;--green:#16883d;--red:#d71920;--amber:#ef7900;--line:#dbe4f0}
+:root{--navy:#0b2a66;--line:#d6e0f0}
 *{box-sizing:border-box}
-body{margin:0;background:#e9eff7;font-family:Arial,Helvetica,sans-serif;color:#18233a}
-.bar{background:var(--navy);color:#fff;padding:14px 22px;font-weight:700;font-size:18px}
-.bar small{display:block;font-weight:400;opacity:.8;font-size:12px;margin-top:2px}
-.ctrl{max-width:900px;margin:14px auto;background:#fff;border-radius:10px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;box-shadow:0 2px 8px #0001}
-.ctrl>div{flex:1;min-width:200px}
-label{font-size:12px;font-weight:700;display:block;margin-bottom:4px}
-input,select{width:100%;padding:9px;border:1px solid #b7c5d8;border-radius:7px;font:inherit;background:#fff}
-button{border:0;border-radius:7px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer;background:var(--green);color:#fff}
-button:disabled{background:#a9b4c3;cursor:not-allowed}
-.link{background:none;color:var(--blue);padding:4px;text-decoration:underline;font-weight:400;font-size:12px}
-#status{max-width:900px;margin:0 auto 10px;font-size:13px;color:#475569;padding:0 6px}
-#pages{transform-origin:top center}
-/* ---------- A4 portrait page ---------- */
-.page{width:794px;height:1123px;margin:0 auto 16px;background:#fff;box-shadow:0 3px 14px #0002;display:flex;flex-direction:column;overflow:hidden}
-.hd{background:linear-gradient(120deg,#0b2860,#1a56b8);color:#fff;padding:16px 30px;position:relative;overflow:hidden}
-.hd:before,.hd:after{content:"";position:absolute;border-radius:50%;background:#ffffff14}
-.hd:before{width:200px;height:200px;right:-50px;top:-90px}.hd:after{width:110px;height:110px;right:150px;bottom:-70px}
-.hd small{letter-spacing:2px;font-size:10px;opacity:.85}.hd h1{margin:3px 0 8px;font-size:21px}
-.pill{display:inline-block;background:#fff;color:var(--navy);border-radius:20px;padding:3px 13px;font-weight:700;font-size:12px;margin-right:8px}
-.pill.o{background:#ffffff26;color:#fff}
-.body{flex:1;min-height:0;overflow:hidden;padding:12px 30px 0}
-.fit{transform-origin:top left;width:734px}
-.ft{padding:7px 30px;font-size:9px;color:#6b778c;display:flex;justify-content:space-between;border-top:1px solid var(--line)}
-.sec{font-size:13px;font-weight:800;color:var(--navy);margin:0 0 7px;padding-left:9px;border-left:5px solid var(--amber)}
-.blk{margin-bottom:10px}
-.two{display:flex;gap:14px;align-items:stretch}
-.glance{width:236px;flex:none;display:flex;flex-direction:column;align-items:center;gap:8px;background:#f4f8fe;border:1px solid var(--line);border-radius:12px;padding:10px}
-.tiles{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.tile{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 2px;text-align:center}
-.tile b{display:block;font-size:20px;color:var(--navy)}.tile span{font-size:9px;color:#55627a;line-height:1.2;display:block}
-.rate{display:inline-block;color:#fff;border-radius:12px;padding:3px 12px;font-weight:800;font-size:12px}
-.bars{flex:1}
-.row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:11px}
-.row .n{width:108px;font-weight:700}.row .t{flex:1;height:13px;background:#e6ecf5;border-radius:7px;overflow:hidden}
-.row .t i{display:block;height:100%;border-radius:7px}.row .p{width:80px;text-align:right;font-weight:800}.row .p small{font-weight:400;color:#667}
-.cc{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;border:1px solid var(--line);border-left-width:5px;border-radius:9px;padding:7px 10px;margin-bottom:6px;background:#fff}
-.who{width:190px;display:flex;gap:8px;align-items:center}.who b{font-size:12.5px;display:block}.who span{display:block;font-size:9.5px;color:#55627a;margin-top:1px}
-.who .sc{font-weight:800}
-.chips{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
-.chip{border-radius:6px;padding:3px 6px;display:flex;gap:5px;align-items:center;line-height:1.2}
-.chip i{font-style:normal;font-weight:900;width:16px;height:16px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;flex:none}
-.chip b{display:block;font-size:9px}.chip em{font-style:normal;font-size:8px;opacity:.85}
-.s-done{background:#e7f6ec}.s-done i{background:var(--green)}
-.s-notdone{background:#fdeaea}.s-notdone i{background:var(--red)}
-.s-na{background:#eef0f3}.s-na i{background:#8a94a3}
-.s-partial,.s-pending{background:#fff3e2}.s-partial i,.s-pending i{background:var(--amber)}
-.notes{flex-basis:100%;font-size:9.5px;line-height:1.45;color:#33415c}
-.tag{display:inline-block;border-radius:4px;padding:0 5px;color:#fff;font-weight:700;font-size:8.5px;margin-right:4px}
-.act{border:1px solid #f1b0b0;background:#fff8f8;border-radius:9px;padding:4px 12px}
-.act div{font-size:10px;line-height:1.4;padding:3px 0;border-bottom:1px dashed #f1c4c4}.act div:last-child{border:0}
-.obs{border:1px solid #9bb8e3;border-left:6px solid var(--navy);background:#f3f7fd;border-radius:9px;padding:8px 14px;font-size:10.5px;line-height:1.5}
-.obs p{margin:0 0 4px}.obs p:last-child{margin:0}
-.ok{color:var(--green);font-weight:700;font-size:11px}
-</style></head><body>
-<div class="bar">Daily Coordinator Monitoring Report<small>Upload the Excel sheet, choose a date, download the PDF.</small></div>
-<div class="ctrl">
-  <div><label>1. Upload Excel / CSV</label><input id="file" type="file" accept=".xlsx,.xls,.csv"><button class="link" onclick="downloadTemplate()">Download Excel template</button></div>
-  <div><label>2. Report date</label><select id="dateSel" disabled><option>Upload a file first</option></select></div>
-  <button id="pdfBtn" onclick="generatePDF()" disabled>3. Download PDF</button>
+html,body{margin:0}
+body{font-family:"Segoe UI",Inter,Arial,sans-serif;background:#e9eef6;color:#172033}
+/* ---------- screen controls ---------- */
+.noprint{max-width:210mm;margin:14px auto 0;padding:0 10px}
+.panel{background:#fff;border:1px solid #dbe4f3;border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.panel h2{margin:0 0 8px;font-size:16px;color:var(--navy)}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:5px;min-width:200px;flex:1}
+.field label{font-size:12px;font-weight:700;color:#475569}
+select,textarea,input[type=file]{font:inherit;font-size:13px}
+select,textarea{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+textarea{min-height:56px;resize:vertical;width:100%}
+button{font:inherit;border:0;background:#2563eb;color:#fff;padding:9px 14px;border-radius:8px;font-weight:700;cursor:pointer}
+button.sec{background:#e8efff;color:#1d4ed8}
+.note{font-size:12px;color:#64748b;line-height:1.5}
+.status{font-size:13px;font-weight:600;color:#176b48;margin-top:6px}
+.hidden{display:none!important}
+/* ---------- A4 page ---------- */
+.sheet-wrap{display:flex;justify-content:flex-start;padding:14px;overflow:auto}
+@media(min-width:860px){.sheet-wrap{justify-content:center}}
+#page{width:210mm;height:297mm;background:#fff;overflow:hidden;flex:none;box-shadow:0 8px 30px #0b2a6633}
+#inner{padding:6mm;width:100%}
+.hdr{background:var(--navy);color:#fff;border-radius:10px;padding:7px 12px;display:flex;align-items:center;gap:12px}
+.hdr .logo{font-size:26pt;line-height:1}
+.hdr .mid{flex:1;text-align:center}
+.hdr h1{margin:0;font-size:18pt;letter-spacing:.6px;font-weight:800}
+.datepill{display:inline-block;background:#fff;color:var(--navy);border-radius:20px;font-weight:800;font-size:12pt;padding:2px 26px;margin-top:4px}
+.empty{padding:30px;text-align:center;color:#64748b;font-size:12pt}
+/* table */
+.tblwrap{margin-top:2.5mm;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+table.rt{width:100%;border-collapse:collapse;font-size:6.3pt;table-layout:auto}
+table.rt th{background:var(--navy);color:#fff;padding:4px 2px;font-weight:700;line-height:1.15;border-right:1px solid #3a5190}
+table.rt td{border-top:1px solid var(--line);border-right:1px solid var(--line);padding:4px 2px;text-align:center;vertical-align:middle;line-height:1.2}
+table.rt td:last-child,table.rt th:last-child{border-right:0}
+.coord{text-align:center;font-weight:600;min-width:15mm}
+.av{width:8mm;height:8mm;border-radius:50%;background:#dbeafe;color:#1e3a8a;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:8pt;margin:0 auto 2px}
+.ic{width:4.4mm;height:4.4mm;border-radius:50%;margin:0 auto 1px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:6.5pt;line-height:1}
+.ic.done{background:#16a34a}.ic.nd{background:#dc2626}.ic.na{background:#94a3b8;font-size:4.8pt}.ic.pend{background:#f59e0b}.ic.part{background:#8b5cf6}.ic.oth{background:#0ea5e9}
+.lb{font-size:5.6pt;color:#334155}
+.good{color:#15803d;font-weight:700}.bad{color:#dc2626;font-weight:700}
+/* summary */
+.sec-title{text-align:center;margin:3mm 0 2mm}
+.sec-title span{display:inline-block;background:var(--navy);color:#fff;font-weight:800;font-size:10.5pt;letter-spacing:.5px;padding:2px 28px;border-radius:6px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:2.2mm}
+.card{border:1px solid;border-radius:8px;padding:5px 7px;font-size:7pt;line-height:1.45}
+.card .t{font-weight:800;font-size:7.6pt;line-height:1.2;margin-bottom:3px;display:flex;gap:4px;align-items:center}
+.card .t .em{font-size:12pt}
+.card ul{margin:0;padding-left:12px}
+.card .pct{font-weight:800;margin-top:2px}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:2.5mm;margin-top:2.5mm}
+.box{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:7pt}
+.box h3{margin:0 0 5px;text-align:center}
+.box h3 span{display:inline-block;color:#fff;font-weight:800;font-size:8.5pt;padding:1px 18px;border-radius:5px;letter-spacing:.4px}
+.comp .row{display:flex;align-items:center;gap:5px;margin:3.4px 0;font-size:7pt}
+.comp .row .n{width:34mm;flex:none}
+.comp .row .bar{flex:1;height:3.4mm;background:#e5e7eb;border-radius:3px;overflow:hidden}
+.comp .row .bar i{display:block;height:100%}
+.comp .row .p{width:11mm;text-align:right;font-weight:800;font-size:7.5pt}
+.comp .row.total{border-top:1px solid var(--line);padding-top:3px;font-weight:800}
+.legend{display:flex;gap:10px;justify-content:center;font-size:6.2pt;margin-top:4px;color:#334155}
+.legend .ic{display:inline-flex;width:3.2mm;height:3.2mm;margin:0 3px 0 0;vertical-align:middle;font-size:5pt}
+.action{border-color:#fca5a5}
+.action h3 span{background:#dc2626}
+.action ol{margin:0;padding:0;list-style:none;counter-reset:a}
+.action li{counter-increment:a;position:relative;padding-left:16px;margin-bottom:3px;font-weight:700;line-height:1.35}
+.action li::before{content:counter(a);position:absolute;left:0;top:0;width:11px;height:11px;border-radius:50%;background:#dc2626;color:#fff;font-size:6pt;display:flex;align-items:center;justify-content:center}
+.action li .sub{display:block;font-weight:400;color:#1f2937}
+.obs{margin-top:2.5mm;border-color:#bcd0f5;background:#f4f8ff}
+.obs h3{text-align:left}.obs h3 span{background:var(--navy)}
+.obs p{margin:0;line-height:1.45;font-size:7pt;outline:none}
+.right{display:flex;flex-direction:column}
+.foot{margin-top:2mm;text-align:center;font-size:5.6pt;color:#94a3b8}
+/* ---------- print ---------- */
+@page{size:A4 portrait;margin:0}
+@media print{
+  html,body{background:#fff}
+  .noprint{display:none!important}
+  .sheet-wrap{padding:0;display:block;overflow:visible}
+  #page{box-shadow:none;width:210mm;height:296.5mm}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="noprint">
+  <div class="panel">
+    <h2>📄 Daily Coordinator Monitoring Report — A4 Print</h2>
+    <input id="file" type="file" accept=".xlsx,.xls,.csv">
+    <button id="sample" class="sec" type="button">Load sample (28 July 2026)</button>
+    <div class="note" style="margin-top:6px">Upload your Excel / CSV (first sheet). The file is processed in this browser only. An internet connection is needed once to load the Excel-reading library.</div>
+    <div id="fileStatus" class="status"></div>
+  </div>
+  <div id="filters" class="panel hidden">
+    <div class="controls">
+      <div class="field" style="max-width:260px"><label for="dateSelect">Report date</label><select id="dateSelect"></select></div>
+      <div class="field" style="flex:2"><label for="extra">Extra action items (one per line, optional — e.g. Maintenance Team should check the availability of half sheets)</label><textarea id="extra"></textarea></div>
+      <button id="print" type="button">🖨 Print / Save as PDF</button>
+    </div>
+    <div class="note" style="margin-top:6px">Tip: in the print dialog choose paper <b>A4</b>, margins <b>None</b>, and turn <b>Background graphics</b> on. The report is automatically fitted to one page. You can click the Observation text on the report to edit it before printing.</div>
+  </div>
 </div>
-<div id="status">Ready.</div>
-<div id="pages"></div>
+
+<div class="sheet-wrap"><div id="page"><div id="inner">
+  <div class="hdr">
+    <div class="logo">📋</div>
+    <div class="mid"><h1>DAILY COORDINATOR MONITORING REPORT</h1><div class="datepill" id="dateText">Date: —</div></div>
+  </div>
+  <div id="body"><div class="empty">Upload your file or load the sample to generate the report.</div></div>
+</div></div></div>
 
 <script>
-const SCHOOL="The Himalayan International School, Vikasnagar, Dehradun";
-const METRICS=[["attendance","Attendance (ERP)"],["spiral","Spiral Check"],["notebook","Notebook"],["classTest","Class Test"],["lesson","Lesson Plan"],["homework","Homework"],["activity","Class Activity"],["notice","Notice"]];
-/* column finder: regex on cleaned heading */
-const COLS=[["timestamp",/^timestamp/],["date",/^date$/],["name",/select_name|^name$/],["classes",/^coordinator_of_class/],
-["attendance",/^attendance_updated/],["spiral",/^attendance_checked|spiral/],["notebookNote",/^if_notebook/],["notebook",/^notebook_checking/],
-["classTestNote",/^if_class_test/],["classTest",/^class_test_verified/],["lessonNote",/^if_lesson/],["lesson",/^lesson_plan_verified/],
-["homework",/^homework/],["activity",/^class_activity/],["notice",/^notice/],["pendingReason",/^if_any_task/],["pending",/^any_pending/]];
-let ALL=[],LABEL="",SMALL=false;
+const $=id=>document.getElementById(id);
+let headers=[],allRows=[],cols={},tasks=[];
 
-/* ---------- helpers ---------- */
-const ck=v=>String(v??"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
-const strip=v=>String(v??"").replace(/[^\p{L}\p{N}\/ ]/gu," ").replace(/\s+/g," ").trim().toLowerCase();
-const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-function status(v){const s=strip(v);
-  if(!s)return"notdone";
-  if(/not applicable|^n ?\/? ?a\b/.test(s))return"na";
-  if(/not done|^no$|not working|not yet|incomplete|not updated|not checked/.test(s))return"notdone";
-  if(/partial/.test(s))return"partial";
-  if(/pending/.test(s))return"pending";
-  if(/done|^yes|complete|updated|verified|checked/.test(s))return"done";
-  return"notdone";}
-const isNo=v=>{const s=strip(v);return !s||/^(no|none|nil|na|n ?\/ ?a|not applicable|no issues?|no pending( tasks?)?|not pending|nothing)$/.test(s)};
-const isStatusWord=v=>/^(|not done|done|na|n\/a|not applicable|pending|partially done|nil|no|none)$/.test(strip(v));
-const note=v=>isStatusWord(v)?"":String(v).trim();
-function ymd(d,shift){const x=shift?new Date(d.getTime()+43200000):d;return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")}
-function parseDate(v,shift){
-  if(v instanceof Date&&!isNaN(v))return ymd(v,shift);
-  const s=String(v??"").trim();let m;
-  if(m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/))return m[1]+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0");
-  if(m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/))return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
-  return "";}
-const pretty=k=>new Date(k+"T00:00:00").toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"});
-const col=p=>p>=80?"#16883d":p>=50?"#ef7900":"#d71920";
-const rating=p=>p>=85?"Excellent":p>=70?"Good":p>=50?"Needs Improvement":"Critical";
-function pendingText(r){
-  const parts=[r.pending,r.pendingReason].filter(x=>!isNo(x)).map(x=>String(x).trim());
-  const txt=[...new Set(parts.filter(x=>!/^(yes|y)$/i.test(x)))].join(" – ");
-  return parts.length?(txt||"Yes"):"";}
-function issueText(r){return [...new Set(r.issues.filter(x=>!isNo(x)).map(x=>String(x).trim()))].join("; ")}
-function score(r){let a=0,d=0;METRICS.forEach(([k])=>{const s=status(r[k]);if(s!=="na"){a++;if(s==="done")d++}});return{a,d,pct:a?d/a*100:0}}
-function stat(rows,k){let a=0,d=0;rows.forEach(r=>{const s=status(r[k]);if(s!=="na"){a++;if(s==="done")d++}});return{a,d,pct:a?d/a*100:0}}
+const TASKS=[
+ {k:'att',name:'ATTENDANCE (ERP)',short:'Attendance in ERP',act:'Attendance Update in ERP',re:/attendance/i,not:/spiral/i,color:'#15803d',bg:'#f2fbf5',em:'👥'},
+ {k:'spiral',name:'SPIRAL ATTENDANCE CHECKED',short:'Attendance in Spiral',act:'Spiral Check',re:/spiral/i,color:'#15803d',bg:'#f2fbf5',em:'✅'},
+ {k:'nb',name:'NOTEBOOK CHECKING',short:'Notebook Checking',act:'Notebook Checking',re:/notebook/i,color:'#ea580c',bg:'#fff8f1',em:'📒',detail:true},
+ {k:'ct',name:'CLASS TESTS',short:'Class Test Verification',act:'Class Tests',re:/class test/i,color:'#2563eb',bg:'#f3f7ff',em:'📝',detail:true},
+ {k:'lp',name:'LESSON PLAN VERIFICATION (ERP)',short:'Lesson Plan in ERP',act:'Lesson Plan Update',re:/plan/i,color:'#7e22ce',bg:'#faf5ff',em:'📖',detail:true},
+ {k:'hw',name:'HOMEWORK UPDATED (ERP)',short:'Homework Updated',act:'Homework Update',re:/homework/i,color:'#ea580c',bg:'#fff8f1',em:'📙'},
+ {k:'ca',name:'CLASS ACTIVITY UPDATED (ERP)',short:'Class Activity Updated',act:'Class Activity Update',re:/class activity/i,color:'#0f766e',bg:'#f0fbfa',em:'🧑‍🤝‍🧑'},
+ {k:'nt',name:'NOTICE UPDATED (ERP)',short:'Notice Updated',act:'Notice Update',re:/notice/i,color:'#db2777',bg:'#fff5f9',em:'📣'}
+];
 
-/* ---------- Excel reading ---------- */
-document.getElementById("file").addEventListener("change",loadFile);
-function loadFile(e){
-  const f=e.target.files[0];if(!f)return;
-  setStatus("Reading file...");
-  const rd=new FileReader();
-  rd.onload=ev=>{try{
-    const wb=XLSX.read(ev.target.result,{type:"array",cellDates:true});
-    const aoa=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:"",raw:true});
-    ALL=parse(aoa);
-    if(!ALL.length)throw new Error("No coordinator rows found. Check the column headings (use the template).");
-    const dates=[...new Set(ALL.map(r=>r.dkey))].sort().reverse();
-    const sel=document.getElementById("dateSel");
-    const names=new Set(ALL.map(r=>r.name.toLowerCase())).size;
-    sel.innerHTML=`<option value="all">All uploaded coordinators (${names}) – latest entry of each</option>`+dates.map(d=>`<option value="${d}">${pretty(d)}  (${ALL.filter(r=>r.dkey===d).length} coordinators)</option>`).join("");
-    sel.disabled=false;document.getElementById("pdfBtn").disabled=false;
-    sel.onchange=render;render();
-  }catch(err){console.error(err);setStatus("Error: "+err.message);alert(err.message)}};
-  rd.readAsArrayBuffer(f);}
-function parse(aoa){
-  const hi=aoa.findIndex(r=>r.some(c=>/select_name/.test(ck(c))));
-  if(hi<0)throw new Error('Could not find the "Select Name" column.');
-  const head=aoa[hi].map(ck),map={},issueCols=[];
-  head.forEach((h,i)=>{
-    if(/^any_issue/.test(h))issueCols.push(i);
-    else for(const [f,re] of COLS){if(!(f in map)&&re.test(h)){map[f]=i;break}}});
-  const out=[];
-  aoa.slice(hi+1).forEach(row=>{
-    const o={};for(const f in map)o[f]=row[map[f]]??"";
-    o.issues=issueCols.map(i=>row[i]??"");
-    o.name=String(o.name||"").trim();
-    if(!o.name)return;                      /* skips blank rows */
-    o.dkey=parseDate(o.date,true)||parseDate(o.timestamp,false);
-    if(!o.dkey)return;
-    o.ts=o.timestamp instanceof Date?o.timestamp.getTime():0;
-    out.push(o)});
-  /* one entry per coordinator per day: keep the latest submission */
-  const uniq={};out.forEach(o=>{const k=o.dkey+"|"+o.name.toLowerCase();if(!uniq[k]||o.ts>=uniq[k].ts)uniq[k]=o});
-  return Object.values(uniq);}
-function setStatus(t){document.getElementById("status").textContent=t}
+const norm=s=>String(s??'').replace(/\s+/g,' ').trim().toLowerCase();
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function parseDate(v){
+ if(v instanceof Date&&!isNaN(v))return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`;
+ if(typeof v==='number'&&v>20000&&v<80000){const d=XLSX.SSF.parse_date_code(v);if(d)return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`}
+ const s=String(v??'').trim();if(!s)return '';
+ let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+ m=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);if(m){let a=+m[1],b=+m[2],y=m[3];if(a>12)return `${y}-${String(b).padStart(2,'0')}-${String(a).padStart(2,'0')}`;return `${y}-${String(a).padStart(2,'0')}-${String(b).padStart(2,'0')}`}
+ const d=new Date(s);if(!isNaN(d))return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;return '';
+}
+const longDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+function status(v){const s=norm(v);if(!s||['nan','null','undefined'].includes(s))return 'Not specified';
+ if(s.includes('not applicable')||s==='na'||s==='n/a')return 'NA';
+ if(s.includes('partial'))return 'Partially Done';if(s.includes('pending'))return 'Pending';
+ if(s.includes('not done')||s.includes('not completed'))return 'Not Done';
+ if(s.includes('done')||s.includes('completed')||s.includes('verified')||s.includes('updated'))return 'Done';return 'Other';}
+const isPendingYes=v=>{const s=norm(v);return !!s&&!/no pending|not pending|^no$|^none$|no task|^-$|^n\/?a$|^nil$/.test(s)};
+const hasIssue=v=>{const s=norm(v);return !!s&&!/no issue|^no$|^none$|not applicable|^n\/?a$|^nil$|^-$/.test(s)};
 
-/* ---------- Report building ---------- */
-function ring(p,size,sw,fs){const r=(size-sw)/2,c=2*Math.PI*r,m=size/2;
-  return `<svg width="${size}" height="${size}"><circle cx="${m}" cy="${m}" r="${r}" fill="none" stroke="#e1e8f3" stroke-width="${sw}"/><circle cx="${m}" cy="${m}" r="${r}" fill="none" stroke="${col(p)}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c*p/100} ${c}" transform="rotate(-90 ${m} ${m})"/><text x="${m}" y="${m}" dy=".35em" text-anchor="middle" font-size="${fs}" font-weight="800" fill="${col(p)}">${Math.round(p)}%</text></svg>`}
-const el=h=>{const d=document.createElement("div");d.className="blk";d.innerHTML=h;return d};
-const sec=t=>`<div class="sec">${t}</div>`;
-const ICON={done:"✓",notdone:"✕",na:"–",partial:"½",pending:"…"},LBL={done:"Done",notdone:"Not Done",na:"N/A",partial:"Partial",pending:"Pending"};
+function loadRows(json,label){
+ if(!json.length)throw new Error('No data rows found in the first worksheet.');
+ headers=Object.keys(json[0]).filter(h=>String(h).trim()!=='');
+ allRows=json;
+ const H=re=>headers.find(h=>re.test(h));
+ cols.date=H(/which of date|report date|^date$/i)||headers.find(h=>/date/i.test(h)&&!/timestamp/i.test(h))||H(/timestamp/i);
+ cols.name=H(/select name|coordinator name|^name$/i)||H(/name/i);
+ cols.cls=H(/coordinator of|classes coordinated|^class(es)?$/i);
+ cols.pending=H(/any pending/i);
+ cols.reason=H(/pending.*reason|reason/i);
+ cols.issues=headers.filter(h=>/issue/i.test(h));
+ if(!cols.date)throw new Error('Could not find a date column (e.g. “Which of Date” / “Report Date”).');
+ tasks=TASKS.map(t=>{
+   const col=headers.find(h=>t.re.test(h)&&!/mention|issue|pending/i.test(h)&&!(t.not&&t.not.test(h)));
+   const det=t.detail?headers.find(h=>t.re.test(h)&&/mention/i.test(h)):null;
+   return {...t,col,det};
+ }).filter(t=>t.col);
+ allRows.forEach(r=>r.__date=parseDate(r[cols.date]));
+ const dates=[...new Set(allRows.map(r=>r.__date).filter(Boolean))].sort();
+ if(!dates.length)throw new Error('No valid dates found in the date column.');
+ $('dateSelect').innerHTML=dates.map(d=>`<option value="${d}">${longDate(d)}</option>`).join('');
+ $('dateSelect').value=dates[dates.length-1];
+ $('filters').classList.remove('hidden');
+ $('fileStatus').textContent=`Loaded ${allRows.length} rows from “${label}” · ${dates.length} date(s) found · ${tasks.length} task columns detected.`;
+ render();
+}
+
+$('file').addEventListener('change',async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{
+  const buf=await f.arrayBuffer();
+  const wb=f.name.toLowerCase().endsWith('.csv')?XLSX.read(new TextDecoder('utf-8').decode(buf),{type:'string',cellDates:true}):XLSX.read(buf,{type:'array',cellDates:true});
+  loadRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false}),f.name);
+ }catch(err){$('fileStatus').textContent='Unable to read file: '+err.message}
+});
+$('sample').addEventListener('click',()=>{
+ const base={'Which of Date':'2026-07-28'};
+ const mk=(o)=>Object.assign({},base,o);
+ const NA='Not Applicable',ND='Not Done';
+ const rows=[
+  mk({'Select Name':'Ms. Aastha Kaushik','Coordinator of Class(es)':'Play Group to U.K.G.','Attendance ERP':NA,'Spiral Check':NA,'Notebook Checking':'Done','If Notebook Checking was Done, mention Class & Subject':'Lkg A','Class Test Verified':NA,'If Class Test was Done, mention Class & Subject':NA,'Lesson Plan ERP':ND,'If Lesson Plan was Done, mention Class & Subject':NA,'Homework ERP':NA,'Class Activity ERP':NA,'Notice ERP':NA,'Any Pending Task?':'Yes','If Any Task is Pending, Reason':'Exam sheet correction','Any Issue in Your Class(es) Today?':'No Issue'}),
+  mk({'Select Name':'Mr. Sudesh','Coordinator of Class(es)':'XI & XII (All Streams)','Attendance ERP':ND,'Spiral Check':ND,'Notebook Checking':ND,'If Notebook Checking was Done, mention Class & Subject':ND,'Class Test Verified':ND,'If Class Test was Done, mention Class & Subject':ND,'Lesson Plan ERP':'Done','If Lesson Plan was Done, mention Class & Subject':'Class 12 psychology','Homework ERP':ND,'Class Activity ERP':ND,'Notice ERP':ND,'Any Pending Task?':'No','If Any Task is Pending, Reason':'No Pending Task','Any Issue in Your Class(es) Today?':'No Issue'}),
+  mk({'Select Name':'Ms. Muuni Thakur','Coordinator of Class(es)':'III to V','Attendance ERP':ND,'Spiral Check':ND,'Notebook Checking':ND,'If Notebook Checking was Done, mention Class & Subject':ND,'Class Test Verified':ND,'If Class Test was Done, mention Class & Subject':ND,'Lesson Plan ERP':ND,'If Lesson Plan was Done, mention Class & Subject':ND,'Homework ERP':ND,'Class Activity ERP':ND,'Notice ERP':ND,'Any Pending Task?':'No','If Any Task is Pending, Reason':'No Pending Task','Any Issue in Your Class(es) Today?':'No Issue'})
+ ];
+ try{$('extra').value='Maintenance Team should check the availability of half sheets.';loadRows(rows,'sample data')}catch(err){$('fileStatus').textContent=err.message}
+});
+$('dateSelect').addEventListener('change',render);
+$('extra').addEventListener('input',render);
+$('print').addEventListener('click',()=>{fit();window.print()});
+window.addEventListener('beforeprint',fit);
+
+function icon(st){
+ const m={'Done':['done','✓','Done'],'Not Done':['nd','✕','Not Done'],'NA':['na','NA','Not Applicable'],'Pending':['pend','…','Pending'],'Partially Done':['part','½','Partial'],'Other':['oth','•','Other'],'Not specified':['na','–','—']}[st];
+ return `<div class="ic ${m[0]}">${m[1]}</div><div class="lb">${m[2]}</div>`;
+}
+const initials=n=>{const p=String(n).replace(/^(mr|ms|mrs|dr|miss)\.?\s+/i,'').trim().split(/\s+/);return ((p[0]||'?')[0]+(p[1]?p[1][0]:'')).toUpperCase()};
+const barColor=p=>p>=80?'#16a34a':p>=50?'#f59e0b':p>=25?'#ea580c':'#dc2626';
 
 function render(){
-  const dk=document.getElementById("dateSel").value;
-  let rows;
-  if(dk==="all"){const m={};[...ALL].sort((a,b)=>a.dkey.localeCompare(b.dkey)||a.ts-b.ts).forEach(r=>m[r.name.toLowerCase()]=r);rows=Object.values(m)}
-  else rows=ALL.filter(r=>r.dkey===dk);
-  rows.sort((a,b)=>a.name.localeCompare(b.name));
-  const ds=rows.map(r=>r.dkey).sort();
-  LABEL=!ds.length?"":ds[0]===ds[ds.length-1]?pretty(ds[0]):pretty(ds[0])+" to "+pretty(ds[ds.length-1]);
-  const n=rows.length,st=METRICS.map(([k,l])=>({k,l,...stat(rows,k)}));
-  const A=st.reduce((x,m)=>x+m.a,0),D=st.reduce((x,m)=>x+m.d,0),overall=A?D/A*100:0;
-  const pend=rows.filter(r=>pendingText(r)),iss=rows.filter(r=>issueText(r));
-  const blocks=[];
+ const date=$('dateSelect').value;if(!date)return;
+ $('dateText').textContent='Date: '+longDate(date);
+ // latest submission per coordinator + class
+ const map=new Map();
+ allRows.filter(r=>r.__date===date).forEach(r=>map.set(norm(r[cols.name])+'|'+norm(cols.cls?r[cols.cls]:''),r));
+ const rows=[...map.values()];
+ if(!rows.length){$('body').innerHTML='<div class="empty">No submissions for this date.</div>';return}
 
-  const glance=`<div class="glance">${ring(overall,96,11,24)}<span class="rate" style="background:${col(overall)}">${rating(overall)}</span>
-    <div class="tiles"><div class="tile"><b>${n}</b><span>Coordinators</span></div>
-    <div class="tile"><b style="color:${pend.length?"#d71920":"#16883d"}">${pend.length}</b><span>Pending tasks</span></div>
-    <div class="tile"><b style="color:${iss.length?"#d71920":"#16883d"}">${iss.length}</b><span>Class issues</span></div></div></div>`;
-  const bars=`<div class="bars">${sec("Compliance by Area")}`+st.map(m=>`<div class="row"><span class="n">${m.l}</span><span class="t"><i style="width:${m.pct}%;background:${col(m.pct)}"></i></span><span class="p" style="color:${col(m.pct)}">${m.pct.toFixed(0)}% <small>${m.d}/${m.a}</small></span></div>`).join("")+
-    `<div style="font-size:8.5px;color:#6b778c">Compliance = Done ÷ applicable tasks (N/A excluded). Partial/Pending not counted as done.</div></div>`;
-  blocks.push(el(`<div class="two">${glance}${bars}</div>`));
+ const stat=(r,t)=>status(r[t.col]);
+ const detCell=(r,t)=>{const v=String(t.det?r[t.det]:'').trim();if(!v)return '<span style="color:#94a3b8">—</span>';
+   if(/^(not done|done|not applicable)$/i.test(v))return icon(status(v));return esc(v)};
+ const issueText=r=>cols.issues.map(h=>String(r[h]??'').trim()).filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ');
 
-  const cards=rows.map(r=>{const s=score(r),nt=[];
-    [["Notebook",r.notebookNote],["Class Test",r.classTestNote],["Lesson Plan",r.lessonNote]].forEach(([l,v])=>{if(note(v))nt.push(`<span class="tag" style="background:#1a56b8">${l}</span>${esc(note(v))} &nbsp;`)});
-    if(pendingText(r))nt.push(`<span class="tag" style="background:#ef7900">Pending</span>${esc(pendingText(r))} &nbsp;`);
-    nt.push(issueText(r)?`<span class="tag" style="background:#d71920">Class Issue</span>${esc(issueText(r))}`:`<span class="tag" style="background:#16883d">Class Issue</span>None`);
-    return `<div class="cc" style="border-left-color:${col(s.pct)}"><div class="who">${ring(s.pct,44,5,11)}<div><b>${esc(r.name)}</b><span>${esc(r.classes||"")}</span><span class="sc" style="color:${col(s.pct)}">${s.d} of ${s.a} done</span></div></div>
-      <div class="chips">${METRICS.map(([k,l])=>{const x=status(r[k]);return `<div class="chip s-${x}"><i>${ICON[x]}</i><div><b>${l}</b><em>${LBL[x]}</em></div></div>`}).join("")}</div>
-      ${nt.length?`<div class="notes">${nt.join("")}</div>`:""}</div>`}).join("");
-  blocks.push(el(sec("Coordinator Scorecards")+cards));
+ // ---- table ----
+ let th='<th>Coordinator</th><th>Classes</th>';
+ tasks.forEach(t=>{th+=`<th>${esc(headerLabel(t.col))}</th>`;if(t.det)th+=`<th>${esc(headerLabel(t.det))}</th>`});
+ if(cols.pending)th+='<th>Any Pending Task?</th>';
+ if(cols.reason)th+='<th>If Any Task is Pending, Reason</th>';
+ if(cols.issues.length)th+='<th>Any Issue in Your Class(es) Today?</th>';
+ let tb='';
+ rows.forEach(r=>{
+  const nm=String(r[cols.name]??'').trim()||'—';
+  tb+=`<tr><td class="coord"><div class="av">${esc(initials(nm))}</div>${esc(nm)}</td><td>${esc(cols.cls?r[cols.cls]:'')}</td>`;
+  tasks.forEach(t=>{tb+=`<td>${icon(stat(r,t))}</td>`;if(t.det)tb+=`<td>${detCell(r,t)}</td>`});
+  if(cols.pending)tb+=`<td>${esc(r[cols.pending])}</td>`;
+  if(cols.reason)tb+=`<td>${esc(r[cols.reason])}</td>`;
+  if(cols.issues.length){const it=issueText(r);tb+=`<td class="${hasIssue(it)?'bad':'good'}">${esc(it||'—')}</td>`}
+  tb+='</tr>';
+ });
 
-  blocks.push(el(sec("Any Issue in Your Class(es) Today?")+(iss.length?`<div class="act">${iss.map(r=>`<div><b>${esc(r.name)}</b>${r.classes?" ("+esc(r.classes)+")":""}: ${esc(issueText(r))}</div>`).join("")}</div>`:`<div class="ok">✓ No class issues reported by any coordinator.</div>`)));
+ // ---- stats ----
+ const S=tasks.map(t=>{
+  const c={Done:0,'Not Done':0,NA:0,Pending:0,'Partially Done':0,Other:0,'Not specified':0};
+  rows.forEach(r=>c[stat(r,t)]++);
+  const den=rows.length-c.NA-c['Not specified'];
+  const pct=den>0?c.Done/den*100:null;
+  return {t,c,den,pct};
+ });
+ const tDone=S.reduce((a,s)=>a+s.c.Done,0),tDen=S.reduce((a,s)=>a+s.den,0);
+ const overall=tDen?tDone/tDen*100:null;
+ const fmt=p=>p===null?'N/A':(Math.round(p*10)/10)+'%';
 
-  const acts=[];
-  rows.forEach(r=>{const miss=METRICS.filter(([k])=>["notdone","partial","pending"].includes(status(r[k]))).map(m=>m[1]);
-    if(miss.length)acts.push(`<div><b>${esc(r.name)}</b> – complete: ${miss.join(", ")}</div>`)});
-  pend.forEach(r=>acts.push(`<div><b>${esc(r.name)}</b> – pending task: ${esc(pendingText(r))}</div>`));
-  blocks.push(el(sec("Action Required")+(acts.length?`<div class="act">${acts.join("")}</div>`:`<div class="ok">✓ No action required – all applicable tasks are complete.</div>`)));
+ const cards=S.map(s=>{
+  const {c}=s;let li=`<li>Completed: ${c.Done}</li>`;
+  if(c.Pending)li+=`<li>Pending: ${c.Pending}</li>`;
+  if(c['Partially Done'])li+=`<li>Partially Done: ${c['Partially Done']}</li>`;
+  li+=`<li>Not Done: ${c['Not Done']}</li><li>Not Applicable: ${c.NA}</li>`;
+  return `<div class="card" style="border-color:${s.t.color}55;background:${s.t.bg}"><div class="t" style="color:${s.t.color}"><span class="em">${s.t.em}</span><span>${s.t.name}</span></div><ul>${li}</ul><div class="pct" style="color:${s.t.color}">${s.den?`${c.Done}/${s.den} (${fmt(s.pct)})`:'N/A'}</div></div>`;
+ }).join('');
 
-  blocks.push(el(sec("Observation")+`<div class="obs">${observation(rows,st,overall,pend,iss)}</div>`));
-  paginate(blocks,dk,n);
-  setStatus(`Showing ${n} coordinator${n===1?"":"s"} for ${LABEL}.`+(SMALL?" Many coordinators, so text is small on the single page.":""));
-  fit();}
+ const comp=S.map(s=>`<div class="row"><div class="n">${s.t.short}</div><div class="bar"><i style="width:${s.pct||0}%;background:${barColor(s.pct||0)}"></i></div><div class="p" style="color:${barColor(s.pct||0)}">${fmt(s.pct)}</div></div>`).join('')
+  +`<div class="row total"><div class="n">Overall</div><div class="bar"><i style="width:${overall||0}%;background:${barColor(overall||0)}"></i></div><div class="p" style="color:${barColor(overall||0)}">${fmt(overall)}</div></div>`;
 
-function observation(rows,st,overall,pend,iss){
-  const n=rows.length,P=[];
-  P.push(`Overall compliance is <b>${overall.toFixed(0)}%</b> (${rating(overall)}) across ${n} coordinator${n===1?"":"s"}.`);
-  const act=st.filter(m=>m.a),best=[...act].sort((a,b)=>b.pct-a.pct)[0],weak=[...act].sort((a,b)=>a.pct-b.pct)[0];
-  if(best&&weak&&best!==weak&&best.pct!==weak.pct)P.push(`Strongest area is <b>${best.l}</b> (${best.pct.toFixed(0)}%). Weakest is <b>${weak.l}</b> (${weak.pct.toFixed(0)}%), with ${weak.a-weak.d} of ${weak.a} applicable records not completed.`);
-  const zero=act.filter(m=>m.pct===0).map(m=>m.l);
-  if(zero.length)P.push(`No coordinator completed: ${zero.join(", ")}.`);
-  const sc=rows.map(r=>({r,...score(r)})).filter(x=>x.a).sort((a,b)=>b.pct-a.pct);
-  if(sc.length>1){const hi=sc[0],lo=sc[sc.length-1];
-    if(hi.pct!==lo.pct)P.push(`${esc(hi.r.name)} has the highest score (${hi.pct.toFixed(0)}%); ${esc(lo.r.name)} has the lowest (${lo.pct.toFixed(0)}%).`)}
-  const full=sc.filter(x=>x.pct===100);
-  if(full.length&&sc.length>1)P.push(`${full.length} coordinator${full.length===1?"":"s"} completed every applicable task.`);
-  if(pend.length)P.push(`Pending tasks reported by ${pend.map(r=>esc(r.name)).join(", ")}.`);
-  if(iss.length)P.push(`Class issues reported by ${iss.map(r=>esc(r.name)).join(", ")}.`);
-  return P.map(p=>`<p>${p}</p>`).join("");}
+ // ---- action items ----
+ const items=[];
+ rows.forEach(r=>{
+  const nm=String(r[cols.name]??'').trim()||'Coordinator';
+  const miss=tasks.filter(t=>['Not Done','Pending','Partially Done'].includes(stat(r,t))).map(t=>t.act);
+  if(miss.length)items.push({h:`${esc(nm)} should complete:`,s:miss.map(esc).join(' &nbsp;•&nbsp; ')});
+ });
+ rows.forEach(r=>{
+  const nm=String(r[cols.name]??'').trim()||'Coordinator';
+  const rs=cols.reason?String(r[cols.reason]??'').trim():'';
+  if(cols.pending&&isPendingYes(r[cols.pending])&&rs&&!/no pending/i.test(rs))items.push({h:`${esc(nm)} should take care of:`,s:esc(rs)});
+  const it=issueText(r);if(hasIssue(it))items.push({h:`${esc(nm)} reported an issue:`,s:esc(it)});
+ });
+ $('extra').value.split('\n').map(x=>x.trim()).filter(Boolean).forEach(x=>items.push({h:esc(x),s:''}));
+ const actHtml=items.length?`<ol>${items.map(i=>`<li>${i.h}${i.s?`<span class="sub">${i.s}</span>`:''}</li>`).join('')}</ol>`:'<div style="text-align:center;color:#15803d;font-weight:700">All tasks completed — no action required.</div>';
 
-/* ---------- Pagination (A4 portrait) ---------- */
-function paginate(blocks,dk,n){
-  const box=document.getElementById("pages");box.innerHTML="";box.style.zoom=1;
-  const p=document.createElement("div");p.className="page";
-  p.innerHTML=`<div class="hd"><small>${esc(SCHOOL.toUpperCase())}</small><h1>Daily Coordinator Monitoring Report</h1>
-    <span class="pill">${LABEL}</span><span class="pill o">${n} Coordinator${n===1?"":"s"}</span></div>
-    <div class="body"><div class="fit"></div></div><div class="ft"><span>${esc(SCHOOL)}</span><span>Generated ${new Date().toLocaleDateString("en-GB")}</span></div>`;
-  box.appendChild(p);
-  const body=p.querySelector(".body"),fit=p.querySelector(".fit");
-  blocks.forEach(b=>fit.appendChild(b));
-  /* everything must fit on ONE page: shrink if needed */
-  const avail=body.clientHeight-4;let s=1;
-  for(let i=0;i<6&&fit.offsetHeight*s>avail;i++){
-    s=Math.max(0.4,s*avail/(fit.offsetHeight*s)*0.985);
-    fit.style.transform=`scale(${s})`;fit.style.width=(734/s)+"px";}
-  SMALL=s<0.62;}
-function fit(){const z=Math.min(1,(window.innerWidth-20)/794);document.getElementById("pages").style.zoom=z}
-window.addEventListener("resize",()=>{if(ALL.length)fit()});
+ const level=overall===null?'not available':overall<40?'very low':overall<70?'moderate':'good';
+ const obsText=overall===null?'No applicable tasks were reported for this date.'
+  :overall<70?`Overall compliance for ${longDate(date)} is ${level} (${fmt(overall)}). Many tasks are pending and require immediate attention to ensure proper academic documentation and smooth functioning. Coordinators are requested to complete pending tasks as per the guidelines.`
+  :`Overall compliance for ${longDate(date)} is ${level} (${fmt(overall)}). Coordinators are requested to complete the remaining tasks to maintain proper academic documentation.`;
 
-/* ---------- PDF (A4 portrait) ---------- */
-async function generatePDF(){
-  const pgs=[...document.querySelectorAll(".page")];if(!pgs.length)return;
-  const box=document.getElementById("pages");box.style.zoom=1;
-  setStatus("Creating PDF...");document.getElementById("pdfBtn").disabled=true;
-  try{
-    const pdf=new window.jspdf.jsPDF("p","mm","a4");
-    for(let i=0;i<pgs.length;i++){
-      const c=await html2canvas(pgs[i],{scale:2,backgroundColor:"#fff",useCORS:true});
-      if(i)pdf.addPage();
-      pdf.addImage(c.toDataURL("image/jpeg",0.95),"JPEG",0,0,210,297);}
-    pdf.save("Daily_Coordinator_Report_"+(document.getElementById("dateSel").value==="all"?"All":document.getElementById("dateSel").value)+".pdf");
-    setStatus("PDF downloaded.");
-  }catch(e){console.error(e);alert("PDF failed: "+e.message);setStatus("PDF failed.")}
-  finally{document.getElementById("pdfBtn").disabled=false;fit()}}
+ $('body').innerHTML=`
+  <div class="tblwrap"><table class="rt"><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>
+  <div class="sec-title"><span>SUMMARY REPORT</span></div>
+  <div class="cards">${cards}</div>
+  <div class="bottom">
+   <div class="box comp"><h3><span style="background:var(--navy)">OVERALL COMPLIANCE</span></h3>${comp}
+     <div class="legend"><span><span class="ic done">✓</span>Done</span><span><span class="ic nd">✕</span>Not Done</span><span><span class="ic na">NA</span>Not Applicable</span></div></div>
+   <div class="right">
+     <div class="box action"><h3><span>ACTION REQUIRED</span></h3>${actHtml}</div>
+     <div class="box obs"><h3><span>OBSERVATION</span></h3><p contenteditable="true" spellcheck="false">${esc(obsText)}</p></div>
+   </div>
+  </div>
+  <div class="foot">Compliance % = tasks Done ÷ applicable tasks (Not Applicable excluded) · Latest submission per coordinator is used</div>`;
+ fit();
+}
+function headerLabel(h){return String(h).replace(/\s*\?$/,'?')}
 
-/* ---------- Template ---------- */
-function downloadTemplate(){
-  const h=["Timestamp","Email Address","Date","Select Name","Coordinator of Class(es)","Attendance Updated in ERP","Attendance Checked in Spiral","Notebook Checking Verified","If Notebook Checking was Done, mention Class & Subject","Class Test Verified","If Class Test was Done, mention Class & Subject","Lesson Plan Verified in ERP","If Lesson Plan was Done, mention Class & Subject","Homework Updated in ERP","Class Activity Updated in ERP","Notice Updated in ERP","Any Pending Task?","If Any Task is Pending, Reason","Any Issue in Your Class(es) Today?","Any Issue in Your Class(es) Today? 2"];
-  const ws=XLSX.utils.aoa_to_sheet([h,["","","2026-10-04","Sample Coordinator","III to V","Done","Done","Done","Class 5 English","Not Done","","Done","Class 5","Done","Done","Done","No Pending Task","","No Issue","No Issue"]]);
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Responses");XLSX.writeFile(wb,"Coordinator_Report_Template.xlsx");}
-</script></body></html>
+// shrink content so the whole report fits on ONE A4 page
+function fit(){
+ const page=$('page'),inner=$('inner');
+ inner.style.zoom=1;
+ const avail=page.clientHeight;let z=1;
+ for(let i=0;i<5;i++){
+  inner.style.zoom=z;
+  const h=inner.getBoundingClientRect().height;
+  if(Math.abs(h-avail)<2||(h<avail&&z>=1))break;
+  if(h>avail||z<1)z=Math.min(1,z*avail/h*0.995);
+ }
+ inner.style.zoom=z;
+}
+window.addEventListener('load',fit);
+</script>
+</body>
+</html>
