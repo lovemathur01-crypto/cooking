@@ -6,6 +6,7 @@
     <button class="dash-tab active" role="tab" id="tab-exam" aria-selected="true" aria-controls="panel-exam" data-target="panel-exam">📝 Examination</button>
     <button class="dash-tab" role="tab" id="tab-arr" aria-selected="false" aria-controls="panel-arr" data-target="panel-arr">🗂️ Arrangement</button>
     <button class="dash-tab" role="tab" id="tab-sdms" aria-selected="false" aria-controls="panel-sdms" data-target="panel-sdms">🎓 SDMS</button>
+    <button class="dash-tab" role="tab" id="tab-coord" aria-selected="false" aria-controls="panel-coord" data-target="panel-coord">📋 Coordinator</button>
   </div>
 
   <!-- Examination -->
@@ -44,6 +45,18 @@
     </div>
   </div>
 
+  <!-- Coordinator -->
+  <div class="dash-panel theme-coord" id="panel-coord" role="tabpanel" aria-labelledby="tab-coord">
+    <div class="dash-card">
+      <div class="dash-icon">📋</div>
+      <div class="dash-info">
+        <h2>Coordinator Dashboard</h2>
+        <p>Daily coordinator monitoring report, task compliance and A4 print summary.</p>
+      </div>
+      <a href="Coordinator.html" class="dash-btn">Open Coordinator →</a>
+    </div>
+  </div>
+
 </div>
 
 <style>
@@ -65,6 +78,7 @@
 .theme-exam{--c:#4f46e5}
 .theme-arr{--c:#0d9488}
 .theme-sdms{--c:#d97706}
+.theme-coord{--c:#db2777}
 
 /* Card */
 .dash-card{display:flex;align-items:center;gap:20px;padding:24px;border-radius:20px;background:#fff;border:2px solid var(--c);box-shadow:0 8px 24px rgba(0,0,0,.08)}
