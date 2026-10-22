@@ -2,56 +2,123 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>APAAR Dashboard</title>
+<meta name="theme-color" content="#07080d">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f0f2f5;color:#1f2937}
-header{padding:16px;max-width:960px;margin:0 auto}
-h1{margin:0;font-size:1.35rem}
-#stamp{color:#6b7280;font-size:.85rem;margin-top:2px}
-.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-button{font:inherit;border:0;border-radius:8px;padding:9px 14px;background:#1d4ed8;color:#fff;cursor:pointer}
-button.sec{background:#e5e7eb;color:#111827}
-button:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
-main{max-width:960px;margin:0 auto;padding:0 16px 32px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-.card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);padding:16px}
-.card h2{margin:0 0 10px;font-size:1.1rem}
+:root{--bg:#07080d;--txt:#f5f5f7;--mut:rgba(235,235,245,.6);--glass:rgba(255,255,255,.07);--glass2:rgba(255,255,255,.12);--line:rgba(255,255,255,.14);--blue:#0a84ff;--green:#30d158;--red:#ff453a;--orange:#ff9f0a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);color-scheme:dark}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;color:var(--txt);-webkit-text-size-adjust:100%;min-height:100vh;
+background:radial-gradient(60vw 45vh at 10% 0%,rgba(10,132,255,.38),transparent 70%),radial-gradient(55vw 45vh at 100% 20%,rgba(191,90,242,.32),transparent 70%),radial-gradient(60vw 50vh at 30% 100%,rgba(48,209,88,.20),transparent 70%),var(--bg);background-attachment:fixed}
+.wrap{max-width:960px;margin:0 auto;padding:0 max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left))}
+header{padding:calc(env(safe-area-inset-top) + 16px) 0 8px}
+h1{margin:0;font-size:1.7rem;font-weight:700;letter-spacing:-.02em}
+#stamp{color:var(--mut);font-size:.82rem;margin-top:3px}
+nav.top{position:sticky;top:0;z-index:5;padding:8px 0;padding-top:max(8px,env(safe-area-inset-top))}
+.tabs{display:flex;gap:4px;padding:4px;border-radius:16px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%)}
+.tabs button{flex:1;min-height:44px;background:transparent;color:var(--mut);font-weight:600;padding:8px 6px;border-radius:12px}
+.tabs button.on{background:var(--glass2);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 2px 10px rgba(0,0,0,.35)}
+.tabs.sub{margin:6px 0 14px}
+button{font:inherit;border:0;border-radius:14px;padding:10px 14px;background:var(--blue);color:#fff;cursor:pointer;min-height:44px;font-weight:600;transition:transform .12s,opacity .12s}
+button:active{transform:scale(.97);opacity:.85}
+button.sec{background:var(--glass2);color:var(--txt);border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+button.warnbtn{background:var(--red)}
+button:disabled{opacity:.45}
+button:focus-visible,input:focus-visible{outline:3px solid rgba(10,132,255,.7);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.row button{flex:1 1 140px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card,.stu{background:var(--glass);border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.14);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%)}
+.card{padding:16px;margin-bottom:14px}
+.grid .card{margin-bottom:0}
+.card h2{margin:0 0 10px;font-size:1.05rem}
+.card h3{margin:0 0 10px;font-size:1rem}
 .nums{display:flex;justify-content:space-between;text-align:center;margin-bottom:12px}
-.nums b{display:block;font-size:1.4rem}
-.nums span{font-size:.78rem;color:#6b7280}
-.track{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}
-.fill{height:100%;background:linear-gradient(90deg,#43a047,#66bb6a);border-radius:99px;transition:width .6s ease}
-.pct{font-size:.8rem;color:#6b7280;margin:6px 0 12px}
-.card button{width:100%}
-.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.78rem;white-space:nowrap}
-.pill.done{background:#e8f5e9;color:#2e7d32}
-.pill.pend{background:#ffebee;color:#c62828}
-.stu{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);padding:12px 14px;margin-bottom:10px}
+.nums b{display:block;font-size:1.5rem;font-weight:700}
+.nums span{font-size:.76rem;color:var(--mut)}
+.track{height:8px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,#30d158,#64e68a);border-radius:99px;transition:width .6s ease}
+.pct{font-size:.8rem;color:var(--mut);margin:6px 0 12px}
+.card .go{width:100%}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.76rem;white-space:nowrap;font-weight:600}
+.pill.done{background:rgba(48,209,88,.18);color:#6ee68c}
+.pill.pend{background:rgba(255,69,58,.18);color:#ff7a72}
+.stu{padding:13px 15px;margin-bottom:10px}
 .stu .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .stu .nm{font-weight:600}
-.meta{font-size:.82rem;color:#4b5563;margin-top:6px;line-height:1.5}
-.up{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.up button{padding:7px 12px;font-size:.85rem}
-.msg{font-size:.82rem;color:#6b7280}
-.warn{border-radius:12px;padding:14px;margin:8px 0}
-.warn.o{background:#fff3e0;color:#e65100}
-.warn.r{background:#ffebee;color:#c62828}
-.search{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font:inherit;margin-bottom:12px}
+.meta{font-size:.83rem;color:var(--mut);margin-top:6px;line-height:1.55}
+.warn{border-radius:16px;padding:14px;margin:8px 0 12px;border:1px solid var(--line);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.warn.o{background:rgba(255,159,10,.15);color:#ffc15a}
+.warn.r{background:rgba(255,69,58,.15);color:#ff8a82}
+.warn.g{background:rgba(48,209,88,.15);color:#6ee68c}
+input.f{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font:inherit;font-size:16px;margin-bottom:12px;background:rgba(255,255,255,.08);color:var(--txt)}
+input.f::placeholder{color:var(--mut)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:480px;font-size:.88rem}
+th,td{padding:10px 8px;text-align:right;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--mut);font-weight:600}
+tfoot td{font-weight:700;border-bottom:0}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.sum b{display:block;font-size:1.35rem}
+.sum span{font-size:.74rem;color:var(--mut)}
+.gr{display:grid;grid-template-columns:78px 1fr 62px;gap:8px;align-items:center;margin-bottom:9px;font-size:.82rem}
+.gr .bar{display:flex;height:16px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.1)}
+.gr .bar i{display:block;height:100%;transition:width .6s ease}
+.gr .l{font-weight:600}.gr .v{text-align:right;color:var(--mut)}
+.legend{display:flex;gap:14px;font-size:.8rem;color:var(--mut);margin-bottom:10px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.formbox{border-radius:22px;overflow:hidden;border:1px solid var(--line);box-shadow:0 8px 32px rgba(0,0,0,.35);padding:6px;background:var(--glass2);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)}
+iframe{display:block;width:100%;height:78vh;min-height:560px;border:0;border-radius:17px;background:#fff}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 </style>
 </head>
 <body>
-<header>
-  <h1 id="title">APAAR ID status</h1>
-  <div id="stamp">Loading…</div>
-  <div class="bar">
-    <button id="btnRefresh">Refresh now</button>
-    <button id="btnAuto" class="sec">Pause auto-refresh</button>
-    <button id="btnBack" class="sec" hidden>Back to classes</button>
-  </div>
-</header>
-<main id="app"></main>
+<div class="wrap">
+  <header>
+    <h1>APAAR ID dashboard</h1>
+    <div id="stamp">Loading…</div>
+  </header>
+  <nav class="top">
+    <div class="tabs" id="mainTabs" role="tablist">
+      <button data-tab="teacher" class="on">Class Teacher</button>
+      <button data-tab="reports">Reports</button>
+      <button data-tab="admin">Admin</button>
+    </div>
+  </nav>
+
+  <!-- CLASS TEACHER -->
+  <section id="p-teacher">
+    <div class="tabs sub" id="subTabs">
+      <button data-sub="view" class="on">View</button>
+      <button data-sub="form">Make APAAR ID</button>
+    </div>
+    <div id="p-view">
+      <div class="row"><button class="sec" id="btnRefreshT">Refresh now</button><button class="sec" id="btnBack" hidden>Back to classes</button></div>
+      <div id="viewBody"></div>
+    </div>
+    <div id="p-form" hidden>
+      <div class="warn o" style="margin-top:0">Fill in the form for one student at a time and attach the proof document. After you submit, the admin updates the status in the sheet.</div>
+      <div id="formBody"></div>
+    </div>
+  </section>
+
+  <!-- REPORTS -->
+  <section id="p-reports" hidden>
+    <div class="row"><button class="sec" id="btnRefreshR">Refresh now</button></div>
+    <div id="repBody"></div>
+  </section>
+
+  <!-- ADMIN -->
+  <section id="p-admin" hidden>
+    <div id="adminBody"></div>
+  </section>
+  <div style="height:32px"></div>
+</div>
 
 <script>
 // ══════════ CONFIG — the only things an admin should edit ══════════
@@ -67,11 +134,15 @@ const COL = {
   status:  "APAAR Generated Status"
 };
 const DONE_VALUES = ["yes","done","generated","y","✓","completed"];
-const APPS_SCRIPT_API = "";   // paste Web App URL here to enable uploads
+const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSetjtgHi4VmmLJT5YV90DJr_s9LUE_-3eJQrkVXkvRuRBNZRw/viewform";
+const ADMIN_PASSWORD = "admin123";   // CHANGE THIS
 // ═══════════════════════════════════════════════════════════════════
 
-const REFRESH_MS = 60000, MAX_BYTES = 10 * 1024 * 1024;
-let students = [], view = null, auto = true, timer = null, lastError = null, updated = null, busy = false;
+const REFRESH_MS = 60000;
+let students = [], view = null, filter = "", paused = false, timer = null;
+let lastError = null, updated = null, busy = false, isAdmin = false, tab = "teacher", sub = "view", formLoaded = false;
+try { isAdmin = sessionStorage.getItem("adm") === "1"; } catch (e) {}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm = s => String(s ?? "").trim().toLowerCase();
@@ -100,134 +171,173 @@ function parseCSV(text) {
 function toStudents(rows) {
   const h = rows.findIndex(r => r.some(c => norm(c) === norm(COL.class)));
   if (h < 0) throw {missing: [COL.class]};
-  const head = rows[h].map(norm);
-  const idx = {}, missing = [];
+  const head = rows[h].map(norm), idx = {}, missing = [];
   for (const k in COL) { idx[k] = head.indexOf(norm(COL[k])); if (idx[k] < 0) missing.push(COL[k]); }
   if (missing.length) throw {missing};
   const get = (r, k) => (r[idx[k]] ?? "").trim();
   return rows.slice(h + 1).filter(r => get(r, "class")).map(r => ({
     cls: get(r, "class"), sec: get(r, "section"), name: get(r, "name"), pen: get(r, "pen"),
-    gender: get(r, "gender"), father: get(r, "father"), mother: get(r, "mother"),
-    done: isDone(get(r, "status"))
+    gender: get(r, "gender"), father: get(r, "father"), mother: get(r, "mother"), done: isDone(get(r, "status"))
   }));
 }
 
 async function load() {
   if (busy) return; busy = true;
+  document.querySelectorAll("#btnRefreshT,#btnRefreshR,#btnRefreshA").forEach(b => b.disabled = true);
   try {
-    const sep = CSV_URL.includes("?") ? "&" : "?";
-    const res = await fetch(CSV_URL + sep + "t=" + Date.now(), {cache: "no-store"});
+    const res = await fetch(CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), {cache: "no-store"});
     if (!res.ok) throw new Error("Could not load the sheet (HTTP " + res.status + ")");
     students = toStudents(parseCSV(await res.text()));
     lastError = null; updated = new Date();
   } catch (e) {
     lastError = e && e.missing ? {missing: e.missing} : {text: (e && e.message) || String(e)};
   }
-  busy = false; render();
+  busy = false;
+  document.querySelectorAll("#btnRefreshT,#btnRefreshR,#btnRefreshA").forEach(b => b.disabled = false);
+  render();
 }
 
+// Group by class + section
+function groups() {
+  const g = {};
+  students.forEach(s => { const k = s.cls + "\u0000" + s.sec; (g[k] = g[k] || {cls: s.cls, sec: s.sec, t: 0, d: 0}).t++; if (s.done) g[k].d++; });
+  return Object.values(g).sort((a, b) => cmp(a.cls, b.cls) || cmp(a.sec, b.sec));
+}
+const label = c => c.cls + (c.sec ? "-" + c.sec : "");
+
+function errorHTML() {
+  if (lastError) return lastError.missing
+    ? `<div class="warn o"><b>Some sheet columns were not found:</b> ${lastError.missing.map(esc).join(", ")}.<br>Check the headers in Row 1 of the sheet.</div>`
+    : `<div class="warn r"><b>Could not load data.</b> ${esc(lastError.text)}</div>`;
+  if (updated && !students.length) return `<div class="warn o"><b>No data found.</b> The sheet has a header but no student rows.</div>`;
+  return "";
+}
+
+// ── Renderers ──
 function render() {
-  const app = $("app");
   $("stamp").textContent = updated
-    ? "Updated: " + updated.toLocaleTimeString([], {hour12: false}) + " · " + students.length + " students"
+    ? "Updated: " + updated.toLocaleTimeString([], {hour12: false}) + " · " + students.length + " students" + (paused ? " · sync paused" : "")
     : "Loading…";
+  if (!(document.activeElement && document.activeElement.id === "q")) renderView();
+  renderReports(); renderAdmin();
+}
+
+function renderView() {
   $("btnBack").hidden = !view;
-  $("title").textContent = view ? "Class " + view.cls + (view.sec ? " – " + view.sec : "") : "APAAR ID status";
-  let html = "";
-  if (lastError) {
-    html += lastError.missing
-      ? `<div class="warn o"><b>Some sheet columns were not found:</b> ${lastError.missing.map(esc).join(", ")}.<br>Check the header names in Row 1 of the sheet, or update the COL settings at the top of this file.</div>`
-      : `<div class="warn r"><b>Could not load data.</b> ${esc(lastError.text)}</div>`;
-  }
-  if (!lastError && updated && !students.length) {
-    html += `<div class="warn o"><b>No data found.</b> The sheet has a header but no student rows.</div>`;
-  }
-  app.innerHTML = html + (view ? listHTML() : dashHTML());
+  $("viewBody").innerHTML = errorHTML() + (view ? listHTML() : dashHTML());
 }
 
 function dashHTML() {
-  const g = {};
-  students.forEach(s => { const k = s.cls + "\u0000" + s.sec; (g[k] = g[k] || {cls: s.cls, sec: s.sec, t: 0, d: 0}).t++; if (s.done) g[k].d++; });
-  const list = Object.values(g).sort((a, b) => cmp(a.cls, b.cls) || cmp(a.sec, b.sec));
-  return `<div class="grid">` + list.map((c, i) => {
+  return `<div class="grid">` + groups().map(c => {
     const p = c.t - c.d, pct = c.t ? Math.round(c.d / c.t * 100) : 0;
     return `<div class="card"><h2>Class ${esc(c.cls)}${c.sec ? " – " + esc(c.sec) : ""}</h2>
-      <div class="nums"><div><b>${c.t}</b><span>Total</span></div><div><b style="color:#2e7d32">${c.d}</b><span>Done</span></div><div><b style="color:#c62828">${p}</b><span>Pending</span></div></div>
+      <div class="nums"><div><b>${c.t}</b><span>Total</span></div><div><b style="color:#30d158">${c.d}</b><span>Done</span></div><div><b style="color:#ff453a">${p}</b><span>Pending</span></div></div>
       <div class="track"><div class="fill" style="width:${pct}%"></div></div>
       <div class="pct">${pct}% complete</div>
-      <button data-i="${i}" data-cls="${esc(c.cls)}" data-sec="${esc(c.sec)}">View students</button></div>`;
+      <button class="go" data-cls="${esc(c.cls)}" data-sec="${esc(c.sec)}">View students</button></div>`;
   }).join("") + `</div>`;
 }
 
-let filter = "";
 function listHTML() {
   const rows = students.filter(s => s.cls === view.cls && s.sec === view.sec).sort((a, b) => cmp(a.name, b.name));
   const f = norm(filter);
   const shown = f ? rows.filter(s => norm(s.name).includes(f) || norm(s.pen).includes(f)) : rows;
-  const canUpload = !!APPS_SCRIPT_API;
-  return `<input class="search" id="q" placeholder="Search by name or PEN" value="${esc(filter)}" aria-label="Search students">` +
+  return `<h2 style="margin:4px 0 10px;font-size:1.1rem">Class ${esc(view.cls)}${view.sec ? " – " + esc(view.sec) : ""}</h2>
+    <input class="f" id="q" placeholder="Search by name or PEN" value="${esc(filter)}" aria-label="Search students">` +
     (shown.length ? shown.map(s => `<div class="stu"><div class="top"><div class="nm">${esc(s.name)}</div>
       <span class="pill ${s.done ? "done" : "pend"}">${s.done ? "✓ Generated" : "⏳ Pending"}</span></div>
-      <div class="meta">PEN: ${esc(s.pen)} · ${esc(s.gender)}<br>Father: ${esc(s.father)}<br>Mother: ${esc(s.mother)}</div>
-      ${canUpload && !s.done ? `<div class="up"><input type="file" accept="image/*,application/pdf" data-pen="${esc(s.pen)}" aria-label="Proof file for ${esc(s.name)}"><button data-up="${esc(s.pen)}">Upload and mark generated</button><span class="msg" data-msg="${esc(s.pen)}"></span></div>` : ""}
-      </div>`).join("") : `<div class="warn o">No students match.</div>`);
+      <div class="meta">PEN: ${esc(s.pen)} · ${esc(s.gender)}<br>Father: ${esc(s.father)}<br>Mother: ${esc(s.mother)}</div></div>`).join("")
+      : `<div class="warn o">No students match.</div>`);
 }
 
-// ── Upload (only when APPS_SCRIPT_API is set) ──
-function toBase64(file) {
-  return new Promise((ok, no) => {
-    const r = new FileReader();
-    r.onload = () => ok(String(r.result).split(",")[1]);
-    r.onerror = () => no(new Error("Could not read the file"));
-    r.readAsDataURL(file);
-  });
-}
-async function post(payload) {
-  // text/plain avoids a CORS preflight, which Apps Script does not answer
-  const res = await fetch(APPS_SCRIPT_API, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(payload)});
-  return res.json();
-}
-async function upload(pen, btn) {
-  const msg = document.querySelector(`[data-msg="${CSS.escape(pen)}"]`);
-  const file = document.querySelector(`input[type=file][data-pen="${CSS.escape(pen)}"]`).files[0];
-  const say = t => msg.textContent = t;
-  if (!file) return say("Choose a file first.");
-  if (!/^image\//.test(file.type) && file.type !== "application/pdf") return say("Only images or PDF files are allowed.");
-  if (file.size > MAX_BYTES) return say("File is larger than 10 MB.");
-  btn.disabled = true; say("Uploading…");
-  try {
-    const up = await post({action: "uploadDoc", pen, fileName: file.name, mimeType: file.type, data: await toBase64(file)});
-    if (!up.success) throw new Error(up.error || "Upload failed");
-    const mk = await post({action: "markGenerated", pen});
-    if (!mk.success) throw new Error(mk.error || "Could not update status");
-    say("Saved. Status updated."); await load();
-  } catch (e) { say("Failed: " + e.message); btn.disabled = false; }
+function renderReports() {
+  const g = groups(), T = g.reduce((a, c) => a + c.t, 0), D = g.reduce((a, c) => a + c.d, 0), P = T - D;
+  const pc = (d, t) => t ? Math.round(d / t * 100) : 0;
+  $("repBody").innerHTML = errorHTML() + `
+    <div class="card"><div class="sum">
+      <div><b>${T}</b><span>Total</span></div><div><b style="color:#30d158">${D}</b><span>Done</span></div>
+      <div><b style="color:#ff453a">${P}</b><span>Pending</span></div><div><b>${pc(D, T)}%</b><span>Complete</span></div></div></div>
+    <div class="card"><h3>Graph: class-wise progress</h3>
+      <div class="legend"><span><i style="background:#30d158"></i>Done</span><span><i style="background:#ff453a"></i>Pending</span></div>
+      ${g.map(c => `<div class="gr"><div class="l">${esc(label(c))}</div>
+        <div class="bar" role="img" aria-label="${esc(label(c))}: ${c.d} done, ${c.t - c.d} pending">
+          <i style="width:${pc(c.d, c.t)}%;background:#30d158"></i><i style="width:${100 - pc(c.d, c.t)}%;background:#ff453a"></i></div>
+        <div class="v">${c.d}/${c.t}</div></div>`).join("")}</div>
+    <div class="card"><h3>Table: all classes</h3><div class="scroll"><table>
+      <thead><tr><th>Class</th><th>Total</th><th>Done</th><th>Pending</th><th>%</th></tr></thead>
+      <tbody>${g.map(c => `<tr><td>${esc(label(c))}</td><td>${c.t}</td><td>${c.d}</td><td>${c.t - c.d}</td><td>${pc(c.d, c.t)}%</td></tr>`).join("")}</tbody>
+      <tfoot><tr><td>All</td><td>${T}</td><td>${D}</td><td>${P}</td><td>${pc(D, T)}%</td></tr></tfoot></table></div></div>`;
 }
 
-// ── Events ──
-$("app").addEventListener("click", e => {
-  const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.cls !== undefined) { view = {cls: b.dataset.cls, sec: b.dataset.sec}; filter = ""; render(); scrollTo(0, 0); }
-  else if (b.dataset.up) upload(b.dataset.up, b);
-});
-$("app").addEventListener("input", e => {
-  if (e.target.id === "q") { filter = e.target.value; const p = e.target.selectionStart; render(); const q = $("q"); q.focus(); q.setSelectionRange(p, p); }
-});
-$("btnBack").onclick = () => { view = null; render(); };
-$("btnRefresh").onclick = load;
-$("btnAuto").onclick = () => {
-  auto = !auto; $("btnAuto").textContent = auto ? "Pause auto-refresh" : "Resume auto-refresh";
-  clearInterval(timer); if (auto) { timer = setInterval(skipIfBusy, REFRESH_MS); load(); }
-};
-// Don't re-render while a teacher is choosing or uploading a file
-function skipIfBusy() {
-  const a = document.activeElement;
-  if (a && a.type === "file") return;
-  if ([...document.querySelectorAll("input[type=file]")].some(i => i.files.length)) return;
-  load();
+function renderAdmin() {
+  const body = $("adminBody");
+  if (!isAdmin) {
+    if (body.querySelector("#pw")) return;   // keep what the user is typing
+    body.innerHTML = `<div class="card"><h3>Admin login</h3>
+      <input class="f" id="pw" type="password" placeholder="Password" autocomplete="current-password" aria-label="Admin password">
+      <button id="btnLogin" style="width:100%">Log in</button><div id="pwMsg" class="warn r" hidden style="margin:10px 0 0">Wrong password.</div></div>`;
+    return;
+  }
+  body.innerHTML = errorHTML() + `
+    <div class="card"><h3>Sync control</h3>
+      <p style="margin:0 0 12px"><span class="dot" style="background:${paused ? "#ff453a" : "#30d158"}"></span>
+        <b>${paused ? "Auto-sync is paused" : "Auto-sync is on"}</b> (every ${REFRESH_MS / 1000} seconds)</p>
+      <div class="row" style="margin-bottom:0">
+        <button class="sec" id="btnRefreshA">Refresh now</button>
+        <button id="btnPause" class="${paused ? "" : "warnbtn"}">${paused ? "Resume sync" : "Pause sync"}</button></div>
+      <p style="font-size:.8rem;color:var(--mut);margin:12px 0 0">Pause only affects this device. Teachers' phones keep syncing on their own and can use Refresh now.</p></div>
+    <div class="card"><h3>Sheet status</h3>
+      <div class="meta">Last updated: ${updated ? esc(updated.toLocaleString()) : "–"}<br>Students loaded: ${students.length}<br>Class sections: ${groups().length}</div></div>
+    <button class="sec" id="btnLogout" style="width:100%">Log out</button>`;
 }
-timer = setInterval(skipIfBusy, REFRESH_MS);
-load();
+
+function setForm() {
+  if (formLoaded) return; formLoaded = true;
+  if (!FORM_URL) { $("formBody").innerHTML = `<div class="warn r"><b>Form link not set.</b> Ask the admin to paste the Google Form link into FORM_URL in index.html.</div>`; return; }
+  const src = FORM_URL + (/embedded=true/.test(FORM_URL) ? "" : (FORM_URL.includes("?") ? "&" : "?") + "embedded=true");
+  $("formBody").innerHTML = `<div class="row"><button class="sec" onclick="window.open('${esc(FORM_URL)}','_blank')">Open form in new tab</button></div>
+    <div class="formbox"><iframe src="${esc(src)}" title="APAAR document form" loading="lazy">Loading…</iframe></div>`;
+}
+
+// ── Navigation & events ──
+function showTab() {
+  ["teacher", "reports", "admin"].forEach(t => $("p-" + t).hidden = tab !== t);
+  document.querySelectorAll("#mainTabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  $("p-view").hidden = sub !== "view"; $("p-form").hidden = sub !== "form";
+  document.querySelectorAll("#subTabs button").forEach(b => b.classList.toggle("on", b.dataset.sub === sub));
+  if (tab === "teacher" && sub === "form") setForm();
+}
+$("mainTabs").onclick = e => { const b = e.target.closest("button"); if (b) { tab = b.dataset.tab; showTab(); scrollTo(0, 0); } };
+$("subTabs").onclick = e => { const b = e.target.closest("button"); if (b) { sub = b.dataset.sub; showTab(); } };
+
+$("viewBody").addEventListener("click", e => {
+  const b = e.target.closest("button.go"); if (!b) return;
+  view = {cls: b.dataset.cls, sec: b.dataset.sec}; filter = ""; renderView(); scrollTo(0, 0);
+});
+$("viewBody").addEventListener("input", e => {
+  if (e.target.id !== "q") return;
+  filter = e.target.value; const p = e.target.selectionStart; renderView();
+  const q = $("q"); q.focus(); q.setSelectionRange(p, p);
+});
+$("btnBack").onclick = () => { view = null; renderView(); };
+$("btnRefreshT").onclick = load; $("btnRefreshR").onclick = load;
+
+$("adminBody").addEventListener("click", e => {
+  const id = e.target.id;
+  if (id === "btnLogin") tryLogin();
+  else if (id === "btnRefreshA") load();
+  else if (id === "btnPause") { paused = !paused; startTimer(); render(); }
+  else if (id === "btnLogout") { isAdmin = false; try { sessionStorage.removeItem("adm"); } catch (x) {} renderAdmin(); }
+});
+$("adminBody").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "pw") tryLogin(); });
+function tryLogin() {
+  if ($("pw").value === ADMIN_PASSWORD) { isAdmin = true; try { sessionStorage.setItem("adm", "1"); } catch (x) {} renderAdmin(); }
+  else { $("pwMsg").hidden = false; $("pw").value = ""; }
+}
+
+// Auto-sync: always on for teachers; only an admin on their own device can pause it
+function startTimer() { clearInterval(timer); if (!paused) timer = setInterval(load, REFRESH_MS); }
+startTimer(); showTab(); load();
 </script>
 </body>
 </html>
