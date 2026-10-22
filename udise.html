@@ -1,332 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>APAAR ID Helper</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>APAAR Dashboard</title>
 <style>
-:root{--pri:#1c5a8a;--bg:#f8fafc;--card:#fff;--tx:#172033;--mu:#64748b;--bd:#e2e8f0;--ok:#166534;--okb:#dcfce7;--yb:#fde047;--yl:#fefce8;--yt:#713f12;--yd:#eab308;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--card:#1e293b;--tx:#e5e7eb;--mu:#94a3b8;--bd:#334155;--okb:#14532d;--ok:#86efac;--yl:#422006;--yt:#fef08a}}
-:root[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--tx:#e5e7eb;--mu:#94a3b8;--bd:#334155;--okb:#14532d;--ok:#86efac;--yl:#422006;--yt:#fef08a}
-*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--tx);font-size:16px;padding-bottom:84px}
-button,input,select{font:inherit;color:inherit}button{cursor:pointer}
-.hidden{display:none!important}
-.hd{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--pri);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px}
-.hd b{font-size:17px;line-height:1.2;flex:1}.hd small{display:block;font-weight:normal;opacity:.85;font-size:12px}
-.hd button{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:8px;padding:8px 12px}
-.wrap{max-width:720px;margin:0 auto;padding:14px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
-h3{margin:4px 0 10px}
-.btn{display:block;width:100%;min-height:50px;border:0;border-radius:12px;padding:12px;font-weight:bold;font-size:16px;background:#e5ecf6;color:#1b2b44;text-align:center;text-decoration:none}
-.p{background:var(--pri);color:#fff}.g{background:#16a34a;color:#fff}.r{background:#dc2626;color:#fff}.y{background:var(--yb);color:#422006}
-.btn:disabled{opacity:.6}
-.row{display:flex;gap:8px}.row>*{flex:1}
-input,select{width:100%;min-height:48px;border:1px solid var(--bd);border-radius:12px;padding:10px;background:var(--card);margin-bottom:8px}
-.sum{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.sum div{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;text-align:center}
-.sum b{display:block;font-size:28px}.sum span{font-size:12px;color:var(--mu)}
-.sum .w{background:var(--yb);border-color:var(--yd)}.sum .w b,.sum .w span{color:#422006}
-.cls{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:10px}
-.cls.pend{background:var(--yl);border-color:var(--yd)}
-.cls .t{display:flex;justify-content:space-between;align-items:center;font-weight:bold;font-size:17px}
-.cls .m{color:var(--mu);font-size:13px;margin:4px 0 8px}
-.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:#16a34a}
-.bdg{display:inline-block;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:bold;white-space:nowrap}
-.bo{background:var(--okb);color:var(--ok)}.bw{background:var(--yb);color:#422006}
-.st{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:8px}
-.st.pend{background:var(--yl);border-color:var(--yd)}
-.st .n{font-weight:bold;font-size:16px;margin-bottom:3px;display:flex;justify-content:space-between;gap:8px}
-.st .m{color:var(--mu);font-size:13px;line-height:1.4}
-.chips{display:flex;gap:8px;margin-bottom:8px}.chips button{flex:1;min-height:44px;border:1px solid var(--bd);border-radius:22px;background:var(--card)}
-.chips button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
-.chips button.on.yy{background:var(--yb);color:#422006;border-color:var(--yd)}
-.bn{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
-.bn button{flex:1;border:0;background:transparent;padding:10px 4px;font-size:12px;min-height:60px;color:var(--mu)}
-.bn button span{display:block;font-size:22px}.bn button.on{color:var(--pri);font-weight:bold}
-.sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
-.sheet.show{display:flex}
-.sp{background:var(--bg);width:100%;max-width:640px;max-height:94%;overflow:auto;border-radius:18px 18px 0 0;padding:14px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}
-.sp .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
-.sp .top b{font-size:18px}.x{width:44px;flex:none!important;min-height:44px;border:0;border-radius:50%;background:var(--bd)}
-.dg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.dg div{border:1px solid var(--bd);border-radius:8px;padding:6px 8px;font-size:13px;word-break:break-word}
-.dg small{display:block;color:var(--mu);font-size:10px;text-transform:uppercase}
-summary{padding:8px 0;font-weight:bold;color:var(--pri)}
-.fb{display:flex;align-items:center;gap:10px;min-height:56px;border:2px dashed var(--bd);border-radius:12px;padding:10px;margin-bottom:8px;background:var(--card);cursor:pointer;font-size:15px}
-.fb.ok{border-style:solid;border-color:#16a34a;background:var(--okb)}.fb input{display:none}.fb em{display:block;font-size:12px;color:var(--mu);font-style:normal}
-.fb span.i{font-size:24px}
-.steps{font-size:14px;line-height:1.7;margin:6px 0 10px}
-.mu{color:var(--mu)}
-#toast{position:fixed;left:14px;right:14px;bottom:calc(86px + env(safe-area-inset-bottom,0px));background:#172033;color:#fff;padding:12px 14px;border-radius:10px;display:none;z-index:99;font-size:14px;text-align:center}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f0f2f5;color:#1f2937}
+header{padding:16px;max-width:960px;margin:0 auto}
+h1{margin:0;font-size:1.35rem}
+#stamp{color:#6b7280;font-size:.85rem;margin-top:2px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{font:inherit;border:0;border-radius:8px;padding:9px 14px;background:#1d4ed8;color:#fff;cursor:pointer}
+button.sec{background:#e5e7eb;color:#111827}
+button:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+main{max-width:960px;margin:0 auto;padding:0 16px 32px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);padding:16px}
+.card h2{margin:0 0 10px;font-size:1.1rem}
+.nums{display:flex;justify-content:space-between;text-align:center;margin-bottom:12px}
+.nums b{display:block;font-size:1.4rem}
+.nums span{font-size:.78rem;color:#6b7280}
+.track{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,#43a047,#66bb6a);border-radius:99px;transition:width .6s ease}
+.pct{font-size:.8rem;color:#6b7280;margin:6px 0 12px}
+.card button{width:100%}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.78rem;white-space:nowrap}
+.pill.done{background:#e8f5e9;color:#2e7d32}
+.pill.pend{background:#ffebee;color:#c62828}
+.stu{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);padding:12px 14px;margin-bottom:10px}
+.stu .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.stu .nm{font-weight:600}
+.meta{font-size:.82rem;color:#4b5563;margin-top:6px;line-height:1.5}
+.up{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.up button{padding:7px 12px;font-size:.85rem}
+.msg{font-size:.82rem;color:#6b7280}
+.warn{border-radius:12px;padding:14px;margin:8px 0}
+.warn.o{background:#fff3e0;color:#e65100}
+.warn.r{background:#ffebee;color:#c62828}
+.search{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font:inherit;margin-bottom:12px}
 </style>
 </head>
 <body>
-<div class="hd"><b>APAAR ID Helper<small id="sn"></small></b><span id="who"></span></div>
-
-<div class="wrap hidden" id="login">
-  <div class="card">
-    <h3>🔐 Admin Login</h3>
-    <p class="mu" style="font-size:13px;margin-top:0">Only admin can load Excel data. Teachers do not need to login.</p>
-    <input id="lu" placeholder="Admin ID" autocomplete="username" autocapitalize="none">
-    <input id="lp" type="password" placeholder="Password" autocomplete="current-password">
-    <button class="btn p" style="margin-bottom:8px" onclick="login()">Login</button>
-    <button class="btn" onclick="closeLogin()">Cancel</button>
+<header>
+  <h1 id="title">APAAR ID status</h1>
+  <div id="stamp">Loading…</div>
+  <div class="bar">
+    <button id="btnRefresh">Refresh now</button>
+    <button id="btnAuto" class="sec">Pause auto-refresh</button>
+    <button id="btnBack" class="sec" hidden>Back to classes</button>
   </div>
-</div>
-
-<div class="wrap" id="app">
-  <section id="v-home">
-    <div class="sum" id="sum"></div>
-    <button class="btn y" style="margin-bottom:14px" onclick="goLeft('')">⏳ Show all students who need APAAR ID</button>
-    <h3>Select your Class</h3>
-    <div id="cl"></div>
-  </section>
-
-  <section id="v-list" class="hidden">
-    <select id="fc" onchange="rl()"></select>
-    <input id="q" placeholder="🔍 Search name / PEN / father" oninput="rl()">
-    <div class="chips"><button id="c1" onclick="onlyLeft=false;rl()">All</button><button id="c2" onclick="onlyLeft=true;rl()">⏳ Need APAAR</button></div>
-    <p class="mu" id="cnt" style="margin:4px 0 10px"></p>
-    <div id="sl"></div>
-  </section>
-
-  <section id="v-data" class="hidden">
-    <div class="card">
-      <h3>📥 Load Student Data (Excel)</h3>
-      <p class="mu" style="font-size:13px">.xlsx / .xls. Header row (Class, Name...) is found automatically. Data stays only in this open page (nothing is stored). APAAR ID “NA” or blank = not generated.</p>
-      <input type="file" id="xf" accept=".xlsx,.xls">
-      <button class="btn p" onclick="imp()">Load</button>
-      <p id="impSt" class="mu"></p>
-    </div>
-    <div class="card">
-      <h3>📤 Reports</h3>
-      <button class="btn" style="margin-bottom:8px" onclick="expAll()">Download all students (Excel)</button>
-      <button class="btn y" onclick="expLeft()">Download students who need APAAR (Excel)</button>
-    </div>
-    <div class="card">
-      <h3>📌 Keep data inside this file</h3>
-      <p class="mu" style="font-size:13px">Tap the button, then in <b>index.html</b> replace <code>const EMBED=[];</code> with the copied text and upload to GitHub again. Then data loads automatically for every teacher.</p>
-      <button class="btn" onclick="copyData()">Copy data code</button>
-    </div>
-    <div class="card">
-      <h3>🔑 Create / change Admin ID &amp; password</h3>
-      <p class="mu" style="font-size:13px">Enter new ID and password, tap the button, then in <b>index.html</b> replace the line starting <code>const ADMINS=</code> with the copied text. Upload to GitHub again.</p>
-      <input id="nu" placeholder="New Admin ID" autocapitalize="none"><input id="np" type="password" placeholder="New password (min 6)">
-      <button class="btn" onclick="mkAdmin()">Copy admin code</button>
-    </div>
-  </section>
-</div>
-
-<nav class="bn" id="bn"></nav>
-
-<div class="sheet" id="sheet"><div class="sp" id="sp"></div></div>
-<div id="toast"></div>
+</header>
+<main id="app"></main>
 
 <script>
-/* PASTE STUDENT DATA HERE (optional): replace [] with the copied data */
-const EMBED=[];
+// ══════════ CONFIG — the only things an admin should edit ══════════
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQKb3JMosWsz5y6ONk_j2BIENmzESZKqDE8Tc6ChsVhtXt4RP22fi4AwA0DjNKGA/pub?gid=1123911021&single=true&output=csv";
+const COL = {
+  class:   "Class",
+  section: "Section",
+  name:    "Student Name",
+  pen:     "Student PEN",
+  gender:  "Gender",
+  father:  "Father Name",
+  mother:  "Mother Name",
+  status:  "APAAR Generated Status"
+};
+const DONE_VALUES = ["yes","done","generated","y","✓","completed"];
+const APPS_SCRIPT_API = "";   // paste Web App URL here to enable uploads
+// ═══════════════════════════════════════════════════════════════════
 
-/* ADMINS: ID + SHA-256 password hash. Default login: admin / admin123 — change it from the Data tab! */
-const ADMINS=[{u:"admin",h:"240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9"}];
-let adm=null;
+const REFRESH_MS = 60000, MAX_BYTES = 10 * 1024 * 1024;
+let students = [], view = null, auto = true, timer = null, lastError = null, updated = null, busy = false;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s ?? "").trim().toLowerCase();
+const isDone = v => DONE_VALUES.includes(norm(v));
+const cmp = (a, b) => String(a).localeCompare(String(b), undefined, {numeric: true, sensitivity: "base"});
 
-const WA="918279840446"; /* WhatsApp number: +91 8279840446 */
-const F=["Class","Section","Name","Gender","Initialised at SDMS","Student PEN","Student State Code","Father Name","Mother Name","Social Category","Minority Group","BPL beneficiary","CWSN","Type of Impairments","Is Repeater","Suspected Duplicate","Entry Status","AADHAAR No.","Name As per AADHAAR","AADHAAR Validation Status","MBU Status","APAAR ID","APAAR Status"];
-const DOCS=["Consent Form","Student Aadhaar Card","Birth Certificate","Parents Aadhaar Card"];
-const DOCS_HI=["सहमति पत्र","बच्चे का आधार कार्ड","जन्म प्रमाण पत्र","माता-पिता का आधार कार्ड"];
-const SCHOOL="HIMALAYAN INTERNATIONAL SCHOOL";
-let S=Array.isArray(EMBED)?EMBED:[],vw="home",onlyLeft=false,CL=[],cur=null,out=null,selCls="";
-const $=id=>document.getElementById(id);
-const E=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const N=v=>String(v).toLowerCase().replace(/[^a-z0-9]/g,"");
-const nat=(a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true});
-function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(window._t);window._t=setTimeout(()=>t.style.display="none",3800)}
-
-const rank=c=>{const v=String(c).toLowerCase().trim();if(v.includes("nursery"))return 0;if(v.startsWith("lkg"))return 1;if(v.startsWith("ukg"))return 2;
-  const r=["i","ii","iii","iv","v","vi","vii","viii","ix","x","xi","xii"].indexOf(v.split(/[\s/(-]/)[0]);if(r>=0)return 3+r;const n=parseInt(v);return isNaN(n)?99:2+n};
-const cmp=(a,b)=>rank(a)-rank(b)||nat(a,b);
-const gk=s=>{const g=String(s.Gender).toLowerCase().trim();return ["male","boy","m"].includes(g)?"b":["female","girl","f"].includes(g)?"g":"t"};
-/* APAAR ID blank, "-", "NA", "N/A", "Nil" etc. = NOT generated */
-const noApaar=s=>["","na","nil","null","none","notgenerated"].includes(N(s["APAAR ID"]??""));
-const clsKey=s=>(s.Class||"?")+"|"+(s.Section||"");
-const clsLab=k=>{const [c,s]=k.split("|");return c+(s?" - "+s:"")};
-function agg(l){const a={n:l.length,b:0,g:0,t:0,left:0};l.forEach(s=>{a[gk(s)]++;if(noApaar(s))a.left++});return a}
-
-async function sha(t){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
-function init(){$("sn").textContent=SCHOOL;shell()}
-function shell(show){
-  $("login").classList.toggle("hidden",!show);$("app").classList.toggle("hidden",!!show);$("bn").classList.toggle("hidden",!!show);
-  $("who").innerHTML=adm?`<button onclick="logout()">${E(adm)} ⎋ Logout</button>`:`<button onclick="openLogin()">🔐 Admin</button>`;
-  if(!show)setView(vw)
-}
-function openLogin(){shell(true);setTimeout(()=>$("lu").focus(),50)}
-function closeLogin(){shell(false)}
-async function login(){
-  const u=$("lu").value.trim(),h=await sha($("lp").value);
-  if(!ADMINS.some(a=>a.u===u&&a.h===h)){toast("Wrong Admin ID or password.");return}
-  adm=u;$("lp").value="";vw="data";shell(false)
-}
-function logout(){adm=null;closeS();vw="home";shell(false)}
-async function mkAdmin(){
-  const u=$("nu").value.trim(),p=$("np").value;
-  if(!u||p.length<6){toast("ID required, password min 6 characters.");return}
-  const t="const ADMINS=[{u:"+JSON.stringify(u)+",h:\""+await sha(p)+"\"}];";
-  try{await navigator.clipboard.writeText(t);toast("Copied. Replace the const ADMINS line in index.html with it.")}catch(e){prompt("Copy this code:",t)}
-}
-function setView(v){
-  if(v==="data"&&!adm)v="home";
-  vw=v;["home","list","data"].forEach(k=>$("v-"+k).classList.toggle("hidden",k!==v));
-  const t=[["home","🏠","Home"],["list","👩‍🎓","Students"]];if(adm)t.push(["data","📥","Data"]);
-  $("bn").innerHTML=t.map(([k,i,l])=>`<button class="${k===v?"on":""}" onclick="${k==="list"?"goLeft(null)":"setView('"+k+"')"}"><span>${i}</span>${l}</button>`).join("");
-  draw();window.scrollTo(0,0)
-}
-function draw(){if(vw==="home")rh();if(vw==="list")rl()}
-function goLeft(c){if(c!==null){$("fc").value=c;onlyLeft=true}setView("list")}
-function openCls(i){selCls=CL[i];onlyLeft=false;setView("list");$("fc").value=selCls;rl()}
-
-function rh(){
-  const t=agg(S);
-  $("sum").innerHTML=`<div><b>${t.n}</b><span>Total Students</span></div><div class="w"><b>${t.left}</b><span>APAAR ID to generate</span></div><div><b>${t.b}</b><span>Boys</span></div><div><b>${t.g}</b><span>Girls</span></div>`;
-  const by={};S.forEach(s=>(by[clsKey(s)]=by[clsKey(s)]||[]).push(s));
-  CL=Object.keys(by).sort((a,b)=>cmp(a.split("|")[0],b.split("|")[0])||nat(a,b));
-  $("cl").innerHTML=CL.length?CL.map((k,i)=>{const a=agg(by[k]),done=a.n-a.left;
-    return `<button class="cls ${a.left?"pend":""}" onclick="openCls(${i})"><div class="t"><span>${E(clsLab(k))}</span><span class="bdg ${a.left?"bw":"bo"}">${a.left?a.left+" need APAAR":"✅ All done"}</span></div><div class="m">${a.n} students · ${a.b} boys · ${a.g} girls</div><div class="bar"><i style="width:${a.n?done/a.n*100:0}%"></i></div></button>`}).join(""):`<div class="card"><p class="mu" style="margin-top:0">No student data loaded yet.</p><button class="btn y" onclick="adm?setView('data'):openLogin()">🔐 Admin: load Excel file</button></div>`;
-}
-
-function rl(){
-  const keys=[...new Set(S.map(clsKey))].sort((a,b)=>cmp(a.split("|")[0],b.split("|")[0])||nat(a,b)),fc=$("fc"),old=fc.value;
-  if(fc.options.length!==keys.length+1){fc.innerHTML='<option value="">All Classes</option>'+keys.map(k=>`<option value="${E(k)}">${E(clsLab(k))}</option>`).join("");fc.value=keys.includes(old)?old:""}
-  $("c1").className=onlyLeft?"":"on";$("c2").className=onlyLeft?"on yy":"";
-  const q=$("q").value.toLowerCase().trim(),c=fc.value,L=[];
-  S.forEach((s,i)=>{if(c&&clsKey(s)!==c)return;if(onlyLeft&&!noApaar(s))return;
-    if(q&&![s.Name,s["Student PEN"],s["Father Name"],s["Mother Name"]].join(" ").toLowerCase().includes(q))return;L.push([s,i])});
-  const a=agg(L.map(x=>x[0]));
-  $("cnt").textContent=`${L.length} student(s) · ${a.left} need APAAR ID`+(L.length>100?" (showing first 100)":"");
-  $("sl").innerHTML=L.length?L.slice(0,100).map(([s,i])=>`<button class="st ${noApaar(s)?"pend":""}" onclick="openS(${i})"><div class="n"><span>${E(s.Name)}</span><span class="bdg ${noApaar(s)?"bw":"bo"}">${noApaar(s)?"⏳ Need APAAR":"✅ Done"}</span></div><div class="m">Class ${E(clsLab(clsKey(s)))} · ${E(s.Gender)}<br>Father: ${E(s["Father Name"]||"—")} · PEN: ${E(s["Student PEN"]||"—")}</div></button>`).join(""):`<p class="mu">No students found.</p>`;
-}
-
-function openS(i){
-  cur=S[i];out=null;const s=cur,need=noApaar(s);
-  $("sp").innerHTML=`<div class="top"><b>${E(s.Name)}</b><button class="x" onclick="closeS()">✕</button></div>
-  <p style="margin:0 0 8px">Class ${E(clsLab(clsKey(s)))} · PEN ${E(s["Student PEN"]||"—")}<br><span class="bdg ${need?"bw":"bo"}" style="margin-top:6px">${need?"⏳ APAAR ID not generated (NA)":"✅ APAAR ID: "+E(s["APAAR ID"])}</span></p>
-  <details class="card"><summary>All student details</summary><div class="dg">${F.map(f=>`<div><small>${E(f)}</small>${E(s[f]||"—")}</div>`).join("")}</div></details>
-  <div class="card">
-    <h3>📎 Documents → PDF</h3>
-    <div class="steps"><b>1.</b> Add the 4 documents (photo or PDF)<br><b>2.</b> Tap “Make PDF”<br><b>3.</b> Save PDF<br><b>4.</b> Send merged PDF + student data on WhatsApp<br><span class="mu">4 दस्तावेज़ जोड़ें → PDF बनाएं → PDF सेव करें → WhatsApp पर भेजें</span></div>
-    ${DOCS.map((d,k)=>`<label class="fb" id="fb${k}"><span class="i">📄</span><span><b>${k+1}. ${d}</b><em id="fn${k}">${DOCS_HI[k]} — tap to add${k===3?" (can add 2 files)":""}</em></span><input type="file" id="f${k}" accept="image/*,application/pdf" ${k===3?"multiple":""} onchange="pick(${k})"></label>`).join("")}
-    <button class="btn g" id="mk" onclick="makePdf()">✅ Make PDF</button>
-    <p class="mu" id="ms" style="margin:8px 0 0"></p>
-  </div>
-  <div class="card hidden" id="res">
-    <h3>🎉 PDF is ready</h3>
-    <button class="btn p" style="margin-bottom:8px" onclick="savePdf()">⬇ Step 3: Save PDF</button>
-    <button class="btn g" onclick="sendWA()">💬 Step 4: Send PDF + Student Data on WhatsApp</button>
-    <button class="btn" style="margin-top:8px" onclick="openWA()">Open chat of 8279840446 (data message only)</button>
-    <p class="mu" style="font-size:12px;margin-bottom:0">Step 4 attaches the merged PDF and student data. In the share list choose <b>WhatsApp</b>, then the contact <b>8279840446</b>. If sharing is not supported, the PDF is saved and the chat opens; tap 📎 and attach the PDF. The PDF's first page has the student data. Nothing is stored in this app.<br>WhatsApp चुनें → नंबर 8279840446 चुनें → भेजें। PDF के पहले पेज पर बच्चे की जानकारी है।</p>
-  </div>`;
-  $("sheet").classList.add("show");
-}
-function closeS(){$("sheet").classList.remove("show");cur=null;out=null}
-function pick(k){
-  const fl=[...$("f"+k).files];$("fb"+k).classList.toggle("ok",fl.length>0);$("fn"+k).textContent=fl.length?"✅ "+fl.map(f=>f.name).join(", ").slice(0,45):DOCS_HI[k]+" — tap to add";
-  $("res").classList.add("hidden");out=null;
-}
-function readDU(f){return new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(f)})}
-async function imgJpeg(f){
-  const im=await new Promise(async(ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=await readDU(f)});
-  const sc=Math.min(1,1800/Math.max(im.width,im.height)),c=document.createElement("canvas");
-  c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
-  const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
-  const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.8));
-  return{bytes:new Uint8Array(await b.arrayBuffer()),w:c.width,h:c.height};
-}
-async function makePdf(){
-  if(!cur)return;const files=[];
-  for(let k=0;k<4;k++){const fl=[...$("f"+k).files];if(!fl.length){toast("Please add: "+DOCS[k]);$("fb"+k).scrollIntoView({block:"center"});return}files.push(...fl)}
-  const b=$("mk");b.disabled=true;$("ms").textContent="⏳ Making PDF, please wait...";
-  try{
-    const {PDFDocument,StandardFonts,rgb}=PDFLib,doc=await PDFDocument.create();
-    {const pg=doc.addPage([595,842]),fb=await doc.embedFont(StandardFonts.HelveticaBold),fr=await doc.embedFont(StandardFonts.Helvetica),cl=t=>String(t??"").replace(/[^\x20-\x7E]/g,"?");
-      let y=800;pg.drawText(cl(SCHOOL),{x:40,y,size:16,font:fb});y-=22;pg.drawText("APAAR ID - Student Data & Documents",{x:40,y,size:12,font:fr});y-=26;
-      [["Name","Name"],["Class","Class"],["Section","Section"],["Gender","Gender"],["Student PEN","Student PEN"],["Student State Code","State Code"],["Father Name","Father Name"],["Mother Name","Mother Name"],["Social Category","Social Category"],["AADHAAR No.","Aadhaar No."],["Name As per AADHAAR","Name as per Aadhaar"],["APAAR ID","APAAR ID"]].forEach(([k,l])=>{
-        const v=String(cur[k]||"").trim()||"-";pg.drawText(l+":",{x:40,y,size:12,font:fb});pg.drawText(cl(v).slice(0,60),{x:190,y,size:12,font:fr});y-=22;
-        pg.drawLine({start:{x:40,y:y+16},end:{x:555,y:y+16},thickness:.4,color:rgb(.8,.8,.8)})});
-      pg.drawText("Documents attached on the following pages.",{x:40,y:y-10,size:11,font:fr,color:rgb(.4,.4,.4)})}
-    for(const f of files){
-      if(f.type==="application/pdf"||/\.pdf$/i.test(f.name)){
-        const src=await PDFDocument.load(await f.arrayBuffer(),{ignoreEncryption:true});
-        (await doc.copyPages(src,src.getPageIndices())).forEach(p=>doc.addPage(p));
-      }else{
-        const m=await imgJpeg(f),img=await doc.embedJpg(m.bytes),W=595,H=842,k=Math.min((W-40)/m.w,(H-40)/m.h),w=m.w*k,h=m.h*k;
-        doc.addPage([W,H]).drawImage(img,{x:(W-w)/2,y:(H-h)/2,width:w,height:h});
-      }
-    }
-    const bytes=await doc.save(),name=((cur.Name||"student")+"_"+(cur["Student PEN"]||"noPEN")+"_APAAR.pdf").replace(/[^\w.\-]+/g,"_");
-    out={bytes,name};
-    $("ms").textContent="✅ Done ("+(bytes.length>1048576?(bytes.length/1048576).toFixed(1)+" MB":Math.round(bytes.length/1024)+" KB")+")";
-    $("res").classList.remove("hidden");$("res").scrollIntoView({behavior:"smooth",block:"center"});
-  }catch(e){console.error(e);$("ms").textContent="";toast("Could not make PDF. Check the files are clear photos or PDFs (not password-protected).")}
-  b.disabled=false;
-}
-function dl(name,data,type){
-  const a=document.createElement("a"),u=URL.createObjectURL(new Blob([data],{type}));
-  a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)
-}
-function savePdf(){if(!out)return;dl(out.name,out.bytes,"application/pdf");toast("PDF saved. Now tap Step 4 to send on WhatsApp.")}
-function waText(){
-  const s=cur;return `*APAAR Documents*\nStudent: ${s.Name}\nClass: ${clsLab(clsKey(s))}\nGender: ${s.Gender||"-"}\nPEN: ${s["Student PEN"]||"-"}\nFather: ${s["Father Name"]||"-"}\nMother: ${s["Mother Name"]||"-"}\nAadhaar: ${s["AADHAAR No."]||"-"}\nAPAAR ID: ${noApaar(s)?"Not generated (NA)":s["APAAR ID"]}\n(Merged PDF attached)`
-}
-function openWA(){if(cur)window.open("https://wa.me/"+WA+"?text="+encodeURIComponent(waText()),"_blank","noopener")}
-async function sendWA(){
-  if(!cur||!out)return;
-  const f=new File([out.bytes],out.name,{type:"application/pdf"});
-  if(navigator.canShare&&navigator.canShare({files:[f]})){
-    try{await navigator.share({files:[f],text:waText(),title:out.name});toast("Choose WhatsApp, then contact 8279840446");return}
-    catch(e){if(e&&e.name==="AbortError")return}
+// ── CSV parser: quotes, "" escapes, commas and newlines inside cells ──
+function parseCSV(text) {
+  const rows = []; let row = [], cell = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if (c === '"') q = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+    } else cell += c;
   }
-  dl(out.name,out.bytes,"application/pdf");toast("PDF saved. In WhatsApp tap 📎 and attach it.");
-  setTimeout(openWA,600);
+  if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+  return rows;
 }
 
-function imp(){
-  if(!adm){toast("Admin login required.");return}
-  const f=$("xf").files[0];if(!f){toast("Select an Excel file.");return}
-  const r=new FileReader();
-  r.onload=e=>{
-    let rows;
-    try{
-      const wb=XLSX.read(e.target.result,{type:"array"});
-      const grid=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:"",raw:false});
-      const h=grid.findIndex(r=>{const n=r.map(N);return n.includes("name")&&n.includes("class")});
-      if(h<0){toast("Header row (Class, Name...) not found.");return}
-      const hd=grid[h].map(String);
-      rows=grid.slice(h+1).filter(r=>r.some(c=>String(c).trim())).map(r=>{const s={};F.forEach(fl=>{const i=hd.findIndex(x=>N(x)===N(fl));s[fl]=i>=0?String(r[i]??"").trim():""});return s});
-    }catch(err){console.error(err);toast("Unable to read the Excel file.");return}
-    if(!rows.length){toast("No student rows found.");return}
-    S=rows;$("impSt").textContent=rows.length+" students loaded ✅";toast(rows.length+" students loaded.");
-  };
-  r.readAsArrayBuffer(f);
-}
-function xl(list,sheet,name){
-  if(!list.length){toast("No data.");return}
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(list.map(s=>{const o={};F.forEach(f=>o[f]=s[f]);return o})),sheet);
-  dl(name,new Uint8Array(XLSX.write(wb,{type:"array",bookType:"xlsx"})),"application/octet-stream");
-}
-const expAll=()=>xl(S,"Students","All_Students.xlsx");
-const expLeft=()=>xl(S.filter(noApaar),"Need APAAR","Need_APAAR.xlsx");
-async function copyData(){
-  if(!S.length){toast("Load the Excel file first.");return}
-  const t="const EMBED="+JSON.stringify(S)+";";
-  try{await navigator.clipboard.writeText(t);toast("Copied. Paste it in index.html in place of: const EMBED=[];")}
-  catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copied.")}catch(_){toast("Copy failed.")}ta.remove()}
+function toStudents(rows) {
+  const h = rows.findIndex(r => r.some(c => norm(c) === norm(COL.class)));
+  if (h < 0) throw {missing: [COL.class]};
+  const head = rows[h].map(norm);
+  const idx = {}, missing = [];
+  for (const k in COL) { idx[k] = head.indexOf(norm(COL[k])); if (idx[k] < 0) missing.push(COL[k]); }
+  if (missing.length) throw {missing};
+  const get = (r, k) => (r[idx[k]] ?? "").trim();
+  return rows.slice(h + 1).filter(r => get(r, "class")).map(r => ({
+    cls: get(r, "class"), sec: get(r, "section"), name: get(r, "name"), pen: get(r, "pen"),
+    gender: get(r, "gender"), father: get(r, "father"), mother: get(r, "mother"),
+    done: isDone(get(r, "status"))
+  }));
 }
 
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeS()});
-$("lp").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
-$("sheet").addEventListener("click",e=>{if(e.target.id==="sheet")closeS()});
-init();
+async function load() {
+  if (busy) return; busy = true;
+  try {
+    const sep = CSV_URL.includes("?") ? "&" : "?";
+    const res = await fetch(CSV_URL + sep + "t=" + Date.now(), {cache: "no-store"});
+    if (!res.ok) throw new Error("Could not load the sheet (HTTP " + res.status + ")");
+    students = toStudents(parseCSV(await res.text()));
+    lastError = null; updated = new Date();
+  } catch (e) {
+    lastError = e && e.missing ? {missing: e.missing} : {text: (e && e.message) || String(e)};
+  }
+  busy = false; render();
+}
+
+function render() {
+  const app = $("app");
+  $("stamp").textContent = updated
+    ? "Updated: " + updated.toLocaleTimeString([], {hour12: false}) + " · " + students.length + " students"
+    : "Loading…";
+  $("btnBack").hidden = !view;
+  $("title").textContent = view ? "Class " + view.cls + (view.sec ? " – " + view.sec : "") : "APAAR ID status";
+  let html = "";
+  if (lastError) {
+    html += lastError.missing
+      ? `<div class="warn o"><b>Some sheet columns were not found:</b> ${lastError.missing.map(esc).join(", ")}.<br>Check the header names in Row 1 of the sheet, or update the COL settings at the top of this file.</div>`
+      : `<div class="warn r"><b>Could not load data.</b> ${esc(lastError.text)}</div>`;
+  }
+  if (!lastError && updated && !students.length) {
+    html += `<div class="warn o"><b>No data found.</b> The sheet has a header but no student rows.</div>`;
+  }
+  app.innerHTML = html + (view ? listHTML() : dashHTML());
+}
+
+function dashHTML() {
+  const g = {};
+  students.forEach(s => { const k = s.cls + "\u0000" + s.sec; (g[k] = g[k] || {cls: s.cls, sec: s.sec, t: 0, d: 0}).t++; if (s.done) g[k].d++; });
+  const list = Object.values(g).sort((a, b) => cmp(a.cls, b.cls) || cmp(a.sec, b.sec));
+  return `<div class="grid">` + list.map((c, i) => {
+    const p = c.t - c.d, pct = c.t ? Math.round(c.d / c.t * 100) : 0;
+    return `<div class="card"><h2>Class ${esc(c.cls)}${c.sec ? " – " + esc(c.sec) : ""}</h2>
+      <div class="nums"><div><b>${c.t}</b><span>Total</span></div><div><b style="color:#2e7d32">${c.d}</b><span>Done</span></div><div><b style="color:#c62828">${p}</b><span>Pending</span></div></div>
+      <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+      <div class="pct">${pct}% complete</div>
+      <button data-i="${i}" data-cls="${esc(c.cls)}" data-sec="${esc(c.sec)}">View students</button></div>`;
+  }).join("") + `</div>`;
+}
+
+let filter = "";
+function listHTML() {
+  const rows = students.filter(s => s.cls === view.cls && s.sec === view.sec).sort((a, b) => cmp(a.name, b.name));
+  const f = norm(filter);
+  const shown = f ? rows.filter(s => norm(s.name).includes(f) || norm(s.pen).includes(f)) : rows;
+  const canUpload = !!APPS_SCRIPT_API;
+  return `<input class="search" id="q" placeholder="Search by name or PEN" value="${esc(filter)}" aria-label="Search students">` +
+    (shown.length ? shown.map(s => `<div class="stu"><div class="top"><div class="nm">${esc(s.name)}</div>
+      <span class="pill ${s.done ? "done" : "pend"}">${s.done ? "✓ Generated" : "⏳ Pending"}</span></div>
+      <div class="meta">PEN: ${esc(s.pen)} · ${esc(s.gender)}<br>Father: ${esc(s.father)}<br>Mother: ${esc(s.mother)}</div>
+      ${canUpload && !s.done ? `<div class="up"><input type="file" accept="image/*,application/pdf" data-pen="${esc(s.pen)}" aria-label="Proof file for ${esc(s.name)}"><button data-up="${esc(s.pen)}">Upload and mark generated</button><span class="msg" data-msg="${esc(s.pen)}"></span></div>` : ""}
+      </div>`).join("") : `<div class="warn o">No students match.</div>`);
+}
+
+// ── Upload (only when APPS_SCRIPT_API is set) ──
+function toBase64(file) {
+  return new Promise((ok, no) => {
+    const r = new FileReader();
+    r.onload = () => ok(String(r.result).split(",")[1]);
+    r.onerror = () => no(new Error("Could not read the file"));
+    r.readAsDataURL(file);
+  });
+}
+async function post(payload) {
+  // text/plain avoids a CORS preflight, which Apps Script does not answer
+  const res = await fetch(APPS_SCRIPT_API, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(payload)});
+  return res.json();
+}
+async function upload(pen, btn) {
+  const msg = document.querySelector(`[data-msg="${CSS.escape(pen)}"]`);
+  const file = document.querySelector(`input[type=file][data-pen="${CSS.escape(pen)}"]`).files[0];
+  const say = t => msg.textContent = t;
+  if (!file) return say("Choose a file first.");
+  if (!/^image\//.test(file.type) && file.type !== "application/pdf") return say("Only images or PDF files are allowed.");
+  if (file.size > MAX_BYTES) return say("File is larger than 10 MB.");
+  btn.disabled = true; say("Uploading…");
+  try {
+    const up = await post({action: "uploadDoc", pen, fileName: file.name, mimeType: file.type, data: await toBase64(file)});
+    if (!up.success) throw new Error(up.error || "Upload failed");
+    const mk = await post({action: "markGenerated", pen});
+    if (!mk.success) throw new Error(mk.error || "Could not update status");
+    say("Saved. Status updated."); await load();
+  } catch (e) { say("Failed: " + e.message); btn.disabled = false; }
+}
+
+// ── Events ──
+$("app").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.cls !== undefined) { view = {cls: b.dataset.cls, sec: b.dataset.sec}; filter = ""; render(); scrollTo(0, 0); }
+  else if (b.dataset.up) upload(b.dataset.up, b);
+});
+$("app").addEventListener("input", e => {
+  if (e.target.id === "q") { filter = e.target.value; const p = e.target.selectionStart; render(); const q = $("q"); q.focus(); q.setSelectionRange(p, p); }
+});
+$("btnBack").onclick = () => { view = null; render(); };
+$("btnRefresh").onclick = load;
+$("btnAuto").onclick = () => {
+  auto = !auto; $("btnAuto").textContent = auto ? "Pause auto-refresh" : "Resume auto-refresh";
+  clearInterval(timer); if (auto) { timer = setInterval(skipIfBusy, REFRESH_MS); load(); }
+};
+// Don't re-render while a teacher is choosing or uploading a file
+function skipIfBusy() {
+  const a = document.activeElement;
+  if (a && a.type === "file") return;
+  if ([...document.querySelectorAll("input[type=file]")].some(i => i.files.length)) return;
+  load();
+}
+timer = setInterval(skipIfBusy, REFRESH_MS);
+load();
 </script>
 </body>
 </html>
