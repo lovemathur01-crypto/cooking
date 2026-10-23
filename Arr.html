@@ -6,6 +6,8 @@
 <title>HIS Timetable & Substitution Duty System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif;background:#eef3f8;color:#172033}
@@ -65,7 +67,7 @@ table{border-collapse:collapse;width:100%}
 .auto-toggle{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:700}
 .auto-toggle input{width:17px;height:17px}
 
-/* ---------- Teacher summary table (green free IPs, red duties, spaced rows) ---------- */
+/* ---------- Teacher summary table ---------- */
 .sum-wrap{overflow-x:auto;padding:2px 2px 6px}
 .sum-table{width:100%;border-collapse:separate;border-spacing:0 7px;font-size:13px;min-width:820px}
 .sum-table thead th{background:#17375e;color:#fff;padding:9px 10px;font-size:12px;text-align:left;font-weight:700}
@@ -253,6 +255,8 @@ Expected columns: <b>Teacher Name, Day, 1st IP, 2nd IP, 3rd IP, 4th IP, Lunch Br
 <button class="btn success" onclick="generateDutyListAutomatically(true)">⚡ Generate Duty List Automatically</button>
 <button class="btn light" onclick="renderDutyListChart()">Refresh Chart</button>
 <button class="btn warning" onclick="printDutyChart()">Print Duty Chart</button>
+<button class="btn purple" onclick="downloadPDFPortrait()">⬇ PDF (Portrait, 2 Pages)</button>
+<button class="btn success" onclick="downloadPNG()">⬇ PNG (High Quality)</button>
 <button class="btn secondary" onclick="savePlan()">Save Duty Chart</button>
 <button class="btn danger" onclick="clearArrangement()">Clear Chart</button>
 </div>
@@ -264,7 +268,7 @@ Expected columns: <b>Teacher Name, Day, 1st IP, 2nd IP, 3rd IP, 4th IP, Lunch Br
 
 <section id="tab6" class="tab">
 <div class="card no-print"><h2>6. Print Duty Chart</h2><div class="info">Make any corrections in Tab 5 first, then click <b>Refresh Print Chart</b>.</div>
-<div class="actions"><button class="btn primary" onclick="refreshPrintChart()">Refresh Print Chart</button><button class="btn warning" onclick="printDutyChart()">Print Duty Chart</button><button class="btn secondary" onclick="savePlan()">Save Current Chart</button></div></div>
+<div class="actions"><button class="btn primary" onclick="refreshPrintChart()">Refresh Print Chart</button><button class="btn warning" onclick="printDutyChart()">Print Duty Chart</button><button class="btn purple" onclick="downloadPDFPortrait()">⬇ PDF (Portrait, 2 Pages)</button><button class="btn success" onclick="downloadPNG()">⬇ PNG (High Quality)</button><button class="btn secondary" onclick="savePlan()">Save Current Chart</button></div></div>
 <div class="card"><div id="printChartContent"><div class="muted">Generate a duty arrangement first.</div></div></div>
 </section>
 
@@ -526,9 +530,6 @@ function signature(){
 }
 
 /* ---------- automatic allocation ---------- */
-// Goal 1: every teacher keeps at least one free IP (if at all possible).
-// Goal 2: duties are spread as evenly as possible.
-// If goal 1 is impossible, the remaining duties are given with the cap relaxed.
 function optimizeAssignments(){
  const day=generated.day,absent=new Set(Object.keys(generated.absence));
  const slots=[];
@@ -568,7 +569,6 @@ function optimizeAssignments(){
  rebuildDutyCount();
 }
 
-// Used by the AUTO choice in a single dropdown.
 function findSubstitute(day,pi,absentSet,usedThisPeriod,dutyCount){
  const data=timetable[day]||{},c=[];
  Object.keys(data).forEach(t=>{
@@ -737,7 +737,6 @@ function rebuildDutyCount(){
 const IP_TIMINGS={"1st IP":"08:20 AM – 09:00 AM","2nd IP":"09:00 AM – 09:40 AM","3rd IP":"09:40 AM – 10:20 AM","4th IP":"10:20 AM – 11:00 AM","5th IP":"11:20 AM – 12:00 Noon","6th IP":"12:00 Noon – 12:40 PM","7th IP":"12:40 PM – 01:20 PM","8th IP":"01:20 PM – 02:00 PM"};
 const IP_NOTES={"1st IP":"(Attendance + Diary)"};
 
-/* Teacher summary as a spaced table: free IPs in GREEN, duties in RED */
 function buildSummaryTable(day,absent){
  const teachers=Object.keys(timetable[day]||{}).filter(t=>!absent.has(key(t))).sort((a,b)=>a.localeCompare(b));
  const half=Math.ceil(teachers.length/2);
@@ -810,9 +809,7 @@ function refreshPrintChart(){
  box.innerHTML=buildChartHTML(false);
 }
 
-/* ---------- Perfect one-page A4 landscape print ---------- */
-// Prints the chart from a clean hidden page whose layout is identical on screen and on paper,
-// measures its real height, and scales it so everything fits exactly on ONE A4 landscape page.
+/* ---------- One-page A4 landscape print ---------- */
 const PRINT_CSS=`
 @page{size:A4 landscape;margin:5mm}
 *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -867,7 +864,7 @@ function printDutyChart(){
  setTimeout(()=>{
   try{
    const sheet=d.getElementById("sheet");
-   const availH=738; // A4 landscape 210mm minus 10mm margins ≈ 756px, small safety gap
+   const availH=738;
    const h=sheet.getBoundingClientRect().height;
    const z=h>availH?availH/h:1;
    if(z<1)sheet.style.zoom=String(z);
@@ -876,6 +873,111 @@ function printDutyChart(){
   }catch(e){console.error(e);window.print()}
   setTimeout(()=>{if(f.parentNode)f.remove()},60000);
  },350);
+}
+
+/* ---------- Downloads: portrait PDF (2 pages) + high-quality PNG ---------- */
+function dutyFileBase(){
+ const iso=generated.date||(()=>{const t=new Date();return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`})();
+ const [y,m,d]=iso.split("-");
+ return `HIS_Substitution_Duty_${String(generated.day).replace(/[^A-Za-z0-9]/g,"")}_${d}-${m}-${y}`;
+}
+const PDF_EXTRA_CSS=`
+.duty-grid{font-size:12px}
+.paper-title{font-size:26px}.paper-date{font-size:19px;margin-bottom:8px}
+.ip-col{width:100px;font-size:12px}.ip-time,.ip-note{font-size:8.5px}
+.abs-col{font-size:12px}
+.cls-line{font-size:11px;min-height:36px}.sub-line{font-size:12px;min-height:28px}
+.sum-two{grid-template-columns:1fr;gap:6px}
+.sum-table{font-size:11px}.sum-table td{padding:3px 6px}.sum-table thead th{font-size:11px;padding:4px 6px}
+.fp{font-size:10px}.teacher-note{font-size:10.5px;margin-top:10px}
+.free-summary-title{font-size:14px}.live-banner{font-size:11px}
+.pg{padding:14px;background:#fff}
+`;
+function makeExportFrame(mode){
+ return new Promise(resolve=>{
+  const f=document.createElement("iframe");
+  f.setAttribute("style","position:fixed;left:-14000px;top:0;width:1600px;height:4000px;border:0");
+  document.body.appendChild(f);
+  const n=Object.keys(generated.absence).length;
+  const w=mode==="pdf"?800:Math.max(1085,100+n*150);
+  const css=PRINT_CSS+`#sheet{width:${w}px;zoom:1!important;background:#fff}.duty-grid{min-width:0!important}`+(mode==="pdf"?PDF_EXTRA_CSS:"");
+  const d=f.contentWindow.document;
+  d.open();
+  d.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body><div id="sheet">${buildChartHTML(false)}</div></body></html>`);
+  d.close();
+  if(mode==="pdf"){
+   const paper=d.querySelector(".generated-duty-paper");
+   const p1=d.createElement("div"),p2=d.createElement("div");
+   p1.className="pg";p2.className="pg";p1.id="page1";p2.id="page2";
+   [...paper.children].forEach(k=>{
+    const first=k.classList.contains("paper-title")||k.classList.contains("paper-date")||k.classList.contains("duty-grid");
+    (first?p1:p2).appendChild(k);
+   });
+   paper.appendChild(p1);paper.appendChild(p2);
+  }
+  setTimeout(()=>resolve(f),400);
+ });
+}
+function canvasToBlob(canvas,type,q){return new Promise(r=>canvas.toBlob(r,type,q))}
+function saveBlob(blob,name){
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);a.download=name;
+ document.body.appendChild(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+
+async function downloadPNG(){
+ if(!generated){alert("Generate the duty chart first.");return}
+ if(typeof html2canvas==="undefined"){alert("Image engine could not load. Check your internet connection and reload.");return}
+ setMessage("generationMessage","Preparing high-quality PNG…","info");
+ const f=await makeExportFrame("png");
+ try{
+  const sheet=f.contentWindow.document.getElementById("sheet");
+  const LIMIT=15*1024*1024;
+  let scale=3,blob=null;
+  while(scale>=0.8){
+   const canvas=await html2canvas(sheet,{scale,backgroundColor:"#ffffff",useCORS:true,logging:false});
+   blob=await canvasToBlob(canvas,"image/png");
+   if(blob&&blob.size<LIMIT)break;
+   scale=Math.round((scale-0.5)*10)/10;
+  }
+  if(!blob||blob.size>=LIMIT)throw new Error("Could not make the PNG smaller than 15 MB.");
+  const name=dutyFileBase()+".png";
+  saveBlob(blob,name);
+  setMessage("generationMessage",`<b>PNG downloaded:</b> ${escapeHTML(name)} (${(blob.size/1048576).toFixed(2)} MB)`,"success");
+ }catch(err){
+  console.error(err);
+  setMessage("generationMessage","<b>PNG could not be created:</b> "+escapeHTML(err.message||String(err)),"error");
+ }finally{f.remove()}
+}
+
+async function downloadPDFPortrait(){
+ if(!generated){alert("Generate the duty chart first.");return}
+ if(typeof html2canvas==="undefined"||!window.jspdf){alert("PDF engine could not load. Check your internet connection and reload.");return}
+ setMessage("generationMessage","Preparing portrait PDF (2 pages)…","info");
+ const f=await makeExportFrame("pdf");
+ try{
+  const doc=f.contentWindow.document;
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  const PW=210,PH=297,M=8,maxW=PW-2*M,maxH=PH-2*M;
+  const ids=["page1","page2"];
+  for(let i=0;i<ids.length;i++){
+   const el=doc.getElementById(ids[i]);
+   const canvas=await html2canvas(el,{scale:2.5,backgroundColor:"#ffffff",useCORS:true,logging:false});
+   const img=canvas.toDataURL("image/jpeg",0.95);
+   let w=maxW,h=w*canvas.height/canvas.width;
+   if(h>maxH){h=maxH;w=h*canvas.width/canvas.height}
+   if(i>0)pdf.addPage("a4","portrait");
+   pdf.addImage(img,"JPEG",M+(maxW-w)/2,M,w,h,undefined,"FAST");
+  }
+  const name=dutyFileBase()+".pdf";
+  pdf.save(name);
+  setMessage("generationMessage",`<b>PDF downloaded:</b> ${escapeHTML(name)} (A4 portrait, 2 pages)`,"success");
+ }catch(err){
+  console.error(err);
+  setMessage("generationMessage","<b>PDF could not be created:</b> "+escapeHTML(err.message||String(err)),"error");
+ }finally{f.remove()}
 }
 
 /* ---------- save / load / history ---------- */
