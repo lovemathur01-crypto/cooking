@@ -252,7 +252,7 @@ Expected columns: <b>Teacher Name, Day, 1st IP, 2nd IP, 3rd IP, 4th IP, Lunch Br
 <div class="actions">
 <button class="btn success" onclick="generateDutyListAutomatically(true)">⚡ Generate Duty List Automatically</button>
 <button class="btn light" onclick="renderDutyListChart()">Refresh Chart</button>
-<button class="btn warning" onclick="window.print()">Print Duty Chart</button>
+<button class="btn warning" onclick="printDutyChart()">Print Duty Chart</button>
 <button class="btn secondary" onclick="savePlan()">Save Duty Chart</button>
 <button class="btn danger" onclick="clearArrangement()">Clear Chart</button>
 </div>
@@ -264,7 +264,7 @@ Expected columns: <b>Teacher Name, Day, 1st IP, 2nd IP, 3rd IP, 4th IP, Lunch Br
 
 <section id="tab6" class="tab">
 <div class="card no-print"><h2>6. Print Duty Chart</h2><div class="info">Make any corrections in Tab 5 first, then click <b>Refresh Print Chart</b>.</div>
-<div class="actions"><button class="btn primary" onclick="refreshPrintChart()">Refresh Print Chart</button><button class="btn warning" onclick="window.print()">Print Duty Chart</button><button class="btn secondary" onclick="savePlan()">Save Current Chart</button></div></div>
+<div class="actions"><button class="btn primary" onclick="refreshPrintChart()">Refresh Print Chart</button><button class="btn warning" onclick="printDutyChart()">Print Duty Chart</button><button class="btn secondary" onclick="savePlan()">Save Current Chart</button></div></div>
 <div class="card"><div id="printChartContent"><div class="muted">Generate a duty arrangement first.</div></div></div>
 </section>
 
@@ -808,6 +808,74 @@ function refreshPrintChart(){
  const box=document.getElementById("printChartContent");
  if(!generated){box.innerHTML='<div class="muted">Generate a duty chart first.</div>';return}
  box.innerHTML=buildChartHTML(false);
+}
+
+/* ---------- Perfect one-page A4 landscape print ---------- */
+// Prints the chart from a clean hidden page whose layout is identical on screen and on paper,
+// measures its real height, and scales it so everything fits exactly on ONE A4 landscape page.
+const PRINT_CSS=`
+@page{size:A4 landscape;margin:5mm}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{margin:0;background:#fff;font-family:"Segoe UI",Arial,sans-serif;color:#111}
+#sheet{width:1085px;margin:0;transform-origin:top left}
+.generated-duty-paper{padding:0}
+.paper-title{text-align:center;font-size:22px;font-weight:900;color:#17375e;line-height:1.1}
+.paper-date{text-align:center;font-size:16px;font-weight:800;color:#17375e;margin:1px 0 5px}
+.duty-grid{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px}
+.duty-grid th,.duty-grid td{border:1px solid #8a97a8;text-align:center;vertical-align:top;padding:0}
+.duty-grid tbody tr>th,.duty-grid tbody tr>td{border-top:2px solid #000}
+.ip-col{width:95px;background:#FCE2D4;color:#3b1f10;font-size:11px;font-weight:800;vertical-align:middle!important}
+.ip-time,.ip-note{display:block;font-size:7.5px;font-weight:600;line-height:1.2}
+.abs-col{background:#FA4C4C;color:#fff;font-size:12px;font-weight:800;padding:4px 3px!important;line-height:1.2}
+.abs-type{display:block;font-size:9px;font-weight:600}
+.cls-line{padding:3px 4px;min-height:24px;background:#fff;white-space:pre-line;font-size:9.5px;line-height:1.2;display:flex;align-items:center;justify-content:center}
+.sub-line{padding:3px 4px;border-top:1.5px dashed #000;background:#fff;font-weight:800;font-size:10.5px;min-height:20px;display:flex;align-items:center;justify-content:center}
+.got-sub .sub-line{background:#FFF2CC}
+.free .cls-line,.free .sub-line{background:#CCFF99;color:#1f3d0a}
+.unassigned .sub-line{background:#fee2e2;color:#991b1b}
+.off .cls-line,.off .sub-line{background:#f3f4f6;color:#6b7280}
+.free-summary-title{font-size:12px;font-weight:800;border-top:1px solid #999;margin-top:6px;padding:4px 2px 1px;color:#17375e}
+.live-banner{font-size:10px;font-weight:700;padding:3px 6px;margin:2px 0 3px;border-radius:5px;background:#eff6ff;color:#1e40af}
+.sum-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.sum-table{width:100%;border-collapse:separate;border-spacing:0 2px;font-size:9px}
+.sum-table thead th{background:#17375e;color:#fff;padding:3px 4px;font-size:9px;text-align:left}
+.sum-table td{background:#fff;padding:1.5px 4px;vertical-align:middle;border-top:1px solid #dbe3ec;border-bottom:1px solid #dbe3ec;line-height:1.25}
+.sum-table tr.has-duty td{background:#fff8f8}
+.sum-table tr.zero-left td{background:#fee2e2}
+.sum-table tr.nofree td{background:#f1f5f9;color:#64748b}
+.c-no{width:20px;text-align:center;color:#64748b;font-weight:700}
+.c-name{font-weight:800;white-space:nowrap}
+.c-left{text-align:center;white-space:nowrap;font-weight:800;color:#15803d;width:40px}
+.c-left.zero{color:#dc2626}
+.fp{display:inline-block;margin:0 2px 0 0;padding:0 5px;border-radius:9px;background:#bbf7d0;color:#14532d;font-weight:800;font-size:8.5px;border:1px solid #4ade80}
+.none-txt{color:#94a3b8;font-weight:600}
+.duty-txt{display:inline;color:#dc2626;font-weight:800;margin-right:4px}
+.duty-txt+.duty-txt::before{content:"| ";color:#dc2626}
+.teacher-note{font-size:8px;line-height:1.3;margin-top:5px;padding-top:3px;border-top:1px solid #aaa}
+`;
+function printDutyChart(){
+ if(!generated){alert("Generate the duty chart first.");return}
+ const old=document.getElementById("printFrame");if(old)old.remove();
+ const f=document.createElement("iframe");
+ f.id="printFrame";
+ f.setAttribute("style","position:fixed;left:-12000px;top:0;width:1200px;height:900px;border:0;visibility:hidden");
+ document.body.appendChild(f);
+ const d=f.contentWindow.document;
+ d.open();
+ d.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Substitution Duty</title><style>${PRINT_CSS}</style></head><body><div id="sheet">${buildChartHTML(false)}</div></body></html>`);
+ d.close();
+ setTimeout(()=>{
+  try{
+   const sheet=d.getElementById("sheet");
+   const availH=738; // A4 landscape 210mm minus 10mm margins ≈ 756px, small safety gap
+   const h=sheet.getBoundingClientRect().height;
+   const z=h>availH?availH/h:1;
+   if(z<1)sheet.style.zoom=String(z);
+   f.contentWindow.focus();
+   f.contentWindow.print();
+  }catch(e){console.error(e);window.print()}
+  setTimeout(()=>{if(f.parentNode)f.remove()},60000);
+ },350);
 }
 
 /* ---------- save / load / history ---------- */
