@@ -133,6 +133,45 @@ input,select,button,textarea{font-family:inherit}
 .duty-grid .free .cls-line,.duty-grid .free .sub-line{background:#CCFF99;color:#1f3d0a}
 .duty-grid .unassigned .sub-line{background:#fee2e2;color:#991b1b}
 .custom-name{width:100%;margin-top:4px;padding:4px 5px;font-size:11px;border:1px solid #FA4C4C;border-radius:5px;background:#fff}
+
+/* ---------- Two-column summary ---------- */
+.sum-two{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.sum-two .sum-table{min-width:0;font-size:11px;border-spacing:0 2px}
+.sum-two .sum-table td,.sum-two .sum-table thead th{padding:2px 6px;line-height:1.25}
+.sum-two .sum-table thead th{padding:5px 6px;font-size:11px}
+.sum-two .c-name{white-space:nowrap}
+.sum-two .fp{font-size:10px;padding:0 7px;margin:0 3px 0 0;line-height:1.35}
+.sum-two .duty-txt{display:inline;margin:0 6px 0 0}
+.sum-two .duty-txt+.duty-txt::before{content:"| ";color:#dc2626}
+@media(max-width:1000px){.sum-two{grid-template-columns:1fr}}
+
+/* ---------- One A4 landscape page ---------- */
+@media print{
+ @page{size:A4 landscape;margin:5mm}
+ .paper-title{font-size:16px;line-height:1.1;margin:0}
+ .paper-date{font-size:13px;line-height:1.1;margin:0 0 3px}
+ .generated-duty-paper{padding:0;overflow:visible}
+ .duty-grid{font-size:8px}
+ .duty-grid .ip-col{width:78px;font-size:9px}
+ .duty-grid .ip-time{font-size:6.5px;margin-top:0}.duty-grid .ip-note{font-size:6.5px}
+ .duty-grid .abs-col{font-size:9px;padding:2px 3px}.abs-type{font-size:7px}
+ .duty-grid tbody tr>th,.duty-grid tbody tr>td{border-top:1.5px solid #000}
+ .duty-grid .cls-line{font-size:7.5px;padding:1px 2px;min-height:16px;line-height:1.15}
+ .duty-grid .sub-line{font-size:8.5px;padding:1px 2px;min-height:14px;line-height:1.15;border-top:1px dashed #000}
+ .free-summary-title{font-size:10px;margin-top:4px;padding:3px 2px 1px}
+ .live-banner{font-size:8px;padding:2px 5px;margin:2px 0}
+ .sum-two{gap:8px}
+ .sum-two .sum-table{font-size:7.5px;border-spacing:0 1.5px}
+ .sum-two .sum-table td,.sum-two .sum-table thead th{padding:1.5px 3px;line-height:1.2}
+ .sum-two .sum-table thead th{font-size:7.5px}
+ .sum-two .c-name{white-space:nowrap}
+ .sum-two .c-no{width:14px}
+ .fp{font-size:7px;padding:0 4px;margin:0 2px 0 0;border-radius:8px}
+ .duty-txt{display:inline;margin:0 4px 0 0}
+ .duty-txt+.duty-txt::before{content:"| ";color:#dc2626}
+ .teacher-note{font-size:6.5px!important;line-height:1.25;margin-top:3px;padding-top:2px}
+ .sum-table tr,.duty-grid tr{page-break-inside:avoid}
+}
 </style>
 </head>
 <body>
@@ -701,19 +740,22 @@ const IP_NOTES={"1st IP":"(Attendance + Diary)"};
 /* Teacher summary as a spaced table: free IPs in GREEN, duties in RED */
 function buildSummaryTable(day,absent){
  const teachers=Object.keys(timetable[day]||{}).filter(t=>!absent.has(key(t))).sort((a,b)=>a.localeCompare(b));
- let h=`<div class="sum-wrap"><table class="sum-table"><thead><tr><th>#</th><th>Teacher's Name</th><th style="text-align:center">Free IPs Left</th><th>Free Periods Left</th><th>Duties</th><th style="text-align:center">No. of Duties</th></tr></thead><tbody>`;
- teachers.forEach((t,i)=>{
-  const row=timetable[day][t]||{};
-  const free=PERIODS.filter(p=>isFree(row[p]));
-  const duties=dutiesOf(t),dset=new Set(duties.map(d=>d.period));
-  const left=free.filter(p=>!dset.has(p));
-  const cls=(duties.length?"has-duty ":"")+(free.length===0?"nofree":left.length===0?"zero-left":"");
-  const leftHtml=left.length?left.map(p=>`<span class="fp">${escapeHTML(p)}</span>`).join(""):`<span class="none-txt">None</span>`;
-  const dutyHtml=duties.length?duties.map(d=>`<span class="duty-txt">${escapeHTML(d.period)} for ${escapeHTML(d.absent)}</span>`).join(""):`<span class="none-txt">—</span>`;
-  h+=`<tr class="${cls}"><td class="c-no">${i+1}</td><td class="c-name">${escapeHTML(t)}</td><td class="c-left${left.length===0?" zero":""}">${left.length} of ${free.length}</td><td>${leftHtml}</td><td>${dutyHtml}</td><td class="c-dutyn">${duties.length||"—"}</td></tr>`;
- });
- h+=`</tbody></table></div>`;
- return h;
+ const half=Math.ceil(teachers.length/2);
+ const makeTable=(list,start)=>{
+  let h=`<table class="sum-table"><thead><tr><th>#</th><th>Teacher's Name</th><th style="text-align:center">Free Left</th><th>Free Periods Left</th><th>Duties</th></tr></thead><tbody>`;
+  list.forEach((t,i)=>{
+   const row=timetable[day][t]||{};
+   const free=PERIODS.filter(p=>isFree(row[p]));
+   const duties=dutiesOf(t),dset=new Set(duties.map(d=>d.period));
+   const left=free.filter(p=>!dset.has(p));
+   const cls=(duties.length?"has-duty ":"")+(free.length===0?"nofree":left.length===0?"zero-left":"");
+   const leftHtml=left.length?left.map(p=>`<span class="fp">${escapeHTML(p.replace(" IP",""))}</span>`).join(""):`<span class="none-txt">None</span>`;
+   const dutyHtml=duties.length?duties.map(d=>`<span class="duty-txt">${escapeHTML(d.period.replace(" IP",""))} for ${escapeHTML(d.absent)}</span>`).join(""):`<span class="none-txt">—</span>`;
+   h+=`<tr class="${cls}"><td class="c-no">${start+i+1}</td><td class="c-name">${escapeHTML(t)}</td><td class="c-left${left.length===0?" zero":""}">${left.length}/${free.length}</td><td>${leftHtml}</td><td>${dutyHtml}</td></tr>`;
+  });
+  return h+`</tbody></table>`;
+ };
+ return `<div class="sum-wrap"><div class="sum-two"><div>${makeTable(teachers.slice(0,half),0)}</div><div>${makeTable(teachers.slice(half),half)}</div></div></div>`;
 }
 
 function buildChartHTML(editable){
