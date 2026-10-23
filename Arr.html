@@ -56,17 +56,35 @@ table{border-collapse:collapse;width:100%}
 .paper-date{text-align:center;font-size:24px;font-weight:800;color:#17375e;margin:2px 0 10px}
 .status-free{font-weight:800}.muted-small{font-size:10px;color:#555}
 .live-count{font-size:9px;color:#475569;margin-top:2px}
-.free-summary-title{font-size:13px;font-weight:800;border-top:1px solid #999;margin-top:10px;padding:7px 4px}
+.free-summary-title{font-size:15px;font-weight:800;border-top:1px solid #999;margin-top:14px;padding:9px 4px 4px;color:#17375e}
 .free-summary-title span{margin-left:30px;color:#245887}
 .live-banner{font-size:12px;font-weight:700;padding:7px 8px;margin:6px 0;border-radius:6px;background:#eff6ff;color:#1e40af}
 .free-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;padding-top:5px}
 .free-summary-row{font-size:10.5px;line-height:1.5;padding:2px 5px;margin-bottom:2px;border-radius:3px}
-.free-summary-row.ok{background:#f0fdf4}
-.free-summary-row.zero{background:#fee2e2;color:#991b1b;font-weight:700}
-.free-summary-row.nofree{background:#f1f5f9;color:#64748b}
 .teacher-note{font-size:10px;line-height:1.45;margin-top:10px;padding-top:7px;border-top:1px solid #aaa}
 .auto-toggle{display:flex;align-items:center;gap:8px;margin-top:10px;font-weight:700}
 .auto-toggle input{width:17px;height:17px}
+
+/* ---------- Teacher summary table (green free IPs, red duties, spaced rows) ---------- */
+.sum-wrap{overflow-x:auto;padding:2px 2px 6px}
+.sum-table{width:100%;border-collapse:separate;border-spacing:0 7px;font-size:13px;min-width:820px}
+.sum-table thead th{background:#17375e;color:#fff;padding:9px 10px;font-size:12px;text-align:left;font-weight:700}
+.sum-table thead th:first-child{border-radius:7px 0 0 7px}.sum-table thead th:last-child{border-radius:0 7px 7px 0}
+.sum-table td{background:#fff;padding:9px 10px;vertical-align:middle;border-top:1px solid #dbe3ec;border-bottom:1px solid #dbe3ec;line-height:1.55}
+.sum-table td:first-child{border-left:1px solid #dbe3ec;border-radius:7px 0 0 7px}
+.sum-table td:last-child{border-right:1px solid #dbe3ec;border-radius:0 7px 7px 0}
+.sum-table tr.has-duty td{background:#fff8f8}
+.sum-table tr.zero-left td{background:#fee2e2}
+.sum-table tr.nofree td{background:#f1f5f9;color:#64748b}
+.sum-table .c-no{width:36px;text-align:center;color:#64748b;font-weight:700}
+.sum-table .c-name{font-weight:800;color:#172033;white-space:nowrap}
+.sum-table .c-left{text-align:center;white-space:nowrap;font-weight:800;color:#15803d}
+.sum-table .c-left.zero{color:#dc2626}
+.fp{display:inline-block;margin:2px 4px 2px 0;padding:2px 9px;border-radius:12px;background:#bbf7d0;color:#14532d;font-weight:800;font-size:12px;border:1px solid #4ade80}
+.none-txt{color:#94a3b8;font-weight:600}
+.duty-txt{display:block;color:#dc2626;font-weight:800;margin:2px 0}
+.c-dutyn{text-align:center;font-weight:900;color:#dc2626;font-size:15px}
+
 @media(max-width:1100px){.absent-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:850px){.absent-grid,.free-summary-grid{grid-template-columns:1fr}.header h1{font-size:22px}.app{padding:9px}}
 @media print{
@@ -74,7 +92,7 @@ table{border-collapse:collapse;width:100%}
  .tab{display:none!important}.tab.active{display:block!important}
  .card{box-shadow:none;border:0;padding:0;margin:0}
  .duty-chart-wrap{border:0;overflow:visible}
- .free-summary-row,.teacher-note{font-size:8px}.paper-title{font-size:24px}.paper-date{font-size:20px}
+ .teacher-note{font-size:8px}.paper-title{font-size:24px}.paper-date{font-size:20px}
  @page{size:A4 landscape;margin:8mm}
 }
 .screen-only{display:block;width:100%}.print-only{display:none}
@@ -98,8 +116,14 @@ table{border-collapse:collapse;width:100%}
  .duty-grid .cls-line{font-size:10.5px;padding:4px 3px;min-height:34px}
  .duty-grid .sub-line{font-size:12px;padding:4px 3px;min-height:30px;border-top:1.5px dashed #000}
  .duty-grid .abs-col{font-size:13px}.duty-grid tr{page-break-inside:avoid}
- .free-summary-row,.teacher-note{font-size:9px!important}
+ .teacher-note{font-size:9px!important}
  .paper-title{font-size:22px}.paper-date{font-size:18px}
+ .sum-wrap{overflow:visible}
+ .sum-table{min-width:0;font-size:10.5px;border-spacing:0 4px}
+ .sum-table td,.sum-table thead th{padding:4px 6px}
+ .sum-table tr{page-break-inside:avoid}
+ .fp{font-size:10px;padding:1px 6px;margin:1px 3px 1px 0}
+ .c-dutyn{font-size:12px}
 }
 input,select,button,textarea{font-family:inherit}
 .duty-grid .ip-col{background:#FCE2D4;color:#3b1f10}
@@ -108,9 +132,6 @@ input,select,button,textarea{font-family:inherit}
 .duty-grid .got-sub .sub-line{background:#FFF2CC}
 .duty-grid .free .cls-line,.duty-grid .free .sub-line{background:#CCFF99;color:#1f3d0a}
 .duty-grid .unassigned .sub-line{background:#fee2e2;color:#991b1b}
-.free-summary-row.ok{background:#fff}
-.free-summary-row.duty{background:#FFF2CC}
-.free-summary-row.zero{background:#FFF2CC;color:#991b1b;font-weight:700}
 .custom-name{width:100%;margin-top:4px;padding:4px 5px;font-size:11px;border:1px solid #FA4C4C;border-radius:5px;background:#fff}
 </style>
 </head>
@@ -676,6 +697,25 @@ function rebuildDutyCount(){
 
 const IP_TIMINGS={"1st IP":"08:20 AM – 09:00 AM","2nd IP":"09:00 AM – 09:40 AM","3rd IP":"09:40 AM – 10:20 AM","4th IP":"10:20 AM – 11:00 AM","5th IP":"11:20 AM – 12:00 Noon","6th IP":"12:00 Noon – 12:40 PM","7th IP":"12:40 PM – 01:20 PM","8th IP":"01:20 PM – 02:00 PM"};
 const IP_NOTES={"1st IP":"(Attendance + Diary)"};
+
+/* Teacher summary as a spaced table: free IPs in GREEN, duties in RED */
+function buildSummaryTable(day,absent){
+ const teachers=Object.keys(timetable[day]||{}).filter(t=>!absent.has(key(t))).sort((a,b)=>a.localeCompare(b));
+ let h=`<div class="sum-wrap"><table class="sum-table"><thead><tr><th>#</th><th>Teacher's Name</th><th style="text-align:center">Free IPs Left</th><th>Free Periods Left</th><th>Duties</th><th style="text-align:center">No. of Duties</th></tr></thead><tbody>`;
+ teachers.forEach((t,i)=>{
+  const row=timetable[day][t]||{};
+  const free=PERIODS.filter(p=>isFree(row[p]));
+  const duties=dutiesOf(t),dset=new Set(duties.map(d=>d.period));
+  const left=free.filter(p=>!dset.has(p));
+  const cls=(duties.length?"has-duty ":"")+(free.length===0?"nofree":left.length===0?"zero-left":"");
+  const leftHtml=left.length?left.map(p=>`<span class="fp">${escapeHTML(p)}</span>`).join(""):`<span class="none-txt">None</span>`;
+  const dutyHtml=duties.length?duties.map(d=>`<span class="duty-txt">${escapeHTML(d.period)} for ${escapeHTML(d.absent)}</span>`).join(""):`<span class="none-txt">—</span>`;
+  h+=`<tr class="${cls}"><td class="c-no">${i+1}</td><td class="c-name">${escapeHTML(t)}</td><td class="c-left${left.length===0?" zero":""}">${left.length} of ${free.length}</td><td>${leftHtml}</td><td>${dutyHtml}</td><td class="c-dutyn">${duties.length||"—"}</td></tr>`;
+ });
+ h+=`</tbody></table></div>`;
+ return h;
+}
+
 function buildChartHTML(editable){
  const abs=Object.values(generated.absence),day=generated.day;
   let h=`<div class="generated-duty-paper"><div class="paper-title">SUBSTITUTION DUTY</div>`;
@@ -704,25 +744,10 @@ function buildChartHTML(editable){
  });
  h+="</tbody></table>";
 
-
  const absent=new Set(Object.keys(generated.absence));
- const teachers=Object.keys(timetable[day]||{}).filter(t=>!absent.has(key(t))).sort((a,b)=>a.localeCompare(b));
- h+=`<div class="free-summary-title">Teacher's Name</div><div class="live-banner">${freeStatusMsg()}</div><div class="free-summary-grid">`;
- const half=Math.ceil(teachers.length/2);
- [teachers.slice(0,half),teachers.slice(half)].forEach(col=>{
-  h+="<div>";
-  col.forEach(t=>{
-   const row=timetable[day][t]||{};
-   const free=PERIODS.filter(p=>isFree(row[p]));
-   const duties=dutiesOf(t),dset=new Set(duties.map(d=>d.period));
-   const left=free.filter(p=>!dset.has(p));
-   const cls=(duties.length?"duty ":"")+(free.length===0?"nofree":left.length===0?"zero":"ok");
-   const dtxt=duties.length?duties.map(d=>d.period+" for "+d.absent).join("; "):"—";
-   h+=`<div class="free-summary-row ${cls}"><b>${escapeHTML(t)}</b> | Free IPs left = <b>${left.length}</b> of ${free.length} | Free periods left: ${escapeHTML(left.length?left.join(", "):"None")} | Duties = ${duties.length} (${escapeHTML(dtxt)})</div>`;
-  });
-  h+="</div>";
- });
- h+=`</div><div class="teacher-note"><b>Dear Teachers,</b><br>Please note that due to the absence of several teachers today, some teachers may have <b>zero free periods</b> in their timetable.<br>You are requested to kindly cooperate with the school administration and support the arrangement of substitute periods wherever required. Your flexibility and cooperation will help ensure that academic work continues smoothly.</div></div>`;
+ h+=`<div class="free-summary-title">Teacher's Name — Free IPs &amp; Duties</div><div class="live-banner">${freeStatusMsg()}</div>`;
+ h+=buildSummaryTable(day,absent);
+ h+=`<div class="teacher-note"><b>Dear Teachers,</b><br>Please note that due to the absence of several teachers today, some teachers may have <b>zero free periods</b> in their timetable.<br>You are requested to kindly cooperate with the school administration and support the arrangement of substitute periods wherever required. Your flexibility and cooperation will help ensure that academic work continues smoothly.</div></div>`;
   return h;
 }
 
