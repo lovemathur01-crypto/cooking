@@ -146,6 +146,7 @@ function parseDate(v){
 const longDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 function status(v){const s=norm(v);if(!s||['nan','null','undefined'].includes(s))return 'Not specified';
  if(s.includes('not applicable')||s==='na'||s==='n/a')return 'NA';
+ if(s==='no'||s==='not')return 'Not Done';
  if(s.includes('partial'))return 'Partially Done';if(s.includes('pending'))return 'Pending';
  if(s.includes('not done')||s.includes('not completed'))return 'Not Done';
  if(s.includes('done')||s.includes('completed')||s.includes('verified')||s.includes('updated'))return 'Done';return 'Other';}
@@ -156,6 +157,8 @@ function loadRows(json,label){
  if(!json.length)throw new Error('No data rows found in the first worksheet.');
  headers=Object.keys(json[0]).filter(h=>String(h).trim()!=='');
  allRows=json;
+ // coordinator name may contain classes in brackets, e.g. "Ms. Laxmi Bisht (VI to VIII)"
+
  const H=re=>headers.find(h=>re.test(h));
  cols.date=H(/which of date|report date|^date$/i)||headers.find(h=>/date/i.test(h)&&!/timestamp/i.test(h))||H(/timestamp/i);
  cols.name=H(/select name|coordinator name|^name$/i)||H(/name/i);
@@ -163,13 +166,19 @@ function loadRows(json,label){
  cols.pending=H(/any pending/i);
  cols.reason=H(/pending.*reason|reason/i);
  cols.issues=headers.filter(h=>/issue/i.test(h));
+ cols.splitCls=!cols.cls;
  if(!cols.date)throw new Error('Could not find a date column (e.g. “Which of Date” / “Report Date”).');
  tasks=TASKS.map(t=>{
    const col=headers.find(h=>t.re.test(h)&&!/mention|issue|pending/i.test(h)&&!(t.not&&t.not.test(h)));
    const det=t.detail?headers.find(h=>t.re.test(h)&&/mention/i.test(h)):null;
    return {...t,col,det};
  }).filter(t=>t.col);
- allRows.forEach(r=>r.__date=parseDate(r[cols.date]));
+ allRows.forEach(r=>{
+   r.__date=parseDate(r[cols.date]);
+   const raw=String(r[cols.name]??'').trim();
+   if(cols.splitCls){const m=raw.match(/^(.*?)\s*\((.*)\)\s*$/);r.__name=m?m[1].trim():raw;r.__cls=m?m[2].trim():''}
+   else{r.__name=raw;r.__cls=String(r[cols.cls]??'').trim()}
+ });
  const dates=[...new Set(allRows.map(r=>r.__date).filter(Boolean))].sort();
  if(!dates.length)throw new Error('No valid dates found in the date column.');
  $('dateSelect').innerHTML=dates.map(d=>`<option value="${d}">${longDate(d)}</option>`).join('');
@@ -184,7 +193,7 @@ $('file').addEventListener('change',async e=>{
  try{
   const buf=await f.arrayBuffer();
   const wb=f.name.toLowerCase().endsWith('.csv')?XLSX.read(new TextDecoder('utf-8').decode(buf),{type:'string',cellDates:true}):XLSX.read(buf,{type:'array',cellDates:true});
-  loadRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false}),f.name);
+  loadRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false,dateNF:'yyyy-mm-dd'}),f.name);
  }catch(err){$('fileStatus').textContent='Unable to read file: '+err.message}
 });
 $('sample').addEventListener('click',()=>{
@@ -215,7 +224,7 @@ function render(){
  $('dateText').textContent='Date: '+longDate(date);
  // latest submission per coordinator + class
  const map=new Map();
- allRows.filter(r=>r.__date===date).forEach(r=>map.set(norm(r[cols.name])+'|'+norm(cols.cls?r[cols.cls]:''),r));
+ allRows.filter(r=>r.__date===date).forEach(r=>map.set(norm(r.__name)+'|'+norm(r.__cls),r));
  const rows=[...map.values()];
  if(!rows.length){$('body').innerHTML='<div class="empty">No submissions for this date.</div>';return}
 
@@ -232,11 +241,11 @@ function render(){
  if(cols.issues.length)th+='<th>Any Issue in Your Class(es) Today?</th>';
  let tb='';
  rows.forEach(r=>{
-  const nm=String(r[cols.name]??'').trim()||'—';
-  tb+=`<tr><td class="coord"><div class="av">${esc(initials(nm))}</div>${esc(nm)}</td><td>${esc(cols.cls?r[cols.cls]:'')}</td>`;
+  const nm=(r.__name||'—');
+  tb+=`<tr><td class="coord"><div class="av">${esc(initials(nm))}</div>${esc(nm)}</td><td>${esc(r.__cls)}</td>`;
   tasks.forEach(t=>{tb+=`<td>${icon(stat(r,t))}</td>`;if(t.det)tb+=`<td>${detCell(r,t)}</td>`});
-  if(cols.pending)tb+=`<td>${esc(r[cols.pending])}</td>`;
-  if(cols.reason)tb+=`<td>${esc(r[cols.reason])}</td>`;
+  if(cols.pending)tb+=`<td>${esc(String(r[cols.pending]).trim())}</td>`;
+  if(cols.reason)tb+=`<td>${esc(String(r[cols.reason]).trim()||'—')}</td>`;
   if(cols.issues.length){const it=issueText(r);tb+=`<td class="${hasIssue(it)?'bad':'good'}">${esc(it||'—')}</td>`}
   tb+='</tr>';
  });
@@ -267,12 +276,12 @@ function render(){
  // ---- action items ----
  const items=[];
  rows.forEach(r=>{
-  const nm=String(r[cols.name]??'').trim()||'Coordinator';
+  const nm=(r.__name||'Coordinator');
   const miss=tasks.filter(t=>['Not Done','Pending','Partially Done'].includes(stat(r,t))).map(t=>t.act);
   if(miss.length)items.push({h:`${esc(nm)} should complete:`,s:miss.map(esc).join(' &nbsp;•&nbsp; ')});
  });
  rows.forEach(r=>{
-  const nm=String(r[cols.name]??'').trim()||'Coordinator';
+  const nm=(r.__name||'Coordinator');
   const rs=cols.reason?String(r[cols.reason]??'').trim():'';
   if(cols.pending&&isPendingYes(r[cols.pending])&&rs&&!/no pending/i.test(rs))items.push({h:`${esc(nm)} should take care of:`,s:esc(rs)});
   const it=issueText(r);if(hasIssue(it))items.push({h:`${esc(nm)} reported an issue:`,s:esc(it)});
@@ -300,7 +309,7 @@ function render(){
   <div class="foot">Compliance % = tasks Done ÷ applicable tasks (Not Applicable excluded) · Latest submission per coordinator is used</div>`;
  fit();
 }
-function headerLabel(h){return String(h).replace(/\s*\?$/,'?')}
+function headerLabel(h){return String(h).trim().replace(/\s*\?$/,'?')}
 
 // shrink content so the whole report fits on ONE A4 page
 function fit(){
