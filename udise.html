@@ -31,21 +31,22 @@ button:disabled{opacity:.45}
 button:focus-visible,input:focus-visible{outline:3px solid rgba(10,132,255,.7);outline-offset:2px}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .row button{flex:1 1 140px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .card,.stu{background:var(--glass);border:1px solid var(--line);border-radius:22px;box-shadow:0 8px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.14);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%)}
 .card{padding:16px;margin-bottom:14px}
 .grid .card{margin-bottom:0}
 .card h2{margin:0 0 10px;font-size:1.05rem}
 .card h3{margin:0 0 10px;font-size:1rem}
-.nums{display:flex;justify-content:space-between;text-align:center;margin-bottom:12px}
-.nums b{display:block;font-size:1.5rem;font-weight:700}
-.nums span{font-size:.76rem;color:var(--mut)}
-.track{height:8px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden}
-.fill{height:100%;background:linear-gradient(90deg,#30d158,#64e68a);border-radius:99px;transition:width .6s ease}
+.nums{display:flex;justify-content:space-between;text-align:center;margin-bottom:12px;gap:4px}
+.nums b{display:block;font-size:1.4rem;font-weight:700}
+.nums span{font-size:.72rem;color:var(--mut)}
+.track{height:8px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden;display:flex}
+.track i{display:block;height:100%;transition:width .6s ease}
 .pct{font-size:.8rem;color:var(--mut);margin:6px 0 12px}
 .card .go{width:100%}
 .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.76rem;white-space:nowrap;font-weight:600}
 .pill.done{background:rgba(48,209,88,.18);color:#6ee68c}
+.pill.req{background:rgba(255,159,10,.18);color:#ffc15a}
 .pill.pend{background:rgba(255,69,58,.18);color:#ff7a72}
 .stu{padding:13px 15px;margin-bottom:10px}
 .stu .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
@@ -58,20 +59,23 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(10,132,255,.7);o
 input.f{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font:inherit;font-size:16px;margin-bottom:12px;background:rgba(255,255,255,.08);color:var(--txt)}
 input.f::placeholder{color:var(--mut)}
 .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-table{border-collapse:collapse;width:100%;min-width:480px;font-size:.88rem}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.88rem}
 th,td{padding:10px 8px;text-align:right;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap}
 th:first-child,td:first-child{text-align:left}
 th{color:var(--mut);font-weight:600}
 tfoot td{font-weight:700;border-bottom:0}
-.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
-.sum b{display:block;font-size:1.35rem}
-.sum span{font-size:.74rem;color:var(--mut)}
+.sum{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center}
+.sum b{display:block;font-size:1.25rem}
+.sum span{font-size:.7rem;color:var(--mut)}
 .gr{display:grid;grid-template-columns:78px 1fr 62px;gap:8px;align-items:center;margin-bottom:9px;font-size:.82rem}
 .gr .bar{display:flex;height:16px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.1)}
 .gr .bar i{display:block;height:100%;transition:width .6s ease}
 .gr .l{font-weight:600}.gr .v{text-align:right;color:var(--mut)}
-.legend{display:flex;gap:14px;font-size:.8rem;color:var(--mut);margin-bottom:10px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--mut);margin-bottom:10px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chips button{flex:0 0 auto;min-height:38px;padding:6px 14px;background:var(--glass2);border:1px solid var(--line);color:var(--txt);font-size:.85rem}
+.chips button.on{background:var(--blue);border-color:var(--blue)}
 .formbox{border-radius:22px;overflow:hidden;border:1px solid var(--line);box-shadow:0 8px 32px rgba(0,0,0,.35);padding:6px;background:var(--glass2);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)}
 iframe{display:block;width:100%;height:78vh;min-height:560px;border:0;border-radius:17px;background:#fff}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
@@ -109,7 +113,10 @@ iframe{display:block;width:100%;height:78vh;min-height:560px;border:0;border-rad
 
   <!-- REPORTS -->
   <section id="p-reports" hidden>
-    <div class="row"><button class="sec" id="btnRefreshR">Refresh now</button></div>
+    <div class="row">
+      <button class="sec" id="btnRefreshR">Refresh now</button>
+      <button id="btnPng">⬇ Download report PNG</button>
+    </div>
     <div id="repBody"></div>
   </section>
 
@@ -133,23 +140,38 @@ const COL = {
   mother:  "Mother Name",
   status:  "APAAR Generated Status"
 };
+// Values typed in the status column (case doesn't matter):
+//   GENERATED     → APAAR ID created
+//   REQUESTED     → request has been sent from school
+//   anything else (e.g. "Not applied", or blank) → NOT APPLIED
 const DONE_VALUES = ["yes","done","generated","y","✓","completed"];
+const REQ_VALUES  = ["requested","request sent","request","requested by school","sent","applied"];
 const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSetjtgHi4VmmLJT5YV90DJr_s9LUE_-3eJQrkVXkvRuRBNZRw/viewform";
 const ADMIN_PASSWORD = "admin123";   // CHANGE THIS
 // ═══════════════════════════════════════════════════════════════════
 
 const REFRESH_MS = 60000;
-let students = [], view = null, filter = "", paused = false, timer = null;
+let students = [], view = null, filter = "", stFilter = "all", paused = false, timer = null;
 let lastError = null, updated = null, busy = false, isAdmin = false, tab = "teacher", sub = "view", formLoaded = false;
 try { isAdmin = sessionStorage.getItem("adm") === "1"; } catch (e) {}
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm = s => String(s ?? "").trim().toLowerCase();
-const isDone = v => DONE_VALUES.includes(norm(v));
 const cmp = (a, b) => String(a).localeCompare(String(b), undefined, {numeric: true, sensitivity: "base"});
+const pc = (d, t) => t ? Math.round(d / t * 100) : 0;
+// status: "done" | "req" | "pend"
+function statusOf(v) {
+  const n = norm(v);
+  if (DONE_VALUES.includes(n)) return "done";
+  if (REQ_VALUES.includes(n) || (n.includes("request") && !n.includes("not"))) return "req";
+  return "pend";
+}
+const ST = {done: "✓ Generated", req: "📨 Requested", pend: "✗ Not applied"};
+const STPLAIN = {done: "Generated", req: "Requested", pend: "Not applied"};
+const COLORS = {done: "#30d158", req: "#ff9f0a", pend: "#ff453a"};
 
-// ── CSV parser: quotes, "" escapes, commas and newlines inside cells ──
+// ── CSV parser ──
 function parseCSV(text) {
   const rows = []; let row = [], cell = "", q = false;
   for (let i = 0; i < text.length; i++) {
@@ -177,13 +199,14 @@ function toStudents(rows) {
   const get = (r, k) => (r[idx[k]] ?? "").trim();
   return rows.slice(h + 1).filter(r => get(r, "class")).map(r => ({
     cls: get(r, "class"), sec: get(r, "section"), name: get(r, "name"), pen: get(r, "pen"),
-    gender: get(r, "gender"), father: get(r, "father"), mother: get(r, "mother"), done: isDone(get(r, "status"))
+    gender: get(r, "gender"), father: get(r, "father"), mother: get(r, "mother"), st: statusOf(get(r, "status"))
   }));
 }
 
 async function load() {
   if (busy) return; busy = true;
-  document.querySelectorAll("#btnRefreshT,#btnRefreshR,#btnRefreshA").forEach(b => b.disabled = true);
+  const btns = () => document.querySelectorAll("#btnRefreshT,#btnRefreshR,#btnRefreshA");
+  btns().forEach(b => b.disabled = true);
   try {
     const res = await fetch(CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "t=" + Date.now(), {cache: "no-store"});
     if (!res.ok) throw new Error("Could not load the sheet (HTTP " + res.status + ")");
@@ -193,17 +216,22 @@ async function load() {
     lastError = e && e.missing ? {missing: e.missing} : {text: (e && e.message) || String(e)};
   }
   busy = false;
-  document.querySelectorAll("#btnRefreshT,#btnRefreshR,#btnRefreshA").forEach(b => b.disabled = false);
+  btns().forEach(b => b.disabled = false);
   render();
 }
 
 // Group by class + section
 function groups() {
   const g = {};
-  students.forEach(s => { const k = s.cls + "\u0000" + s.sec; (g[k] = g[k] || {cls: s.cls, sec: s.sec, t: 0, d: 0}).t++; if (s.done) g[k].d++; });
+  students.forEach(s => {
+    const k = s.cls + "\u0000" + s.sec;
+    const o = g[k] = g[k] || {cls: s.cls, sec: s.sec, t: 0, done: 0, req: 0, pend: 0};
+    o.t++; o[s.st]++;
+  });
   return Object.values(g).sort((a, b) => cmp(a.cls, b.cls) || cmp(a.sec, b.sec));
 }
 const label = c => c.cls + (c.sec ? "-" + c.sec : "");
+const totals = g => g.reduce((a, c) => ({t: a.t + c.t, done: a.done + c.done, req: a.req + c.req, pend: a.pend + c.pend}), {t: 0, done: 0, req: 0, pend: 0});
 
 function errorHTML() {
   if (lastError) return lastError.missing
@@ -229,50 +257,62 @@ function renderView() {
 
 function dashHTML() {
   return `<div class="grid">` + groups().map(c => {
-    const p = c.t - c.d, pct = c.t ? Math.round(c.d / c.t * 100) : 0;
+    const w = k => pc(c[k], c.t);
     return `<div class="card"><h2>Class ${esc(c.cls)}${c.sec ? " – " + esc(c.sec) : ""}</h2>
-      <div class="nums"><div><b>${c.t}</b><span>Total</span></div><div><b style="color:#30d158">${c.d}</b><span>Done</span></div><div><b style="color:#ff453a">${p}</b><span>Pending</span></div></div>
-      <div class="track"><div class="fill" style="width:${pct}%"></div></div>
-      <div class="pct">${pct}% complete</div>
+      <div class="nums"><div><b>${c.t}</b><span>Total</span></div>
+        <div><b style="color:#30d158">${c.done}</b><span>Generated</span></div>
+        <div><b style="color:#ff9f0a">${c.req}</b><span>Requested</span></div>
+        <div><b style="color:#ff453a">${c.pend}</b><span>Not applied</span></div></div>
+      <div class="track"><i style="width:${w("done")}%;background:#30d158"></i><i style="width:${w("req")}%;background:#ff9f0a"></i></div>
+      <div class="pct">${w("done")}% generated</div>
       <button class="go" data-cls="${esc(c.cls)}" data-sec="${esc(c.sec)}">View students</button></div>`;
   }).join("") + `</div>`;
 }
 
 function listHTML() {
-  const rows = students.filter(s => s.cls === view.cls && s.sec === view.sec).sort((a, b) => cmp(a.name, b.name));
+  const all = students.filter(s => s.cls === view.cls && s.sec === view.sec).sort((a, b) => cmp(a.name, b.name));
+  const n = k => all.filter(s => s.st === k).length;
   const f = norm(filter);
-  const shown = f ? rows.filter(s => norm(s.name).includes(f) || norm(s.pen).includes(f)) : rows;
+  const shown = all.filter(s => (stFilter === "all" || s.st === stFilter) && (!f || norm(s.name).includes(f) || norm(s.pen).includes(f)));
+  const chip = (k, t, c) => `<button data-sf="${k}" class="${stFilter === k ? "on" : ""}">${t} (${c})</button>`;
   return `<h2 style="margin:4px 0 10px;font-size:1.1rem">Class ${esc(view.cls)}${view.sec ? " – " + esc(view.sec) : ""}</h2>
-    <input class="f" id="q" placeholder="Search by name or PEN" value="${esc(filter)}" aria-label="Search students">` +
+    <input class="f" id="q" placeholder="Search by name or PEN" value="${esc(filter)}" aria-label="Search students">
+    <div class="chips">${chip("all", "All", all.length)}${chip("done", "Generated", n("done"))}${chip("req", "Requested", n("req"))}${chip("pend", "Not applied", n("pend"))}</div>` +
     (shown.length ? shown.map(s => `<div class="stu"><div class="top"><div class="nm">${esc(s.name)}</div>
-      <span class="pill ${s.done ? "done" : "pend"}">${s.done ? "✓ Generated" : "⏳ Pending"}</span></div>
+      <span class="pill ${s.st}">${ST[s.st]}</span></div>
       <div class="meta">PEN: ${esc(s.pen)} · ${esc(s.gender)}<br>Father: ${esc(s.father)}<br>Mother: ${esc(s.mother)}</div></div>`).join("")
       : `<div class="warn o">No students match.</div>`);
 }
 
+function sumHTML(T) {
+  return `<div class="sum">
+    <div><b>${T.t}</b><span>Total</span></div>
+    <div><b style="color:#30d158">${T.done}</b><span>Generated</span></div>
+    <div><b style="color:#ff9f0a">${T.req}</b><span>Requested</span></div>
+    <div><b style="color:#ff453a">${T.pend}</b><span>Not applied</span></div>
+    <div><b>${pc(T.done, T.t)}%</b><span>Generated</span></div></div>`;
+}
+
 function renderReports() {
-  const g = groups(), T = g.reduce((a, c) => a + c.t, 0), D = g.reduce((a, c) => a + c.d, 0), P = T - D;
-  const pc = (d, t) => t ? Math.round(d / t * 100) : 0;
+  const g = groups(), T = totals(g);
   $("repBody").innerHTML = errorHTML() + `
-    <div class="card"><div class="sum">
-      <div><b>${T}</b><span>Total</span></div><div><b style="color:#30d158">${D}</b><span>Done</span></div>
-      <div><b style="color:#ff453a">${P}</b><span>Pending</span></div><div><b>${pc(D, T)}%</b><span>Complete</span></div></div></div>
+    <div class="card">${sumHTML(T)}</div>
     <div class="card"><h3>Graph: class-wise progress</h3>
-      <div class="legend"><span><i style="background:#30d158"></i>Done</span><span><i style="background:#ff453a"></i>Pending</span></div>
+      <div class="legend"><span><i style="background:#30d158"></i>Generated</span><span><i style="background:#ff9f0a"></i>Requested</span><span><i style="background:#ff453a"></i>Not applied</span></div>
       ${g.map(c => `<div class="gr"><div class="l">${esc(label(c))}</div>
-        <div class="bar" role="img" aria-label="${esc(label(c))}: ${c.d} done, ${c.t - c.d} pending">
-          <i style="width:${pc(c.d, c.t)}%;background:#30d158"></i><i style="width:${100 - pc(c.d, c.t)}%;background:#ff453a"></i></div>
-        <div class="v">${c.d}/${c.t}</div></div>`).join("")}</div>
+        <div class="bar" role="img" aria-label="${esc(label(c))}: ${c.done} generated, ${c.req} requested, ${c.pend} not applied">
+          <i style="width:${pc(c.done, c.t)}%;background:#30d158"></i><i style="width:${pc(c.req, c.t)}%;background:#ff9f0a"></i><i style="width:${pc(c.pend, c.t)}%;background:#ff453a"></i></div>
+        <div class="v">${c.done}/${c.t}</div></div>`).join("")}</div>
     <div class="card"><h3>Table: all classes</h3><div class="scroll"><table>
-      <thead><tr><th>Class</th><th>Total</th><th>Done</th><th>Pending</th><th>%</th></tr></thead>
-      <tbody>${g.map(c => `<tr><td>${esc(label(c))}</td><td>${c.t}</td><td>${c.d}</td><td>${c.t - c.d}</td><td>${pc(c.d, c.t)}%</td></tr>`).join("")}</tbody>
-      <tfoot><tr><td>All</td><td>${T}</td><td>${D}</td><td>${P}</td><td>${pc(D, T)}%</td></tr></tfoot></table></div></div>`;
+      <thead><tr><th>Class</th><th>Total</th><th>Generated</th><th>Requested</th><th>Not applied</th><th>%</th></tr></thead>
+      <tbody>${g.map(c => `<tr><td>${esc(label(c))}</td><td>${c.t}</td><td>${c.done}</td><td>${c.req}</td><td>${c.pend}</td><td>${pc(c.done, c.t)}%</td></tr>`).join("")}</tbody>
+      <tfoot><tr><td>All</td><td>${T.t}</td><td>${T.done}</td><td>${T.req}</td><td>${T.pend}</td><td>${pc(T.done, T.t)}%</td></tr></tfoot></table></div></div>`;
 }
 
 function renderAdmin() {
   const body = $("adminBody");
   if (!isAdmin) {
-    if (body.querySelector("#pw")) return;   // keep what the user is typing
+    if (body.querySelector("#pw")) return;
     body.innerHTML = `<div class="card"><h3>Admin login</h3>
       <input class="f" id="pw" type="password" placeholder="Password" autocomplete="current-password" aria-label="Admin password">
       <button id="btnLogin" style="width:100%">Log in</button><div id="pwMsg" class="warn r" hidden style="margin:10px 0 0">Wrong password.</div></div>`;
@@ -299,6 +339,75 @@ function setForm() {
     <div class="formbox"><iframe src="${esc(src)}" title="APAAR document form" loading="lazy">Loading…</iframe></div>`;
 }
 
+// ── PNG report (drawn on a canvas) ──
+function downloadPNG() {
+  if (!students.length) { alert("No data loaded yet."); return; }
+  const g = groups(), T = totals(g);
+  const W = 1080, S = 2, pad = 48;
+  const H = 150 + 150 + 30 + 40 + 26 + g.length * 44 + 30 + 18 + 34 + g.length * 38 + 100;
+  const cv = document.createElement("canvas"); cv.width = W * S; cv.height = H * S;
+  const x = cv.getContext("2d"); x.scale(S, S);
+  const F = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+  const MUT = "#9a9aa8", GR = COLORS.done, OR = COLORS.req, RD = COLORS.pend;
+  const rr = (X, Y, w, h, r, fill) => { x.beginPath(); (x.roundRect ? x.roundRect(X, Y, w, h, r) : x.rect(X, Y, w, h)); x.fillStyle = fill; x.fill(); };
+  const tx = (t, X, Y, size, color, weight, align) => { x.font = (weight || 400) + " " + size + "px " + F; x.fillStyle = color; x.textAlign = align || "left"; x.fillText(String(t), X, Y); };
+
+  x.fillStyle = "#0b0d14"; x.fillRect(0, 0, W, H);
+  let gr = x.createRadialGradient(0, 0, 0, 0, 0, 700); gr.addColorStop(0, "rgba(10,132,255,.35)"); gr.addColorStop(1, "rgba(10,132,255,0)"); x.fillStyle = gr; x.fillRect(0, 0, W, H);
+  gr = x.createRadialGradient(W, 200, 0, W, 200, 600); gr.addColorStop(0, "rgba(191,90,242,.28)"); gr.addColorStop(1, "rgba(191,90,242,0)"); x.fillStyle = gr; x.fillRect(0, 0, W, H);
+
+  tx("APAAR ID Report", pad, 80, 44, "#fff", 700);
+  tx("Generated " + new Date().toLocaleString([], {hour12: false}), pad, 114, 20, MUT);
+
+  let y = 150;
+  rr(pad, y, W - pad * 2, 130, 24, "rgba(255,255,255,.08)");
+  tx("ALL STUDENTS", pad + 24, y + 34, 20, MUT, 600);
+  const items = [[T.t, "Total", "#fff"], [T.done, "Generated", GR], [T.req, "Requested", OR], [T.pend, "Not applied", RD], [pc(T.done, T.t) + "%", "% Generated", "#fff"]];
+  const cw = (W - pad * 2) / items.length;
+  items.forEach((it, i) => { const cx = pad + cw * i + cw / 2; tx(it[0], cx, y + 86, 40, it[2], 700, "center"); tx(it[1], cx, y + 112, 17, MUT, 400, "center"); });
+  y += 150 + 30;
+
+  tx("Class-wise progress", pad, y + 10, 26, "#fff", 700); y += 26;
+  // legend
+  [["Generated", GR], ["Requested", OR], ["Not applied", RD]].forEach((l, i) => {
+    const lx = W - pad - 440 + i * 150; rr(lx, y - 12, 14, 14, 4, l[1]); tx(l[0], lx + 22, y, 17, MUT);
+  });
+  y += 20;
+  g.forEach(c => {
+    const bx = pad + 110, bw = W - pad * 2 - 110 - 110;
+    tx(label(c), pad, y + 20, 20, "#fff", 600);
+    rr(bx, y + 4, bw, 22, 11, "rgba(255,255,255,.12)");
+    x.save(); x.beginPath(); (x.roundRect ? x.roundRect(bx, y + 4, bw, 22, 11) : x.rect(bx, y + 4, bw, 22)); x.clip();
+    let off = bx;
+    [["done", GR], ["req", OR], ["pend", RD]].forEach(([k, col]) => { const w = bw * c[k] / c.t; x.fillStyle = col; x.fillRect(off, y + 4, w, 22); off += w; });
+    x.restore();
+    tx(c.done + "/" + c.t + " · " + pc(c.done, c.t) + "%", W - pad, y + 21, 18, MUT, 400, "right");
+    y += 44;
+  });
+
+  y += 30;
+  tx("All classes", pad, y, 26, "#fff", 700); y += 18;
+  const cols = [pad + 12, 440, 580, 720, 880, W - pad - 8];
+  rr(pad, y, W - pad * 2, 34, 8, "rgba(255,255,255,.1)");
+  ["Class", "Total", "Generated", "Requested", "Not applied", "%"].forEach((h, i) => tx(h, cols[i], y + 23, 18, MUT, 600, i === 0 ? "left" : "right"));
+  y += 34;
+  const row = (vals, bold) => {
+    vals.forEach((v, i) => tx(v, cols[i], y + 25, 19, i === 2 ? GR : i === 3 ? OR : i === 4 ? RD : "#fff", bold ? 700 : 500, i === 0 ? "left" : "right"));
+    x.fillStyle = "rgba(255,255,255,.08)"; x.fillRect(pad, y + 37, W - pad * 2, 1); y += 38;
+  };
+  g.forEach(c => row([label(c), c.t, c.done, c.req, c.pend, pc(c.done, c.t) + "%"]));
+  y -= 0;
+  tx("APAAR ID dashboard", W / 2, H - 28, 16, MUT, 400, "center");
+
+  cv.toBlob(b => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = "APAAR-report-" + new Date().toISOString().slice(0, 10) + ".png";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }, "image/png");
+}
+
 // ── Navigation & events ──
 function showTab() {
   ["teacher", "reports", "admin"].forEach(t => $("p-" + t).hidden = tab !== t);
@@ -311,8 +420,10 @@ $("mainTabs").onclick = e => { const b = e.target.closest("button"); if (b) { ta
 $("subTabs").onclick = e => { const b = e.target.closest("button"); if (b) { sub = b.dataset.sub; showTab(); } };
 
 $("viewBody").addEventListener("click", e => {
-  const b = e.target.closest("button.go"); if (!b) return;
-  view = {cls: b.dataset.cls, sec: b.dataset.sec}; filter = ""; renderView(); scrollTo(0, 0);
+  const go = e.target.closest("button.go");
+  if (go) { view = {cls: go.dataset.cls, sec: go.dataset.sec}; filter = ""; stFilter = "all"; renderView(); scrollTo(0, 0); return; }
+  const sf = e.target.closest("button[data-sf]");
+  if (sf) { stFilter = sf.dataset.sf; renderView(); }
 });
 $("viewBody").addEventListener("input", e => {
   if (e.target.id !== "q") return;
@@ -321,6 +432,7 @@ $("viewBody").addEventListener("input", e => {
 });
 $("btnBack").onclick = () => { view = null; renderView(); };
 $("btnRefreshT").onclick = load; $("btnRefreshR").onclick = load;
+$("btnPng").onclick = downloadPNG;
 
 $("adminBody").addEventListener("click", e => {
   const id = e.target.id;
@@ -335,7 +447,6 @@ function tryLogin() {
   else { $("pwMsg").hidden = false; $("pw").value = ""; }
 }
 
-// Auto-sync: always on for teachers; only an admin on their own device can pause it
 function startTimer() { clearInterval(timer); if (!paused) timer = setInterval(load, REFRESH_MS); }
 startTimer(); showTab(); load();
 </script>
