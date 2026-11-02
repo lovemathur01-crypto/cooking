@@ -417,6 +417,19 @@ function downloadPNG() {
   const GR = "#1f9d46", OR = "#e08a00", RD = "#d93025";
   const tx = (t, X, Y, size, color, weight, align) => { x.font = (weight || 400) + " " + size + "px " + F; x.fillStyle = color; x.textAlign = align || "left"; x.fillText(String(t), X, Y); };
   const box = (X, Y, w, h, fill) => { x.fillStyle = fill; x.fillRect(X, Y, w, h); };
+  // draw text shrunk (down to 6px) so it never runs into the next column
+  const fit = (t, X, Y, size, color, weight, maxW) => {
+    let s = size; x.font = (weight || 400) + " " + s + "px " + F;
+    while (s > 6 && x.measureText(String(t)).width > maxW) { s -= 0.5; x.font = (weight || 400) + " " + s + "px " + F; }
+    tx(t, X, Y, s, color, weight);
+  };
+  // short class name for the report: "NUR", "LKG A", "XII B"… (falls back to sheet name)
+  const shortLabel = c => {
+    const k = classKey(c.cls, c.sec);
+    if (k === "playgroup") return "Play Group";
+    const m = k && k.match(/^(nur|lkg|ukg|[ivx]+)([a-d]?)$/);
+    return m ? m[1].toUpperCase() + (m[2] ? " " + m[2].toUpperCase() : "") : label(c);
+  };
 
   box(0, 0, W, H, "#ffffff");
 
@@ -469,14 +482,14 @@ function downloadPNG() {
     const coName = inf.co ? inf.co.name : null;
     if (i > 0) box(pad, y, W - pad * 2, coName !== prevCo ? 1.2 : 0.5, coName !== prevCo ? "#9a9aa6" : LN);
     prevCo = coName;
-    tx(label(c), cx.cls, mid + 4, 11, INK, 700);
-    const person = (p, X) => {
+    fit(shortLabel(c), cx.cls, mid + 4, 11, INK, 700, cx.tea - cx.cls - 8);
+    const person = (p, X, maxW) => {
       if (!p) { tx("—", X, mid + 3.5, 9.5, MUT); return; }
-      if (two) { tx(p.name, X, mid - 1, 9.5, INK, 600); tx(p.phone, X, mid + 9, 8, MUT); }
-      else tx(p.name + " " + p.phone, X, mid + 3, 8, INK);
+      if (two) { fit(p.name, X, mid - 1, 9.5, INK, 600, maxW); fit(p.phone, X, mid + 9, 8, MUT, 400, maxW); }
+      else fit(p.name + " " + p.phone, X, mid + 3, 8, INK, 400, maxW);
     };
-    person(inf.t, cx.tea);
-    person(inf.co, cx.coo);
+    person(inf.t, cx.tea, cx.coo - cx.tea - 8);
+    person(inf.co, cx.coo, cx.tot - 30 - cx.coo - 8);
     tx(c.t, cx.tot, mid + 4, 10.5, INK, 600, "right");
     tx(c.done, cx.gen, mid + 4, 10.5, GR, 600, "right");
     tx(c.req, cx.req, mid + 4, 10.5, OR, 600, "right");
