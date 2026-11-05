@@ -223,6 +223,9 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
 .fm table.dt td.k { width: 22%; font-weight: 600; background: var(--surface-2); }
 .fm-class { display: flex; flex-direction: column; gap: 10px; break-inside: avoid; margin-top: 6px; }
 .fm-cap { font-weight: 600; font-size: 0.9rem; margin: 4px 0 -4px; }
+.pdf-dark, .pdf-dark * { color: #0A0F1E !important; }
+.pdf-dark { background: #fff !important; }
+.pdf-dark .fm-ok, .pdf-dark .fm-short, .pdf-dark th, .pdf-dark .fm-cap, .pdf-dark h3, .pdf-dark h4 { font-weight: 700; }
 .fm-ok { color: var(--ok); font-weight: 600; }
 .fm-short { color: var(--bad); font-weight: 600; }
 
@@ -257,10 +260,12 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
   .rc, .rp-section { box-shadow: none; }
   .rp-section { break-inside: avoid; }
   .fm { border: 0; padding: 0; }
+  .fm, .fm * { color: #0A0F1E !important; }
 }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
 </head>
 <body>
@@ -702,7 +707,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     $("pdf").hidden = true;
     $("pdf-note").textContent = "If the download does not start in this preview, open the HTML file in Chrome or Edge and generate the PDF there.";
   } else {
-    $("pdf-note").textContent = "Download PDF saves the file directly. Print opens the print window, where you can choose Save as PDF.";
+    $("pdf-note").textContent = "Download PDF saves a single A4 page with dark text. Print opens the print window, where long reports may run over more than one page.";
   }
 
   function doPrint() {
@@ -719,31 +724,37 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     var el = document.querySelector("#report-body .fm");
     var btn = $("dl");
     if (!el) return;
-    if (typeof window.html2pdf === "undefined") {
+    if (typeof window.html2canvas === "undefined" || !window.jspdf) {
       $("pdf-note").textContent = "The PDF tool could not load (check your internet connection). Use Print and choose Save as PDF instead.";
       $("pdf").hidden = false;
       return;
     }
-    var root = document.documentElement, prevTheme = root.getAttribute("data-theme");
-    root.setAttribute("data-theme", "light");   // always capture in light colours
     btn.disabled = true; btn.textContent = "Preparing PDF...";
     var name = "Result Report - " + $("teacher").value.trim() + " - " + $("exam").value + ".pdf";
-    function done() {
-      if (prevTheme === null) root.removeAttribute("data-theme"); else root.setAttribute("data-theme", prevTheme);
-      btn.disabled = false; btn.textContent = "Download PDF";
-    }
-    window.html2pdf().set({
-      margin: [10, 10, 10, 10],
-      filename: name,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"], avoid: [".fm-class", "tr", "h3", "h4", ".rp-sign"] }
-    }).from(el).save().then(done, function () {
+    function done() { btn.disabled = false; btn.textContent = "Download PDF"; }
+    function fail() {
       done();
       $("pdf-note").textContent = "The download was blocked. Use Print and choose Save as PDF instead.";
       $("pdf").hidden = false;
-    });
+    }
+    window.html2canvas(el, {
+      scale: 2.5, useCORS: true, backgroundColor: "#ffffff", windowWidth: 1000,
+      onclone: function (doc) {
+        // Capture in light colours with dark text, at a fixed width
+        doc.documentElement.setAttribute("data-theme", "light");
+        var c = doc.querySelector("#report-body .fm");
+        if (c) { c.classList.add("pdf-dark"); c.style.width = "780px"; c.style.maxWidth = "780px"; }
+      }
+    }).then(function (canvas) {
+      var pdf = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      var pw = 210, ph = 297, m = 8, maxW = pw - 2 * m, maxH = ph - 2 * m;
+      var ratio = canvas.width / canvas.height;
+      var w = maxW, h = w / ratio;
+      if (h > maxH) { h = maxH; w = h * ratio; }   // shrink so everything fits on ONE A4 page
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", (pw - w) / 2, m, w, h);
+      pdf.save(name);
+      done();
+    }).catch(fail);
   });
 
   $("f").addEventListener("submit", function (e) { e.preventDefault(); if (check()) showReport(); });
