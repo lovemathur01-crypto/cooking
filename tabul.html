@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class Result Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a form (teacher, subjects + classes, result blocks) that turns into a printable report: cover band, result-vs-target chart, one scorecard per class, signature lines. */
+:root {
+  --bg: #F2F5F9;
+  --surface: #FFFFFF;
+  --surface-2: #E9EEF5;
+  --ink: #13203A;
+  --muted: #566480;
+  --line: #D3DBE8;
+  --accent: #1D4ED8;
+  --accent-ink: #FFFFFF;
+  --mark: #F2A33A;
+  --cover-bg: #13203A;
+  --cover-fg: #F2F5F9;
+  --ok: #13795B;
+  --ok-soft: #DDF3EA;
+  --warn: #8F5400;
+  --warn-soft: #FBEBCF;
+  --bad: #B42318;
+  --bad-soft: #FCE4E1;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1626; --surface: #16213A; --surface-2: #1D2A47; --ink: #E8EDF7; --muted: #9AA8C4;
+    --line: #2B3A5C; --accent: #7BA2FF; --accent-ink: #0B1224; --cover-bg: #0A1120; --cover-fg: #F2F5F9;
+    --ok: #5FD3A6; --ok-soft: #14372D; --warn: #F2B861; --warn-soft: #3B2D12; --bad: #FF8A7D; --bad-soft: #40201C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1626; --surface: #16213A; --surface-2: #1D2A47; --ink: #E8EDF7; --muted: #9AA8C4;
+  --line: #2B3A5C; --accent: #7BA2FF; --accent-ink: #0B1224; --cover-bg: #0A1120; --cover-fg: #F2F5F9;
+  --ok: #5FD3A6; --ok-soft: #14372D; --warn: #F2B861; --warn-soft: #3B2D12; --bad: #FF8A7D; --bad-soft: #40201C;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(1.7rem, 5vw, 2.3rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.15rem; font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.lede { color: var(--muted); max-width: 60ch; margin-top: 8px; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.hint { color: var(--muted); font-size: 0.875rem; }
+
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+label, .legend { font-weight: 600; font-size: 0.9rem; }
+.req { color: var(--bad); margin-left: 2px; }
+input[type="text"], input[type="number"], select, textarea {
+  width: 100%; font: inherit; color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; min-height: 44px;
+}
+textarea { resize: vertical; min-height: 84px; }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.75; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, .chip input:focus-visible + span {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+.suffix { position: relative; }
+.suffix input { padding-right: 34px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.suffix::after { content: "%"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-family: var(--font-mono); pointer-events: none; }
+.invalid { border-color: var(--bad) !important; background: var(--bad-soft) !important; }
+.err { color: var(--bad); font-size: 0.82rem; }
+.err:empty { display: none; }
+
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.chip span {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 52px; min-height: 44px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--surface);
+  font-family: var(--font-mono); font-size: 0.95rem; font-variant-numeric: tabular-nums; user-select: none;
+}
+.chip input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 500; }
+.chip:hover span { border-color: var(--accent); }
+.count { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.assign-list { display: flex; flex-direction: column; gap: 14px; }
+.assign { border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 14px; background: var(--bg); }
+.assign select { background: var(--surface); }
+.assign-head { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.assign-head .field { flex: 1 1 220px; }
+.btn-add { border-style: dashed; align-self: flex-start; }
+
+.empty { border: 1px dashed var(--line); border-radius: 10px; padding: 28px 20px; text-align: center; color: var(--muted); }
+.empty strong { color: var(--ink); display: block; margin-bottom: 4px; font-family: var(--font-display); font-size: 1.05rem; }
+
+#cards { display: flex; flex-direction: column; gap: 28px; }
+.subj-group { display: flex; flex-direction: column; gap: 14px; }
+.subj-title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 6px; font-size: 1.25rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; animation: rise 0.22s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 20px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.card-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.card-title .cls { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; }
+.card-title .sub { color: var(--muted); font-size: 0.95rem; }
+.pill { font-family: var(--font-mono); font-size: 0.78rem; padding: 4px 10px; border-radius: 999px; background: var(--warn-soft); color: var(--warn); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill.done { background: var(--ok-soft); color: var(--ok); }
+.card-body { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 20px; }
+.group { display: flex; flex-direction: column; gap: 12px; }
+.group-label { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+
+.actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+button { font: inherit; cursor: pointer; border-radius: 6px; min-height: 46px; padding: 0 22px; font-weight: 600; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); }
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-quiet { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn-quiet:hover { border-color: var(--accent); }
+.form-msg { color: var(--bad); font-size: 0.92rem; }
+.privacy { color: var(--muted); font-size: 0.85rem; }
+
+/* ---------- Report ---------- */
+#report { display: flex; flex-direction: column; gap: 22px; }
+.rp-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.rp-note { color: var(--muted); font-size: 0.88rem; flex: 1 1 260px; }
+.rp-cover { background: var(--cover-bg); color: var(--cover-fg); border-radius: 10px; padding: 26px 24px 22px; border-top: 6px solid var(--mark); }
+.rp-eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mark); }
+.rp-title { font-family: var(--font-display); font-size: clamp(2.2rem, 8vw, 3.4rem); font-weight: 700; line-height: 1; letter-spacing: -0.02em; margin: 10px 0 8px; }
+.rp-sub { opacity: 0.85; }
+.rp-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px 20px; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.22); }
+.rp-meta span { display: block; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
+.rp-meta b { font-weight: 600; overflow-wrap: anywhere; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; }
+.kpi b { display: block; font-family: var(--font-mono); font-size: 1.6rem; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.kpi span { color: var(--muted); font-size: 0.85rem; overflow-wrap: anywhere; }
+.rp-section { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; }
+.rp-h { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; }
+.legend-row { display: flex; gap: 16px; flex-wrap: wrap; color: var(--muted); font-size: 0.82rem; margin-bottom: 4px; }
+.legend-row i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--bc); }
+.legend-row .tick-key i { width: 3px; height: 14px; background: var(--ink); border-radius: 1px; vertical-align: -3px; }
+.good { --bc: var(--ok); } .mid { --bc: var(--warn); } .low { --bc: var(--bad); }
+.bar-subj { font-family: var(--font-display); font-weight: 600; margin-top: 12px; }
+.bar-row, .bar-axis { display: grid; grid-template-columns: 78px minmax(0, 1fr) 56px; gap: 10px; align-items: center; }
+.bar-label { font-size: 0.9rem; overflow-wrap: anywhere; }
+.bar-track { position: relative; height: 18px; border-radius: 3px; background-color: var(--surface-2); background-image: linear-gradient(to right, var(--line) 1px, transparent 1px); background-size: 25% 100%; }
+.bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px 0 0 3px; background: var(--bc); }
+.bar-target { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1px; background: var(--ink); border-radius: 1px; }
+.bar-val { text-align: right; font-family: var(--font-mono); font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+.bar-axis { margin-top: 6px; }
+.bar-axis .ticks { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); grid-column: 2; }
+.rp-subj { display: flex; flex-direction: column; gap: 12px; }
+.rp-subj-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 6px; break-after: avoid; }
+.rp-subj-head .rp-h { font-size: 1.35rem; }
+.rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.rc { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; min-width: 0; break-inside: avoid; }
+.rc-top { display: flex; gap: 14px; align-items: center; }
+.ring { --p: 0; width: 78px; height: 78px; flex: none; border-radius: 50%; position: relative; display: grid; place-items: center; background: conic-gradient(var(--bc) calc(var(--p) * 1%), var(--surface-2) 0); }
+.ring::before { content: ""; position: absolute; inset: 8px; border-radius: 50%; background: var(--surface); }
+.ring span { position: relative; font-family: var(--font-mono); font-weight: 500; font-size: 0.98rem; font-variant-numeric: tabular-nums; }
+.rc-class { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; line-height: 1.1; }
+.rc-subject { color: var(--muted); font-size: 0.92rem; }
+.band { display: inline-block; margin-top: 6px; font-family: var(--font-mono); font-size: 0.72rem; padding: 2px 10px; border-radius: 999px; }
+.band.good { background: var(--ok-soft); color: var(--ok); }
+.band.mid { background: var(--warn-soft); color: var(--warn); }
+.band.low { background: var(--bad-soft); color: var(--bad); }
+.rc-rows { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.rc-row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; font-size: 0.93rem; }
+.rc-row dt { color: var(--muted); font-size: 0.82rem; padding-top: 1px; }
+.rc-row dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; min-width: 0; }
+.rc-target { border-top: 1px dashed var(--line); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; }
+.rc-target .gap { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); }
+.rp-sign { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; margin-top: 26px; break-inside: avoid; }
+.sig { border-top: 1px solid var(--ink); padding-top: 6px; font-size: 0.85rem; color: var(--muted); }
+.rp-foot { color: var(--muted); font-size: 0.8rem; }
+
+@media (max-width: 560px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .panel { padding: 16px; }
+  .card-head, .card-body { padding-left: 16px; padding-right: 16px; }
+  .actions button { flex: 1 1 100%; }
+  .assign-head .rm { flex: 1 1 100%; }
+  .rc-grid { grid-template-columns: minmax(0, 1fr); }
+  .rp-sign { gap: 24px; }
+  .bar-row, .bar-axis { grid-template-columns: 64px minmax(0, 1fr) 50px; gap: 8px; }
+}
+
+/* ---------- Print: A4, light colours, report only ---------- */
+@page { size: A4; margin: 12mm; }
+@media print {
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
+    --bg: #FFFFFF; --surface: #FFFFFF; --surface-2: #E9EEF5; --ink: #13203A; --muted: #566480; --line: #D3DBE8;
+    --cover-bg: #13203A; --cover-fg: #F2F5F9; --ok: #13795B; --ok-soft: #DDF3EA; --warn: #8F5400; --warn-soft: #FBEBCF;
+    --bad: #B42318; --bad-soft: #FCE4E1; color-scheme: light;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { padding: 0; background: #fff; font-size: 13px; }
+  .no-print, #f, #page-head { display: none !important; }
+  .wrap { max-width: none; }
+  .rc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rc, .rp-section { box-shadow: none; }
+  .rp-section { break-inside: avoid; }
+}
+</style>
+
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<div class="wrap">
+  <header id="page-head">
+    <div class="eyebrow">Result analysis</div>
+    <h1>Class Result Report</h1>
+    <p class="lede">Add every subject you teach and the classes for each one. A result block opens for each subject and class. Fill them in, then generate a printable report.</p>
+  </header>
+
+  <form id="f" novalidate class="wrap" style="max-width:none">
+    <section class="panel" aria-labelledby="h-teacher">
+      <h2 id="h-teacher">Teacher</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="teacher">Teacher name<span class="req">*</span></label>
+          <input type="text" id="teacher" autocomplete="name" placeholder="e.g. Mrs. Anita Sharma">
+          <div class="err" id="e-teacher"></div>
+        </div>
+        <div class="field">
+          <label for="exam">Examination<span class="req">*</span></label>
+          <select id="exam">
+            <option value="">Select examination</option>
+            <option>Unit Test 1</option>
+            <option>Half Yearly</option>
+            <option>Unit Test 2</option>
+            <option>Annual Examination</option>
+          </select>
+          <div class="err" id="e-exam"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-sc">
+      <div class="panel-head">
+        <h2 id="h-sc">Subjects and classes</h2>
+        <span class="count" id="count">0 result blocks</span>
+      </div>
+      <p class="hint">Teach more than one subject? Choose a subject and its classes, then use Add another subject. Each subject can have different classes.</p>
+      <div class="assign-list" id="assign"></div>
+      <button type="button" class="btn-quiet btn-add" id="add">+ Add another subject</button>
+    </section>
+
+    <div id="cards" aria-live="polite"></div>
+
+    <div class="actions">
+      <button type="submit" class="btn-primary">Generate report</button>
+      <button type="button" class="btn-quiet" id="reset">Clear form</button>
+      <span class="form-msg" id="form-msg" role="alert"></span>
+    </div>
+    <p class="privacy">Nothing you type is saved or sent anywhere. It stays on this screen until you close or refresh the page.</p>
+  </form>
+
+  <section id="report" hidden aria-label="Result report">
+    <div class="rp-bar no-print">
+      <button type="button" class="btn-quiet" id="back">Back to form</button>
+      <button type="button" class="btn-primary" id="pdf">Save as PDF</button>
+      <p class="rp-note" id="pdf-note"></p>
+    </div>
+    <div id="report-body" class="wrap" style="max-width:none"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var SUBJECTS = ["English", "Hindi", "Sanskrit", "Mathematics", "Science", "Social Science", "Computer Science",
+    "Physics", "Chemistry", "Biology", "Accountancy", "Business Studies", "Economics", "History",
+    "Political Science", "Geography", "Physical Education", "Art"];
+  var CLASSES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  var FIELDS = [
+    { k: "pct", label: "Result percentage" },
+    { k: "lowest", label: "Lowest student name" },
+    { k: "action", label: "Action taken" },
+    { k: "topper", label: "Topper name" },
+    { k: "plan", label: "Plan" },
+    { k: "target", label: "Target for next exam" }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var uid = 0;
+  var assignments = [];    // [{ id, subject, classes: { 8: true } }]
+  var store = {};          // "assignmentId|class" -> values (memory only, never saved)
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function newAssignment() { return { id: ++uid, subject: "", classes: {} }; }
+  function byId(id) { return assignments.filter(function (a) { return String(a.id) === String(id); })[0]; }
+  function classesOf(a) { return CLASSES.filter(function (c) { return a.classes[c]; }); }
+  function entry(a, c) { var k = a.id + "|" + c; return store[k] || (store[k] = {}); }
+  function usedByOther(a, s) { return assignments.some(function (o) { return o.id !== a.id && o.subject === s; }); }
+  function readyAssignments() { return assignments.filter(function (a) { return a.subject && classesOf(a).length; }); }
+
+  // ---------- Assignments (subject + classes) ----------
+  function subjectOptions(a) {
+    return '<option value="">Select subject</option>' + SUBJECTS.map(function (s) {
+      return "<option" + (a.subject === s ? " selected" : "") + (usedByOther(a, s) ? " disabled" : "") + ">" + s + "</option>";
+    }).join("");
+  }
+  function renderAssign() {
+    $("assign").innerHTML = assignments.map(function (a, i) {
+      var chips = CLASSES.map(function (c) {
+        return '<label class="chip"><input type="checkbox" value="' + c + '" id="cls-' + a.id + '-' + c + '"' + (a.classes[c] ? " checked" : "") + '><span>' + c + "</span></label>";
+      }).join("");
+      return '<div class="assign" data-aid="' + a.id + '">' +
+        '<div class="assign-head"><div class="field"><label for="sub-' + a.id + '">Subject ' + (i + 1) + '<span class="req">*</span></label>' +
+        '<select id="sub-' + a.id + '">' + subjectOptions(a) + '</select><div class="err" id="esub-' + a.id + '"></div></div>' +
+        (assignments.length > 1 ? '<button type="button" class="btn-quiet rm" data-rm="' + a.id + '">Remove</button>' : "") + "</div>" +
+        '<fieldset><div class="legend">Classes you teach this subject<span class="req">*</span></div><div class="chips">' + chips + '</div><div class="err" id="ecls-' + a.id + '"></div></fieldset></div>';
+    }).join("");
+    updateCount();
+  }
+  function refreshSubjectOptions() {
+    assignments.forEach(function (a) {
+      var sel = $("sub-" + a.id);
+      if (!sel) return;
+      Array.prototype.forEach.call(sel.options, function (o) { o.disabled = !!o.value && usedByOther(a, o.value); });
+    });
+  }
+  function updateCount() {
+    var n = 0;
+    readyAssignments().forEach(function (a) { n += classesOf(a).length; });
+    $("count").textContent = n + (n === 1 ? " result block" : " result blocks");
+  }
+
+  $("assign").addEventListener("change", function (e) {
+    var row = e.target.closest(".assign");
+    if (!row) return;
+    var a = byId(row.dataset.aid);
+    if (e.target.tagName === "SELECT") {
+      a.subject = e.target.value;
+      e.target.classList.remove("invalid"); $("esub-" + a.id).textContent = "";
+      refreshSubjectOptions();
+    } else if (e.target.type === "checkbox") {
+      a.classes[e.target.value] = e.target.checked;
+      $("ecls-" + a.id).textContent = "";
+    }
+    updateCount();
+    renderCards();
+  });
+  $("assign").addEventListener("click", function (e) {
+    var id = e.target.getAttribute("data-rm");
+    if (!id) return;
+    assignments = assignments.filter(function (a) { return String(a.id) !== String(id); });
+    renderAssign(); renderCards();
+  });
+  $("add").addEventListener("click", function () {
+    var a = newAssignment();
+    assignments.push(a);
+    renderAssign();
+    var sel = $("sub-" + a.id);
+    if (sel) { sel.scrollIntoView({ block: "center", behavior: "smooth" }); try { sel.focus({ preventScroll: true }); } catch (x) {} }
+  });
+
+  // ---------- Result blocks ----------
+  function cardHTML(a, c) {
+    var v = entry(a, c);
+    var p = "c" + a.id + "-" + c + "-";
+    function open(k, label, extra) {
+      return '<div class="field ' + (extra || "") + '"><label for="' + p + k + '">' + label + '<span class="req">*</span></label>';
+    }
+    function close(k) { return '<div class="err" id="err-' + p + k + '"></div></div>'; }
+    return '<article class="card" data-aid="' + a.id + '" data-class="' + c + '">' +
+      '<div class="card-head"><div class="card-title"><span class="cls">Class ' + c + '</span><span class="sub">' + esc(a.subject) + '</span></div>' +
+      '<span class="pill" id="pill-' + a.id + '-' + c + '">0 of 6 filled</span></div>' +
+      '<div class="card-body">' +
+        '<div class="group"><div class="group-label">Result</div><div class="grid">' +
+          open("pct", "Result percentage") + '<div class="suffix"><input type="number" inputmode="decimal" min="0" max="100" step="0.01" id="' + p + 'pct" data-k="pct" placeholder="e.g. 78.5" value="' + esc(v.pct || "") + '"></div>' + close("pct") +
+          '<div class="field"><label for="' + p + 'section">Section <span class="hint">(optional)</span></label><input type="text" id="' + p + 'section" data-k="section" maxlength="4" placeholder="e.g. A" value="' + esc(v.section || "") + '"></div>' +
+        '</div></div>' +
+        '<div class="group"><div class="group-label">Lowest performer</div><div class="grid">' +
+          open("lowest", "Lowest student name", "full") + '<input type="text" id="' + p + 'lowest" data-k="lowest" placeholder="Name of the student with the lowest result" value="' + esc(v.lowest || "") + '">' + close("lowest") +
+          open("action", "Action taken", "full") + '<textarea id="' + p + 'action" data-k="action" placeholder="e.g. Remedial class on weekdays, parent meeting held on 3 Nov">' + esc(v.action || "") + '</textarea>' + close("action") +
+        '</div></div>' +
+        '<div class="group"><div class="group-label">Topper</div><div class="grid">' +
+          open("topper", "Topper name", "full") + '<input type="text" id="' + p + 'topper" data-k="topper" placeholder="Name of the student with the highest result" value="' + esc(v.topper || "") + '">' + close("topper") +
+        '</div></div>' +
+        '<div class="group"><div class="group-label">Plan and target</div><div class="grid">' +
+          open("plan", "Plan", "full") + '<textarea id="' + p + 'plan" data-k="plan" placeholder="What you will do before the next exam">' + esc(v.plan || "") + '</textarea>' + close("plan") +
+          open("target", "Target for next exam") + '<div class="suffix"><input type="number" inputmode="decimal" min="0" max="100" step="0.01" id="' + p + 'target" data-k="target" placeholder="e.g. 85" value="' + esc(v.target || "") + '"></div>' + close("target") +
+        '</div></div>' +
+      '</div></article>';
+  }
+
+  function renderCards() {
+    var box = $("cards");
+    var list = readyAssignments();
+    if (!list.length) {
+      box.innerHTML = '<div class="empty"><strong>Select a subject and at least one class</strong>A result block opens here for each class you choose.</div>';
+      return;
+    }
+    box.innerHTML = list.map(function (a) {
+      var cl = classesOf(a);
+      return '<section class="subj-group"><h3 class="subj-title">' + esc(a.subject) + '<span class="count">' + cl.length + (cl.length === 1 ? " class" : " classes") + "</span></h3>" +
+        cl.map(function (c) { return cardHTML(a, c); }).join("") + "</section>";
+    }).join("");
+    list.forEach(function (a) { classesOf(a).forEach(function (c) { updatePill(a, c); }); });
+  }
+
+  function filledCount(a, c) {
+    var v = entry(a, c), n = 0;
+    FIELDS.forEach(function (f) { if (String(v[f.k] || "").trim() !== "") n++; });
+    return n;
+  }
+  function updatePill(a, c) {
+    var p = $("pill-" + a.id + "-" + c);
+    if (!p) return;
+    var n = filledCount(a, c);
+    p.textContent = n === 6 ? "Complete" : n + " of 6 filled";
+    p.className = "pill" + (n === 6 ? " done" : "");
+  }
+
+  $("cards").addEventListener("input", function (e) {
+    var t = e.target, card = t.closest(".card");
+    if (!card || !t.dataset.k) return;
+    var a = byId(card.dataset.aid), c = card.dataset["class"];
+    entry(a, c)[t.dataset.k] = t.value;
+    t.classList.remove("invalid");
+    var er = $("err-" + t.id); if (er) er.textContent = "";
+    updatePill(a, c);
+  });
+  ["teacher", "exam"].forEach(function (id) {
+    $(id).addEventListener("input", function () { $(id).classList.remove("invalid"); $("e-" + id).textContent = ""; });
+  });
+
+  // ---------- Validation ----------
+  function validate() {
+    var first = null, ok = true;
+    function bad(el, errEl, msg) { el.classList.add("invalid"); errEl.textContent = msg; ok = false; if (!first) first = el; }
+    if (!$("teacher").value.trim()) bad($("teacher"), $("e-teacher"), "Enter your name.");
+    if (!$("exam").value) bad($("exam"), $("e-exam"), "Select the examination.");
+    assignments.forEach(function (a) {
+      if (!a.subject) bad($("sub-" + a.id), $("esub-" + a.id), "Select a subject.");
+      if (!classesOf(a).length) {
+        $("ecls-" + a.id).textContent = "Select at least one class.";
+        ok = false; if (!first) first = $("cls-" + a.id + "-1");
+      }
+      if (!a.subject) return;
+      classesOf(a).forEach(function (c) {
+        var v = entry(a, c);
+        FIELDS.forEach(function (f) {
+          var id = "c" + a.id + "-" + c + "-" + f.k, el = $(id), er = $("err-" + id);
+          if (!el) return;
+          var val = String(v[f.k] || "").trim();
+          if (val === "") { bad(el, er, "This field is required."); return; }
+          if (f.k === "pct" || f.k === "target") {
+            var n = Number(val);
+            if (isNaN(n) || n < 0 || n > 100) bad(el, er, "Enter a number from 0 to 100.");
+          }
+        });
+      });
+    });
+    return { ok: ok, first: first };
+  }
+
+  function check() {
+    var r = validate();
+    if (!r.ok) {
+      $("form-msg").textContent = "Some fields need attention.";
+      if (r.first) { r.first.scrollIntoView({ block: "center", behavior: "smooth" }); try { r.first.focus({ preventScroll: true }); } catch (x) {} }
+      return false;
+    }
+    $("form-msg").textContent = "";
+    return true;
+  }
+
+  // ---------- Report ----------
+  var fmt = function (n) { return (Math.round(n * 10) / 10) + "%"; };
+  function band(p) { return p >= 75 ? { c: "good", t: "Strong" } : p >= 50 ? { c: "mid", t: "Steady" } : { c: "low", t: "Needs attention" }; }
+
+  function buildGroups() {
+    return readyAssignments().map(function (a) {
+      var rows = classesOf(a).map(function (c) {
+        var v = entry(a, c), sec = (v.section || "").trim();
+        return { label: "Class " + c + (sec ? "-" + sec : ""), subject: a.subject, pct: Number(v.pct), target: Number(v.target),
+          lowest: v.lowest.trim(), action: v.action.trim(), topper: v.topper.trim(), plan: v.plan.trim() };
+      });
+      var avg = rows.reduce(function (s, r) { return s + r.pct; }, 0) / rows.length;
+      return { subject: a.subject, rows: rows, avg: avg };
+    });
+  }
+
+  function barRow(r, label) {
+    var b = band(r.pct);
+    return '<div class="bar-row ' + b.c + '"><span class="bar-label">' + esc(label) + '</span><div class="bar-track">' +
+      '<div class="bar-fill" style="width:' + r.pct + '%"></div><i class="bar-target" style="left:' + r.target + '%"></i></div>' +
+      '<span class="bar-val">' + fmt(r.pct) + "</span></div>";
+  }
+
+  function scorecard(r) {
+    var b = band(r.pct), diff = Math.round((r.target - r.pct) * 10) / 10;
+    var gap = diff > 0 ? diff + " points to reach the target" : "Target already met";
+    return '<article class="rc ' + b.c + '"><div class="rc-top"><div class="ring" style="--p:' + r.pct + '"><span>' + fmt(r.pct) + "</span></div>" +
+      '<div><div class="rc-class">' + esc(r.label) + '</div><div class="rc-subject">' + esc(r.subject) + '</div><span class="band ' + b.c + '">' + b.t + "</span></div></div>" +
+      '<dl class="rc-rows">' +
+        '<div class="rc-row"><dt>Topper</dt><dd>' + esc(r.topper) + "</dd></div>" +
+        '<div class="rc-row"><dt>Lowest student</dt><dd>' + esc(r.lowest) + "</dd></div>" +
+        '<div class="rc-row"><dt>Action taken</dt><dd>' + esc(r.action) + "</dd></div>" +
+        '<div class="rc-row"><dt>Plan</dt><dd>' + esc(r.plan) + "</dd></div></dl>" +
+      '<div class="rc-target"><div><b>Target ' + fmt(r.target) + '</b></div>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + r.pct + '%"></div><i class="bar-target" style="left:' + r.target + '%"></i></div>' +
+        '<div class="gap">' + gap + "</div></div></article>";
+  }
+
+  function showReport() {
+    var groups = buildGroups(), all = [];
+    groups.forEach(function (g) { all = all.concat(g.rows); });
+    var avg = all.reduce(function (s, r) { return s + r.pct; }, 0) / all.length;
+    var best = all.reduce(function (a, r) { return r.pct > a.pct ? r : a; });
+    var met = all.filter(function (r) { return r.pct >= r.target; }).length;
+    var today;
+    try { today = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }); } catch (x) { today = new Date().toDateString(); }
+    var multi = groups.length > 1;
+
+    var html = '<header class="rp-cover"><div class="rp-eyebrow">Result analysis</div>' +
+      '<div class="rp-title">Result Report</div><div class="rp-sub">' + esc($("exam").value) + " · " + esc(today) + "</div>" +
+      '<div class="rp-meta"><div><span>Teacher</span><b>' + esc($("teacher").value.trim()) + "</b></div>" +
+      "<div><span>" + (multi ? "Subjects" : "Subject") + "</span><b>" + esc(groups.map(function (g) { return g.subject; }).join(", ")) + "</b></div>" +
+      "<div><span>Classes reported</span><b>" + all.length + "</b></div></div></header>";
+
+    html += '<div class="kpis">' +
+      '<div class="kpi"><b>' + fmt(avg) + "</b><span>Overall average</span></div>" +
+      '<div class="kpi"><b>' + fmt(best.pct) + "</b><span>Highest: " + esc(best.label + " " + best.subject) + "</span></div>" +
+      '<div class="kpi"><b>' + met + " of " + all.length + "</b><span>Classes at or above target</span></div></div>";
+
+    html += '<section class="rp-section"><div class="rp-h">Result against target</div>' +
+      '<div class="legend-row"><span class="good"><i></i>Strong 75% and above</span><span class="mid"><i></i>Steady 50 to 74%</span><span class="low"><i></i>Needs attention below 50%</span><span class="tick-key"><i></i>Target</span></div>';
+    groups.forEach(function (g) {
+      if (multi) html += '<div class="bar-subj">' + esc(g.subject) + "</div>";
+      g.rows.forEach(function (r) { html += barRow(r, r.label); });
+    });
+    html += '<div class="bar-axis"><div class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div></div></section>';
+
+    groups.forEach(function (g) {
+      html += '<section class="rp-subj"><div class="rp-subj-head"><span class="rp-h">' + esc(g.subject) + '</span><span class="count">average ' + fmt(g.avg) + " · " + g.rows.length + (g.rows.length === 1 ? " class" : " classes") + '</span></div><div class="rc-grid">' +
+        g.rows.map(scorecard).join("") + "</div></section>";
+    });
+
+    html += '<div class="rp-sign"><div class="sig">Teacher: ' + esc($("teacher").value.trim()) + '</div><div class="sig">Principal</div></div>' +
+      '<p class="rp-foot">Generated on ' + esc(today) + ". Percentages are rounded to one decimal place.</p>";
+
+    $("report-body").innerHTML = html;
+    $("f").hidden = true; $("page-head").hidden = true; $("report").hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Printing is blocked when the page runs inside a preview frame, so PDF saving only works in a standalone browser tab.
+  var embedded = false;
+  try { embedded = window.self !== window.top; } catch (x) { embedded = true; }
+  if (embedded) {
+    $("pdf").hidden = true;
+    $("pdf-note").textContent = "Saving as PDF is not available in this preview. Open the downloaded HTML file in Chrome or Edge, generate the report there and choose Save as PDF.";
+  } else {
+    $("pdf-note").textContent = "In the print window, choose Save as PDF as the destination.";
+  }
+
+  $("pdf").addEventListener("click", function () {
+    var old = document.title;
+    document.title = "Result Report - " + $("teacher").value.trim() + " - " + $("exam").value;
+    function restore() { document.title = old; window.removeEventListener("afterprint", restore); }
+    window.addEventListener("afterprint", restore);
+    window.print();
+  });
+
+  $("f").addEventListener("submit", function (e) { e.preventDefault(); if (check()) showReport(); });
+  $("back").addEventListener("click", function () {
+    $("report").hidden = true; $("f").hidden = false; $("page-head").hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  function resetAll() {
+    store = {};
+    assignments = [newAssignment()];
+    $("teacher").value = ""; $("exam").value = "";
+    ["teacher", "exam"].forEach(function (id) { $(id).classList.remove("invalid"); $("e-" + id).textContent = ""; });
+    $("form-msg").textContent = "";
+    renderAssign(); renderCards();
+  }
+  $("reset").addEventListener("click", resetAll);
+
+  resetAll();
+})();
+</script>
+
+</body>
+</html>
