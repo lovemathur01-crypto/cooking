@@ -142,6 +142,9 @@ button { font: inherit; cursor: pointer; border-radius: 6px; min-height: 46px; p
 .btn-quiet { background: transparent; color: var(--ink); border: 1px solid var(--line); }
 .btn-quiet:hover { border-color: var(--accent); }
 .form-msg { color: var(--bad); font-size: 0.92rem; }
+.autosave { display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+.as-label { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; cursor: pointer; min-height: 44px; }
+.as-label input { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
 .privacy { color: var(--muted); font-size: 0.85rem; }
 
 /* ---------- Report ---------- */
@@ -257,6 +260,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
 }
 </style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
 </head>
 <body>
@@ -302,22 +306,24 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
 
     <div id="cards" aria-live="polite"></div>
 
+    <div class="autosave">
+      <label class="as-label"><input type="checkbox" id="autosave"> Auto-save my entries on this device</label>
+      <span class="count" id="save-status" aria-live="polite"></span>
+    </div>
+
     <div class="actions">
-      <button type="submit" class="btn-primary">Generate report</button>
+      <button type="submit" class="btn-primary">Generate formal PDF</button>
       <button type="button" class="btn-quiet" id="reset">Clear form</button>
       <span class="form-msg" id="form-msg" role="alert"></span>
     </div>
-    <p class="privacy">Nothing you type is saved or sent anywhere. It stays on this screen until you close or refresh the page.</p>
+    <p class="privacy">Nothing is sent anywhere. With auto-save on, your entries are kept only in this browser on this device, and your next visit restores them. Turn it off or use Clear form to erase them. "Generate formal PDF" builds the Formal report, which you can then download as a PDF or print.</p>
   </form>
 
   <section id="report" hidden aria-label="Result report">
     <div class="rp-bar no-print">
       <button type="button" class="btn-quiet" id="back">Back to form</button>
-      <div class="seg" role="group" aria-label="Report style">
-        <button type="button" id="m-formal" aria-pressed="true">Formal</button>
-        <button type="button" id="m-informal" aria-pressed="false">Informal</button>
-      </div>
-      <button type="button" class="btn-primary" id="pdf">Save as PDF</button>
+      <button type="button" class="btn-primary" id="dl">Download PDF</button>
+      <button type="button" class="btn-quiet" id="pdf">Print</button>
       <p class="rp-note" id="pdf-note"></p>
     </div>
     <div id="report-body" class="wrap" style="max-width:none"></div>
@@ -683,8 +689,6 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     groups.forEach(function (g) { all = all.concat(g.rows); });
     var today = todayStr();
     $("report-body").innerHTML = mode === "formal" ? formalHTML(groups, all, today) : informalHTML(groups, all, today);
-    $("m-formal").setAttribute("aria-pressed", mode === "formal" ? "true" : "false");
-    $("m-informal").setAttribute("aria-pressed", mode === "informal" ? "true" : "false");
   }
   function showReport() {
     lastGroups = buildGroups();
@@ -692,24 +696,54 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     $("f").hidden = true; $("page-head").hidden = true; $("report").hidden = false;
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  $("m-formal").addEventListener("click", function () { mode = "formal"; renderReport(); });
-  $("m-informal").addEventListener("click", function () { mode = "informal"; renderReport(); });
-
   var embedded = false;
   try { embedded = window.self !== window.top; } catch (x) { embedded = true; }
   if (embedded) {
     $("pdf").hidden = true;
-    $("pdf-note").textContent = "Saving as PDF is not available in this preview. Open the downloaded HTML file in Chrome or Edge, generate the report there and choose Save as PDF.";
+    $("pdf-note").textContent = "If the download does not start in this preview, open the HTML file in Chrome or Edge and generate the PDF there.";
   } else {
-    $("pdf-note").textContent = "In the print window, choose Save as PDF as the destination.";
+    $("pdf-note").textContent = "Download PDF saves the file directly. Print opens the print window, where you can choose Save as PDF.";
   }
 
-  $("pdf").addEventListener("click", function () {
+  function doPrint() {
     var old = document.title;
     document.title = "Result Report - " + $("teacher").value.trim() + " - " + $("exam").value;
     function restore() { document.title = old; window.removeEventListener("afterprint", restore); }
     window.addEventListener("afterprint", restore);
     window.print();
+  }
+  $("pdf").addEventListener("click", doPrint);
+
+  // Download the Formal report as a real PDF file
+  $("dl").addEventListener("click", function () {
+    var el = document.querySelector("#report-body .fm");
+    var btn = $("dl");
+    if (!el) return;
+    if (typeof window.html2pdf === "undefined") {
+      $("pdf-note").textContent = "The PDF tool could not load (check your internet connection). Use Print and choose Save as PDF instead.";
+      $("pdf").hidden = false;
+      return;
+    }
+    var root = document.documentElement, prevTheme = root.getAttribute("data-theme");
+    root.setAttribute("data-theme", "light");   // always capture in light colours
+    btn.disabled = true; btn.textContent = "Preparing PDF...";
+    var name = "Result Report - " + $("teacher").value.trim() + " - " + $("exam").value + ".pdf";
+    function done() {
+      if (prevTheme === null) root.removeAttribute("data-theme"); else root.setAttribute("data-theme", prevTheme);
+      btn.disabled = false; btn.textContent = "Download PDF";
+    }
+    window.html2pdf().set({
+      margin: [10, 10, 10, 10],
+      filename: name,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: { mode: ["css", "legacy"], avoid: [".fm-class", "tr", "h3", "h4", ".rp-sign"] }
+    }).from(el).save().then(done, function () {
+      done();
+      $("pdf-note").textContent = "The download was blocked. Use Print and choose Save as PDF instead.";
+      $("pdf").hidden = false;
+    });
   });
 
   $("f").addEventListener("submit", function (e) { e.preventDefault(); if (check()) showReport(); });
@@ -726,9 +760,56 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     $("form-msg").textContent = "";
     renderAssign(); renderCards();
   }
-  $("reset").addEventListener("click", resetAll);
+  // ---------- Auto-save (this browser only) ----------
+  var KEY = "crr-v1", PREF = "crr-autosave", saveTimer = null;
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (x) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (x) { return false; } }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (x) {} }
+  function autoOn() { return $("autosave").checked; }
+  function setStatus(t) { $("save-status").textContent = t; }
+  function saveNow() {
+    if (!autoOn()) return;
+    var ok = lsSet(KEY, JSON.stringify({ teacher: $("teacher").value, exam: $("exam").value, uid: uid, assignments: assignments, store: store }));
+    var t = "";
+    try { t = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }); } catch (x) {}
+    setStatus(ok ? "Saved" + (t ? " at " + t : "") : "Auto-save is not available in this browser");
+  }
+  function scheduleSave() {
+    if (!autoOn()) return;
+    clearTimeout(saveTimer);
+    setStatus("Saving...");
+    saveTimer = setTimeout(saveNow, 400);
+  }
+  function loadSaved() {
+    var raw = lsGet(KEY);
+    if (!raw) return;
+    try {
+      var d = JSON.parse(raw);
+      if (!d || !Array.isArray(d.assignments) || !d.assignments.length) return;
+      assignments = d.assignments;
+      store = d.store || {};
+      uid = Math.max(Number(d.uid) || 0, assignments.reduce(function (m, a) { return Math.max(m, a.id); }, 0));
+      $("teacher").value = d.teacher || "";
+      var ok = Array.prototype.some.call($("exam").options, function (o) { return o.value === d.exam; });
+      $("exam").value = ok ? d.exam : "";
+      renderAssign(); renderCards();
+      setStatus("Restored your saved entries");
+    } catch (x) { /* ignore a corrupt save */ }
+  }
+
+  $("autosave").checked = lsGet(PREF) !== "0";
+  $("autosave").addEventListener("change", function () {
+    lsSet(PREF, autoOn() ? "1" : "0");
+    if (autoOn()) { saveNow(); } else { lsDel(KEY); setStatus("Auto-save is off. Saved entries were erased."); }
+  });
+  $("f").addEventListener("input", scheduleSave);
+  $("f").addEventListener("change", function (e) { if (e.target.id !== "autosave") scheduleSave(); });
+  $("f").addEventListener("click", function (e) { if (e.target.getAttribute && (e.target.getAttribute("data-rm") || e.target.id === "add")) scheduleSave(); });
+
+  $("reset").addEventListener("click", function () { resetAll(); lsDel(KEY); setStatus(autoOn() ? "Cleared" : ""); });
 
   resetAll();
+  if (autoOn()) loadSaved();
 })();
 </script>
 
