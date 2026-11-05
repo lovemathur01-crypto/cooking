@@ -46,6 +46,7 @@
 }
 
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
 body {
   background: var(--bg); color: var(--ink);
   font-family: var(--font-body); font-size: 16px; line-height: 1.5;
@@ -72,7 +73,7 @@ p { margin: 0; }
 label, .legend { font-weight: 600; font-size: 0.9rem; }
 .req { color: var(--bad); margin-left: 2px; }
 input[type="text"], input[type="number"], select, textarea {
-  width: 100%; font: inherit; color: var(--ink); background: var(--bg);
+  width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--bg);
   border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; min-height: 44px;
 }
 textarea { resize: vertical; min-height: 84px; }
@@ -126,7 +127,7 @@ fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .group { display: flex; flex-direction: column; gap: 12px; }
 .group-label { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
 
-/* Entry tables (three students) */
+/* Entry tables (5 weak students, 3 toppers) */
 .stu { display: flex; flex-direction: column; gap: 10px; }
 .sthead, .strow { display: grid; gap: 10px; align-items: start; }
 .sthead.low, .strow.low { grid-template-columns: 28px minmax(0, 1.3fr) 104px minmax(0, 2fr); }
@@ -136,7 +137,7 @@ fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .strow textarea { min-height: 44px; height: 44px; }
 
 .actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-button { font: inherit; cursor: pointer; border-radius: 6px; min-height: 46px; padding: 0 22px; font-weight: 600; }
+button { font: inherit; cursor: pointer; border-radius: 6px; min-height: 46px; padding: 0 22px; font-weight: 600; touch-action: manipulation; }
 .btn-primary { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); }
 .btn-primary:hover { filter: brightness(1.08); }
 .btn-quiet { background: transparent; color: var(--ink); border: 1px solid var(--line); }
@@ -197,7 +198,7 @@ button { font: inherit; cursor: pointer; border-radius: 6px; min-height: 46px; p
 .band.low { background: var(--bad-soft); color: var(--bad); }
 .rc-block { display: flex; flex-direction: column; gap: 6px; }
 .rc-cap { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.tw { overflow-x: auto; }
+.tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table.dt { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 table.dt th, table.dt td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
 table.dt th { font-family: var(--font-mono); font-weight: 500; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); }
@@ -229,19 +230,34 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
 .fm-ok { color: var(--ok); font-weight: 600; }
 .fm-short { color: var(--bad); font-weight: 600; }
 
+/* ---------- Phones ---------- */
 @media (max-width: 640px) {
+  body { padding-top: 18px; }
   .grid { grid-template-columns: minmax(0, 1fr); }
   .panel { padding: 16px; }
-  .card-head, .card-body { padding-left: 16px; padding-right: 16px; }
-  .actions button { flex: 1 1 100%; }
+  .card-head, .card-body { padding-left: 14px; padding-right: 14px; }
+  .card-title .cls { font-size: 1.15rem; }
   .assign-head .rm { flex: 1 1 100%; }
   .rc-grid { grid-template-columns: minmax(0, 1fr); }
   .rp-sign { gap: 24px; }
   .bar-row, .bar-axis { grid-template-columns: 64px minmax(0, 1fr) 50px; gap: 8px; }
   .sthead { display: none; }
-  .strow.low { grid-template-columns: 24px minmax(0, 1fr) 104px; }
+  .strow { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; gap: 8px; }
+  .strow .rk { padding-top: 0; align-self: center; }
+  .strow.low { grid-template-columns: 22px minmax(0, 1fr) 96px; }
+  .strow.top { grid-template-columns: 22px minmax(0, 1fr) 96px; }
   .strow.low .act { grid-column: 1 / -1; }
+  .strow textarea { min-height: 64px; height: 64px; }
+  table.dt { font-size: 0.82rem; }
   .fm { padding: 18px 14px; }
+  .rp-bar button { flex: 1 1 40%; }
+  .actions {
+    position: sticky; bottom: 0; z-index: 5; background: var(--bg);
+    border-top: 1px solid var(--line); margin: 0 -16px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  .actions button { flex: 1 1 40%; }
+  .actions .form-msg { flex: 1 1 100%; }
 }
 
 /* ---------- Print: A4, light colours, report only ---------- */
@@ -273,7 +289,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
   <header id="page-head">
     <div class="eyebrow">Result analysis</div>
     <h1>Class Result Report</h1>
-    <p class="lede">Add every subject you teach and the classes for each one. A result block opens for each subject and class. Fill them in, then generate a printable report in a Formal or Informal layout.</p>
+    <p class="lede">Add every subject you teach and the classes for each one. A result block opens for each subject and class. Fill them in, then generate a printable report.</p>
   </header>
 
   <form id="f" novalidate class="wrap" style="max-width:none">
@@ -321,7 +337,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
       <button type="button" class="btn-quiet" id="reset">Clear form</button>
       <span class="form-msg" id="form-msg" role="alert"></span>
     </div>
-    <p class="privacy">Nothing is sent anywhere. With auto-save on, your entries are kept only in this browser on this device, and your next visit restores them. Turn it off or use Clear form to erase them. "Generate formal PDF" builds the Formal report, which you can then download as a PDF or print.</p>
+    <p class="privacy">Nothing is sent anywhere. With auto-save on, your entries are kept only in this browser on this device, and your next visit restores them. Turn it off or use Clear form to erase them. “Generate formal PDF” builds the report, which you can then download as a PDF or print.</p>
   </form>
 
   <section id="report" hidden aria-label="Result report">
@@ -341,11 +357,12 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     "Physics", "Chemistry", "Biology", "Accountancy", "Business Studies", "Economics", "History",
     "Political Science", "Geography", "Physical Education", "Art"];
   var CLASSES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-  var N3 = [1, 2, 3];
+  var N3 = [1, 2, 3];          // top students
+  var N5 = [1, 2, 3, 4, 5];    // weak students
 
-  // Required fields. Table fields: l{i}n / l{i}p / l{i}a (lowest), t{i}n / t{i}p (topper)
+  // Required fields. Table fields: l{i}n / l{i}p / l{i}a (weak), t{i}n / t{i}p (topper)
   var FIELDS = [{ k: "pct", pctField: true }];
-  N3.forEach(function (i) { FIELDS.push({ k: "l" + i + "n" }, { k: "l" + i + "p", pctField: true }, { k: "l" + i + "a" }); });
+  N5.forEach(function (i) { FIELDS.push({ k: "l" + i + "n" }, { k: "l" + i + "p", pctField: true }, { k: "l" + i + "a" }); });
   N3.forEach(function (i) { FIELDS.push({ k: "t" + i + "n" }, { k: "t" + i + "p", pctField: true }); });
   FIELDS.push({ k: "plan" }, { k: "target", pctField: true });
   var TOTAL = FIELDS.length;
@@ -444,17 +461,17 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     }
 
     var low = '<div class="stu"><div class="sthead low"><span>#</span><span>Student name</span><span>Percentage</span><span>Action taken</span></div>' +
-      N3.map(function (i) {
+      N5.map(function (i) {
         return '<div class="strow low"><span class="rk">' + i + '</span>' +
-          '<input type="text" id="' + p + 'l' + i + 'n" data-k="l' + i + 'n" aria-label="Lowest student ' + i + ' name" placeholder="Student name" value="' + val("l" + i + "n") + '">' +
-          pctInput("l" + i + "p", "Lowest student " + i + " percentage", "e.g. 32") +
-          '<textarea class="act" id="' + p + 'l' + i + 'a" data-k="l' + i + 'a" rows="1" aria-label="Action taken for lowest student ' + i + '" placeholder="Action taken">' + val("l" + i + "a") + '</textarea></div>';
+          '<input type="text" id="' + p + 'l' + i + 'n" data-k="l' + i + 'n" autocomplete="off" aria-label="Weak student ' + i + ' name" placeholder="Student name" value="' + val("l" + i + "n") + '">' +
+          pctInput("l" + i + "p", "Weak student " + i + " percentage", "e.g. 32") +
+          '<textarea class="act" id="' + p + 'l' + i + 'a" data-k="l' + i + 'a" rows="2" aria-label="Action taken for weak student ' + i + '" placeholder="Action taken">' + val("l" + i + "a") + '</textarea></div>';
       }).join("") + '<div class="err" id="err-' + p + 'low"></div></div>';
 
     var top = '<div class="stu"><div class="sthead top"><span>#</span><span>Student name</span><span>Percentage</span></div>' +
       N3.map(function (i) {
         return '<div class="strow top"><span class="rk">' + i + '</span>' +
-          '<input type="text" id="' + p + 't' + i + 'n" data-k="t' + i + 'n" aria-label="Topper ' + i + ' name" placeholder="Student name" value="' + val("t" + i + "n") + '">' +
+          '<input type="text" id="' + p + 't' + i + 'n" data-k="t' + i + 'n" autocomplete="off" aria-label="Topper ' + i + ' name" placeholder="Student name" value="' + val("t" + i + "n") + '">' +
           pctInput("t" + i + "p", "Topper " + i + " percentage", "e.g. 96") + '</div>';
       }).join("") + '<div class="err" id="err-' + p + 'top"></div></div>';
 
@@ -466,7 +483,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
           open("pct", "Result percentage") + pctInput("pct", "Result percentage", "e.g. 78.5") + close("pct") +
           '<div class="field"><label for="' + p + 'section">Section <span class="hint">(optional)</span></label><input type="text" id="' + p + 'section" data-k="section" maxlength="4" placeholder="e.g. A" value="' + val("section") + '"></div>' +
         '</div></div>' +
-        '<div class="group"><div class="group-label">Three lowest students</div>' + low + '</div>' +
+        '<div class="group"><div class="group-label">Five weak students</div>' + low + '</div>' +
         '<div class="group"><div class="group-label">Top three students</div>' + top + '</div>' +
         '<div class="group"><div class="group-label">Plan and target</div><div class="grid">' +
           open("plan", "Plan", "full") + '<textarea id="' + p + 'plan" data-k="plan" placeholder="What you will do before the next exam">' + val("plan") + '</textarea>' + close("plan") +
@@ -573,7 +590,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     return readyAssignments().map(function (a) {
       var rows = classesOf(a).map(function (c) {
         var v = entry(a, c), sec = (v.section || "").trim();
-        var lows = N3.map(function (i) { return { n: v["l" + i + "n"].trim(), p: Number(v["l" + i + "p"]), a: v["l" + i + "a"].trim() }; });
+        var lows = N5.map(function (i) { return { n: v["l" + i + "n"].trim(), p: Number(v["l" + i + "p"]), a: v["l" + i + "a"].trim() }; });
         var tops = N3.map(function (i) { return { n: v["t" + i + "n"].trim(), p: Number(v["t" + i + "p"]) }; });
         return { label: "Class " + c + (sec ? "-" + sec : ""), subject: a.subject, pct: Number(v.pct), target: Number(v.target),
           lows: lows, tops: tops, plan: v.plan.trim() };
@@ -607,7 +624,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     return '<article class="rc ' + b.c + '"><div class="rc-top"><div class="ring" style="--p:' + r.pct + '"><span>' + fmt(r.pct) + "</span></div>" +
       '<div><div class="rc-class">' + esc(r.label) + '</div><div class="rc-subject">' + esc(r.subject) + '</div><span class="band ' + b.c + '">' + b.t + "</span></div></div>" +
       '<div class="rc-block"><div class="rc-cap">Top three students</div>' + topTable(r) + "</div>" +
-      '<div class="rc-block"><div class="rc-cap">Three lowest students</div>' + lowTable(r) + "</div>" +
+      '<div class="rc-block"><div class="rc-cap">Five weak students</div>' + lowTable(r) + "</div>" +
       '<div class="rc-plan"><b>Plan</b>' + esc(r.plan) + "</div>" +
       '<div class="rc-target"><div><b>Target ' + fmt(r.target) + '</b></div>' +
         '<div class="bar-track"><div class="bar-fill" style="width:' + r.pct + '%"></div><i class="bar-target" style="left:' + r.target + '%"></i></div>' +
@@ -679,7 +696,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
       g.rows.forEach(function (r) {
         html += '<div class="fm-class"><h4>' + esc(r.label) + " · Result " + fmt(r.pct) + " · Target " + fmt(r.target) + "</h4>" +
           '<div class="fm-cap">Top three students</div>' + topTable(r) +
-          '<div class="fm-cap">Three lowest students</div>' + lowTable(r) +
+          '<div class="fm-cap">Five weak students</div>' + lowTable(r) +
           '<div class="tw"><table class="dt"><tbody><tr><td class="k">Plan for next exam</td><td style="white-space:pre-wrap">' + esc(r.plan) + "</td></tr></tbody></table></div></div>";
       });
     });
@@ -707,7 +724,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     $("pdf").hidden = true;
     $("pdf-note").textContent = "If the download does not start in this preview, open the HTML file in Chrome or Edge and generate the PDF there.";
   } else {
-    $("pdf-note").textContent = "Download PDF saves a single A4 page with dark text. Print opens the print window, where long reports may run over more than one page.";
+    $("pdf-note").textContent = "Download PDF saves A4 pages with dark text. Print opens the print window.";
   }
 
   function doPrint() {
@@ -719,7 +736,7 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
   }
   $("pdf").addEventListener("click", doPrint);
 
-  // Download the Formal report as a real PDF file
+  // Download the Formal report as a real PDF file (multi-page A4)
   $("dl").addEventListener("click", function () {
     var el = document.querySelector("#report-body .fm");
     var btn = $("dl");
@@ -748,10 +765,24 @@ table.dt td.w { width: 36%; white-space: pre-wrap; }
     }).then(function (canvas) {
       var pdf = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
       var pw = 210, ph = 297, m = 8, maxW = pw - 2 * m, maxH = ph - 2 * m;
-      var ratio = canvas.width / canvas.height;
-      var w = maxW, h = w / ratio;
-      if (h > maxH) { h = maxH; w = h * ratio; }   // shrink so everything fits on ONE A4 page
-      pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", (pw - w) / 2, m, w, h);
+      var w = maxW, totalH = w * canvas.height / canvas.width;
+      if (totalH <= maxH) {
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", m, m, w, totalH);
+      } else {
+        // Split across several A4 pages so text stays readable
+        var pxPer = Math.floor(maxH * canvas.width / w), y = 0, first = true;
+        while (y < canvas.height) {
+          var sh = Math.min(pxPer, canvas.height - y);
+          var pc = document.createElement("canvas");
+          pc.width = canvas.width; pc.height = sh;
+          var ctx = pc.getContext("2d");
+          ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, pc.width, sh);
+          ctx.drawImage(canvas, 0, y, canvas.width, sh, 0, 0, canvas.width, sh);
+          if (!first) pdf.addPage();
+          pdf.addImage(pc.toDataURL("image/jpeg", 0.95), "JPEG", m, m, w, sh * w / canvas.width);
+          y += sh; first = false;
+        }
+      }
       pdf.save(name);
       done();
     }).catch(fail);
