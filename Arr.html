@@ -734,7 +734,7 @@ function rebuildDutyCount(){
  }));
 }
 
-const IP_TIMINGS={"1st IP":"08:20 AM – 09:00 AM","2nd IP":"09:00 AM – 09:40 AM","3rd IP":"09:40 AM – 10:20 AM","4th IP":"10:20 AM – 11:00 AM","5th IP":"11:20 AM – 12:00 Noon","6th IP":"12:00 Noon – 12:40 PM","7th IP":"12:40 PM – 01:20 PM","8th IP":"01:20 PM – 02:00 PM"};
+const IP_TIMINGS={"Zero IP":"08:45 AM – 09:05 AM","1st IP":"09:05 AM – 09:40 AM","2nd IP":"09:40 AM – 10:15 AM","3rd IP":"10:15 AM – 10:50 AM","4th IP":"10:50 AM – 11:25 AM","5th IP":"11:40 AM – 12:15 PM","6th IP":"12:15 PM – 12:50 PM","7th IP":"12:50 PM – 01:25 PM","8th IP":"01:25 PM – 02:00 PM"};
 const IP_NOTES={"1st IP":"(Attendance + Diary)"};
 
 function buildSummaryTable(day,absent){
@@ -764,8 +764,8 @@ function buildChartHTML(editable){
  h+=`<table class="duty-grid" style="min-width:${100+abs.length*150}px"><thead><tr><th class="ip-col">IP</th>`;
  abs.forEach(a=>h+=`<th class="abs-col">${escapeHTML(a.name)}<span class="abs-type">${escapeHTML(a.type)}</span></th>`);
  h+=`</tr></thead><tbody>`;
- PERIODS.forEach((p,pi)=>{
-  h+=`<tr><th class="ip-col">${escapeHTML(p)}${IP_NOTES[p]?`<span class="ip-note">${IP_NOTES[p]}</span>`:""}${IP_TIMINGS[p]?`<span class="ip-time">${IP_TIMINGS[p]}</span>`:""}</th>`;
+ const addRow=(label,p,pi,ed)=>{
+  h+=`<tr><th class="ip-col">${escapeHTML(label)}${label===p&&IP_NOTES[p]?`<span class="ip-note">${IP_NOTES[p]}</span>`:""}${IP_TIMINGS[label]?`<span class="ip-time">${IP_TIMINGS[label]}</span>`:""}</th>`;
   abs.forEach(a=>{
    const r=generated.results[a.name][p]||{};
    const orig=normalize(r.original);
@@ -773,7 +773,7 @@ function buildChartHTML(editable){
    let sub="",cls="";
    if(r.status==="assigned"||r.status==="unassigned"){
     const text=r.status==="assigned"?escapeHTML(r.substitute):"UNASSIGNED";
-    sub=editable?`<div class="screen-only">${chartDutyOptions(a.name,pi)}</div><div class="print-only">${text}</div>`:text;
+    sub=ed?`<div class="screen-only">${chartDutyOptions(a.name,pi)}</div><div class="print-only">${text}</div>`:text;
     cls=r.status==="unassigned"?"unassigned":"got-sub";
    }else if(r.status==="no-duty"){sub="FREE";cls="free"}
    else if(r.status==="na"){sub="NA";cls="free"}
@@ -782,7 +782,9 @@ function buildChartHTML(editable){
    h+=`<td class="duty-cell ${cls}"><div class="cls-line">${classHtml}</div><div class="sub-line">${sub}</div></td>`;
   });
   h+="</tr>";
- });
+ };
+ addRow("Zero IP","1st IP",0,false); /* Zero IP mirrors 1st IP: same class, same substitute */
+ PERIODS.forEach((p,pi)=>addRow(p,p,pi,editable));
  h+="</tbody></table>";
 
  const absent=new Set(Object.keys(generated.absence));
