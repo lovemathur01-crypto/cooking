@@ -174,11 +174,39 @@ input,select,button,textarea{font-family:inherit}
  .teacher-note{font-size:6.5px!important;line-height:1.25;margin-top:3px;padding-top:2px}
  .sum-table tr,.duty-grid tr{page-break-inside:avoid}
 }
+
+/* ---------- Dark mode (web interface only; duty chart, print and exports stay light) ---------- */
+.header{position:relative}
+.theme-btn{position:absolute;top:18px;right:22px;margin:0;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.45)}
+body.dark{background:#0f172a;color:#e2e8f0}
+.dark .header{background:linear-gradient(135deg,#0b1d36,#17375e)}
+.dark .tabs,.dark .card{background:#1e293b;box-shadow:0 3px 15px rgba(0,0,0,.4)}
+.dark .card h2,.dark .card h3{color:#93c5fd}
+.dark .tab-btn{background:#334155;color:#cbd5e1}.dark .tab-btn.active{background:#2563eb;color:#fff}
+.dark input[type=date],.dark select{background:#0f172a;color:#e2e8f0;border-color:#475569}
+.dark .btn.light{background:#334155;color:#e2e8f0}
+.dark .info{background:#172554;border-color:#1e40af;color:#bfdbfe}
+.dark .success-box{background:#052e16;border-color:#166534;color:#bbf7d0}
+.dark .error-box{background:#450a0a;border-color:#991b1b;color:#fecaca}
+.dark .warning-box{background:#422006;border-color:#92400e;color:#fde68a}
+.dark .muted{color:#94a3b8}
+.dark .kpi{background:#0f172a;border-color:#334155}.dark .kpi strong{color:#93c5fd}.dark .kpi span{color:#94a3b8}
+.dark .preview-box th,.dark .preview-box td{border-color:#475569}
+.dark .check-item{border-color:#334155}
+.dark .absent-panel{border-color:#334155}
+.dark .absent-panel.full-day{background:#3b1d24}.dark .absent-panel.first-half{background:#172554}.dark .absent-panel.second-half{background:#14301f}
+.dark .teacher-list{background:#0f172a;border-color:#334155}
+.dark .teacher-row{border-color:#1e293b}.dark .teacher-row:hover{background:#1e293b}
+.dark .duty-chart-wrap{border-color:#475569;background:#fff}
+.dark .duty-chart-wrap>.muted{color:#64748b}
+.dark .generated-duty-paper select,.dark .generated-duty-paper input{background:#fff;color:#111;border-color:#cbd5e1}
+@media print{body.dark{background:#fff;color:#111}.dark .card{background:#fff}}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="header">
+<button class="btn theme-btn no-print" id="themeBtn" onclick="toggleTheme()">🌙 Dark Mode</button>
 <h1>HIS TIMETABLE & SUBSTITUTION DUTY SYSTEM</h1>
 <p>Compatible with sample_master_timetable.xlsx and similar Master Timetable Excel files</p>
 </div>
@@ -1023,6 +1051,19 @@ function clearArrangement(){
  renderDutyListChart();refreshPrintChart();
  setMessage("generationMessage","Duty list cleared. Generate it again when ready.","warning");
 }
+
+/* ---------- dark mode (web only) ---------- */
+const THEME_KEY="HIS_TIMETABLE_THEME";
+function applyTheme(dark){
+ document.body.classList.toggle("dark",dark);
+ const b=document.getElementById("themeBtn");if(b)b.textContent=dark?"☀ Light Mode":"🌙 Dark Mode";
+}
+function toggleTheme(){
+ const dark=!document.body.classList.contains("dark");
+ applyTheme(dark);
+ try{localStorage.setItem(THEME_KEY,dark?"dark":"light")}catch(e){}
+}
+try{applyTheme(localStorage.getItem(THEME_KEY)==="dark")}catch(e){}
 
 /* ---------- init ---------- */
 (function(){
