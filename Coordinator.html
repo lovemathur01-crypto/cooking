@@ -95,9 +95,10 @@ table.rt td:last-child,table.rt th:last-child{border-right:0}
 <div class="noprint">
   <div class="panel">
     <h2>📄 Daily Coordinator Monitoring Report — A4 Print</h2>
-    <input id="file" type="file" accept=".xlsx,.xls,.csv">
+    <button id="refresh" type="button">🔄 Refresh from Google Sheet</button>
     <button id="sample" class="sec" type="button">Load sample (28 July 2026)</button>
-    <div class="note" style="margin-top:6px">Upload your Excel / CSV (first sheet). The file is processed in this browser only. An internet connection is needed once to load the Excel-reading library.</div>
+    <label class="note" style="margin-left:8px">Or upload a file: <input id="file" type="file" accept=".xlsx,.xls,.csv"></label>
+    <div class="note" style="margin-top:6px">Data is collected automatically from the published Google Sheet when this page opens, and re-checked every few minutes. If the sheet cannot be reached, upload an Excel / CSV file instead. An internet connection is needed.</div>
     <div id="fileStatus" class="status"></div>
   </div>
   <div id="filters" class="panel hidden">
@@ -122,6 +123,55 @@ table.rt td:last-child,table.rt th:last-child{border-right:0}
 const $=id=>document.getElementById(id);
 let headers=[],allRows=[],cols={},tasks=[];
 
+/* ---------- AUTO DATA COLLECTION FROM GOOGLE SHEET ---------- */
+// Your "Publish to web" link (the .../pubhtml one). Change here if the sheet changes.
+const SHEET_PUBHTML='https://docs.google.com/spreadsheets/d/e/2PACX-1vRWsYb_6Sg6DxI9CgZzdzjO36_T3Yt7cOfgmT01IoAxK_TvhRLIPJmOEX6myKEAzstIrlHl1AfLXZ0w/pubhtml';
+const SHEET_GID='';          // optional: tab id (number after gid= in the sheet URL). Empty = first tab
+const REFRESH_MINUTES=5;     // auto re-check interval; 0 = only on page load / button
+function sheetCsvUrl(){
+ let u=SHEET_PUBHTML.replace(/\/pubhtml.*$/,'/pub')+'?output=csv'+(SHEET_GID?'&gid='+SHEET_GID:'');
+ return u+'&_t='+Date.now(); // avoid cached copies
+}
+
+// Tries the direct Google link first, then public CORS relays (needed when the page is opened as a local file)
+async function fetchCsvAny(){
+ const u=sheetCsvUrl();
+ const routes=[
+  u,
+  'https://corsproxy.io/?'+encodeURIComponent(u),
+  'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+  'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u)
+ ];
+ let last='';
+ for(const r of routes){
+  try{
+   const res=await fetch(r,{cache:'no-store'});
+   if(!res.ok){last='HTTP '+res.status;continue}
+   const t=await res.text();
+   if(t&&!/^\s*<(!doctype|html)/i.test(t))return t;
+   last='Google returned a web page, not data (re-publish the sheet as CSV / Web page)';
+  }catch(e){last=e.message}
+ }
+ throw new Error(last||'network blocked');
+}
+let lastCsv='';
+async function loadFromSheet(manual){
+ const st=$('fileStatus');
+ if(manual||!allRows.length)st.textContent='Collecting data from Google Sheet…';
+ try{
+  const text=await fetchCsvAny();
+  if(/^\s*<(!doctype|html)/i.test(text))throw new Error('Google returned a web page, not data. Re-publish the sheet as "Web page" or CSV.');
+  if(text===lastCsv&&allRows.length){st.textContent='Up to date · checked '+new Date().toLocaleTimeString();return}
+  lastCsv=text;
+  const keep=$('dateSelect').value;
+  const wb=XLSX.read(text,{type:'string',cellDates:true});
+  loadRows(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false}),'Google Sheet',keep);
+  st.textContent+=' · updated '+new Date().toLocaleTimeString();
+ }catch(err){
+  st.textContent='Could not collect from Google Sheet: '+err.message+' — you can still upload a file below.';
+ }
+}
+
 const TASKS=[
  {k:'att',name:'ATTENDANCE (ERP)',short:'Attendance in ERP',act:'Attendance Update in ERP',re:/attendance/i,not:/spiral/i,color:'#15803d',bg:'#f2fbf5',em:'👥'},
  {k:'spiral',name:'SPIRAL ATTENDANCE CHECKED',short:'Attendance in Spiral',act:'Spiral Check',re:/spiral/i,color:'#15803d',bg:'#f2fbf5',em:'✅'},
@@ -140,7 +190,7 @@ function parseDate(v){
  if(typeof v==='number'&&v>20000&&v<80000){const d=XLSX.SSF.parse_date_code(v);if(d)return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`}
  const s=String(v??'').trim();if(!s)return '';
  let m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
- m=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);if(m){let a=+m[1],b=+m[2],y=m[3];if(a>12)return `${y}-${String(b).padStart(2,'0')}-${String(a).padStart(2,'0')}`;return `${y}-${String(a).padStart(2,'0')}-${String(b).padStart(2,'0')}`}
+ m=s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);if(m){let a=+m[1],b=+m[2],y=m[3];if(b>12)return `${y}-${String(a).padStart(2,'0')}-${String(b).padStart(2,'0')}`;return `${y}-${String(b).padStart(2,'0')}-${String(a).padStart(2,'0')}`}
  const d=new Date(s);if(!isNaN(d))return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;return '';
 }
 const longDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
@@ -153,7 +203,7 @@ function status(v){const s=norm(v);if(!s||['nan','null','undefined'].includes(s)
 const isPendingYes=v=>{const s=norm(v);return !!s&&!/no pending|not pending|^no$|^none$|no task|^-$|^n\/?a$|^nil$/.test(s)};
 const hasIssue=v=>{const s=norm(v);return !!s&&!/no issue|^no$|^none$|not applicable|^n\/?a$|^nil$|^-$/.test(s)};
 
-function loadRows(json,label){
+function loadRows(json,label,keepDate){
  if(!json.length)throw new Error('No data rows found in the first worksheet.');
  headers=Object.keys(json[0]).filter(h=>String(h).trim()!=='');
  allRows=json;
@@ -182,7 +232,7 @@ function loadRows(json,label){
  const dates=[...new Set(allRows.map(r=>r.__date).filter(Boolean))].sort();
  if(!dates.length)throw new Error('No valid dates found in the date column.');
  $('dateSelect').innerHTML=dates.map(d=>`<option value="${d}">${longDate(d)}</option>`).join('');
- $('dateSelect').value=dates[dates.length-1];
+ $('dateSelect').value=(keepDate&&dates.includes(keepDate))?keepDate:dates[dates.length-1];
  $('filters').classList.remove('hidden');
  $('fileStatus').textContent=`Loaded ${allRows.length} rows from “${label}” · ${dates.length} date(s) found · ${tasks.length} task columns detected.`;
  render();
@@ -206,6 +256,11 @@ $('sample').addEventListener('click',()=>{
   mk({'Select Name':'Ms. Muuni Thakur','Coordinator of Class(es)':'III to V','Attendance ERP':ND,'Spiral Check':ND,'Notebook Checking':ND,'If Notebook Checking was Done, mention Class & Subject':ND,'Class Test Verified':ND,'If Class Test was Done, mention Class & Subject':ND,'Lesson Plan ERP':ND,'If Lesson Plan was Done, mention Class & Subject':ND,'Homework ERP':ND,'Class Activity ERP':ND,'Notice ERP':ND,'Any Pending Task?':'No','If Any Task is Pending, Reason':'No Pending Task','Any Issue in Your Class(es) Today?':'No Issue'})
  ];
  try{$('extra').value='Maintenance Team should check the availability of half sheets.';loadRows(rows,'sample data')}catch(err){$('fileStatus').textContent=err.message}
+});
+$('refresh').addEventListener('click',()=>loadFromSheet(true));
+window.addEventListener('DOMContentLoaded',()=>{
+ loadFromSheet(true);
+ if(REFRESH_MINUTES>0)setInterval(()=>{if(!document.hidden)loadFromSheet(false)},REFRESH_MINUTES*60000);
 });
 $('dateSelect').addEventListener('change',render);
 $('extra').addEventListener('input',render);
