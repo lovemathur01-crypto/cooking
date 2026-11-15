@@ -201,6 +201,13 @@ body.dark{background:#0f172a;color:#e2e8f0}
 .dark .duty-chart-wrap>.muted{color:#64748b}
 .dark .generated-duty-paper select,.dark .generated-duty-paper input{background:#fff;color:#111;border-color:#cbd5e1}
 @media print{body.dark{background:#fff;color:#111}.dark .card{background:#fff}}
+
+/* ---------- Lock / Unlock ---------- */
+.lock-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;padding:11px 13px;border-radius:8px;font-weight:700;font-size:13px}
+.lock-bar.locked{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b}
+.lock-bar.unlocked{background:#f0fdf4;border:1px solid #86efac;color:#166534}
+.dark .lock-bar.locked{background:#450a0a;border-color:#991b1b;color:#fecaca}
+.dark .lock-bar.unlocked{background:#052e16;border-color:#166534;color:#bbf7d0}
 </style>
 </head>
 <body>
@@ -286,10 +293,13 @@ Expected columns: <b>Teacher Name, Day, 1st IP, 2nd IP, 3rd IP, 4th IP, Lunch Br
 <button class="btn purple" onclick="downloadPDFPortrait()">⬇ PDF (Portrait, 2 Pages)</button>
 <button class="btn success" onclick="downloadPNG()">⬇ PNG (High Quality)</button>
 <button class="btn secondary" onclick="savePlan()">Save Duty Chart</button>
+<button class="btn danger" onclick="lockChart()" id="lockBtn">🔒 Lock Chart</button>
 <button class="btn danger" onclick="clearArrangement()">Clear Chart</button>
 </div>
 <label class="auto-toggle"><input type="checkbox" id="autoGenerateToggle" checked> Automatically generate/update the duty list when Tab 5 is opened</label>
 <div id="generationMessage" class="info" style="margin-top:12px">Select the date/day and absent teachers. When you open Tab 5, the duty list is generated automatically.</div>
+<label class="auto-toggle"><input type="checkbox" id="lockOnSaveToggle" checked> Lock the chart automatically when I save it</label>
+<div id="lockStatus"></div>
 </div>
 <div class="card"><div id="dutyListChart" class="duty-chart-wrap"><div class="muted" style="padding:12px">Your generated duty chart will appear here.</div></div></div>
 </section>
@@ -563,12 +573,16 @@ function optimizeAssignments(){
  const slots=[];
  Object.keys(generated.results).forEach(a=>PERIODS.forEach((p,pi)=>{
   const r=generated.results[a][p];
-  if(r&&(r.status==="assigned"||r.status==="unassigned"))slots.push({p,pi,r,teacher:null,elig:[]});
+  if(r&&!r.fixed&&(r.status==="assigned"||r.status==="unassigned"))slots.push({p,pi,r,teacher:null,elig:[]});
  }));
  const teachers=Object.keys(timetable[day]||{}).filter(t=>!absent.has(key(t)));
- const free={},held={},cap={};
- teachers.forEach(t=>{free[t]=totalFree(day,t);held[t]=[]});
- slots.forEach(s=>{s.elig=teachers.filter(t=>isFree(timetable[day][t][s.p]))});
+ const free={},held={},cap={},fixedBy={};
+ Object.keys(generated.results).forEach(a=>PERIODS.forEach(p=>{
+  const r=generated.results[a][p];
+  if(r&&r.fixed&&r.substitute){const k=key(r.substitute);(fixedBy[k]=fixedBy[k]||[]).push(p)}
+ }));
+ teachers.forEach(t=>{free[t]=totalFree(day,t)-(fixedBy[key(t)]||[]).length;held[t]=[]});
+ slots.forEach(s=>{s.elig=teachers.filter(t=>isFree(timetable[day][t][s.p])&&!(fixedBy[key(t)]||[]).includes(s.p))});
  const assign=(s,t)=>{if(s.teacher)held[s.teacher]=held[s.teacher].filter(x=>x!==s);s.teacher=t;held[t].push(s)};
  const order=s=>s.elig.slice().sort((x,y)=>held[x].length-held[y].length||free[y]-free[x]||x.localeCompare(y));
  function tryAssign(s,vis){
@@ -594,6 +608,7 @@ function optimizeAssignments(){
   if(s.teacher){s.r.status="assigned";s.r.substitute=s.teacher}
   else{s.r.status="unassigned";s.r.substitute="UNASSIGNED"}
  });
+ Object.values(generated.results).forEach(byP=>Object.values(byP).forEach(r=>{delete r.fixed}));
  rebuildDutyCount();
 }
 
@@ -612,6 +627,10 @@ function findSubstitute(day,pi,absentSet,usedThisPeriod,dutyCount){
 
 function generateDutyListAutomatically(force){
  try{
+  if(generated&&generated.locked){
+   if(force){alert("This duty chart is LOCKED. Unlock it first to regenerate.");return false}
+   renderDutyListChart();refreshPrintChart();return true;
+  }
   const toggle=document.getElementById("autoGenerateToggle");
   if(!force&&toggle&&!toggle.checked){
    renderDutyListChart();
@@ -630,7 +649,7 @@ function generateDutyListAutomatically(force){
  }
 }
 
-function generateArrangement(){
+function generateArrangement(prev){
  if(!Object.keys(timetable).length){setMessage("generationMessage","<b>Please upload the timetable Excel first.</b>","error");openTab("tab1");return false}
  if(validation&&validation.errors.some(x=>/Teacher Name is blank|Day is blank|Duplicate teacher\/day/i.test(x))){
   setMessage("generationMessage","<b>Please fix the Excel errors first (see Tab 2).</b>","error");openTab("tab2");return false;
@@ -656,7 +675,23 @@ function generateArrangement(){
    else{results[a.name][p]={original,substitute:"UNASSIGNED",status:"unassigned"};required++}
   });
  });
- generated={day,date,absence,results,dutyCount:{},required,assigned:0,unassigned:0,noDuty,signature:signature()};
+ // Keep existing duties (used by "Unlock & Update")
+ if(prev&&prev.day===day){
+  Object.keys(prev.results||{}).forEach(an=>{
+   if(!results[an])return;
+   PERIODS.forEach(p=>{
+    const pr=prev.results[an][p],r=results[an][p];
+    if(!pr||pr.status!=="assigned"||!r||r.status!=="unassigned")return;
+    const t=pr.substitute,k=key(t);
+    if(absence[k])return;
+    if(!pr.custom){const row=timetable[day]?.[t];if(!row||!isFree(row[p]))return}
+    const clash=Object.keys(results).some(a=>a!==an&&results[a][p].status==="assigned"&&key(results[a][p].substitute)===k);
+    if(clash)return;
+    r.status="assigned";r.substitute=t;if(pr.custom)r.custom=true;r.fixed=true;
+   });
+  });
+ }
+ generated={day,date,absence,results,dutyCount:{},required,assigned:0,unassigned:0,noDuty,signature:signature(),locked:false};
  optimizeAssignments();
  renderDutyListChart();refreshPrintChart();
  setMessage("generationMessage",`<b>Duty list generated automatically.</b> ${generated.required} required, ${generated.assigned} assigned, ${generated.unassigned} unassigned.<br>${freeStatusMsg()}`,generated.unassigned?"warning":"success");
@@ -691,11 +726,12 @@ function chartDutyOptions(absName,pi){
  });
  if(!cands.length)opts+='<option value="__NONE__">UNASSIGNED — no eligible teacher</option>';
  opts+='<option value="__CUSTOM__">✍ Type another name…</option>';
- const inp=(custom||r.status==="unassigned")?`<input type="text" class="custom-name" placeholder="Or type another person's name" value="${custom?escapeHTML(r.substitute):""}" data-abs="${escapeHTML(absName)}" data-pi="${pi}" onchange="customDutyChanged(this)">`:"";
- return `<select data-abs="${escapeHTML(absName)}" data-pi="${pi}" onchange="dutyDropdownChanged(this)">${opts}</select>${inp}<div class="live-count">${cands.length} eligible now</div>`;
+ const dis=generated.locked?" disabled":"";
+ const inp=(custom||r.status==="unassigned")?`<input type="text" class="custom-name"${dis} placeholder="Or type another person's name" value="${custom?escapeHTML(r.substitute):""}" data-abs="${escapeHTML(absName)}" data-pi="${pi}" onchange="customDutyChanged(this)">`:"";
+ return `<select${dis} data-abs="${escapeHTML(absName)}" data-pi="${pi}" onchange="dutyDropdownChanged(this)">${opts}</select>${inp}<div class="live-count">${cands.length} eligible now</div>`;
 }
 function dutyDropdownChanged(sel){
- if(!generated)return;
+ if(!generated||generated.locked)return;
  dutyChoiceChanged(sel.dataset.abs,Number(sel.dataset.pi),sel.value);
  if(sel.value==="__CUSTOM__"){
   setMessage("generationMessage","<b>Type the other person's name</b> in the box under the dropdown, then press Enter or click outside.","info");
@@ -706,7 +742,7 @@ function dutyDropdownChanged(sel){
  setMessage("generationMessage","<b>Duty updated.</b> "+freeStatusMsg(),zeroFreeTeachers().length?"warning":"success");
 }
 function customDutyChanged(inp){
- if(!generated)return;
+ if(!generated||generated.locked)return;
  const abs=inp.dataset.abs,pi=Number(inp.dataset.pi),period=PERIODS[pi],r=generated.results[abs][period],name=normalize(inp.value);
  if(name){
   if(generated.absence[key(name)]){alert("That person is marked absent, so they cannot take a duty.");renderDutyListChart();return}
@@ -730,6 +766,7 @@ function ensurePeriodUnique(absName,pi,teacher){
  return true;
 }
 function dutyChoiceChanged(absName,pi,value){
+ if(generated.locked)return;
  const period=PERIODS[pi],r=generated.results[absName][period];
  if(value==="__KEEP__")return;
  if(value==="__CUSTOM__"){r.status="unassigned";r.substitute="UNASSIGNED";delete r.custom}
@@ -824,13 +861,14 @@ function buildChartHTML(editable){
 
 function renderDutyListChart(){
  const box=document.getElementById("dutyListChart");
- if(!generated){box.innerHTML='<div class="muted" style="padding:12px">Your generated duty chart will appear here.</div>';return}
+ if(!generated){box.innerHTML='<div class="muted" style="padding:12px">Your generated duty chart will appear here.</div>';updateLockUI();return}
  const oldPaper=box.querySelector(".generated-duty-paper");
  const sl=oldPaper?oldPaper.scrollLeft:0,st=box.scrollTop,sy=window.scrollY;
  box.innerHTML=buildChartHTML(true);
  const np=box.querySelector(".generated-duty-paper");
  if(np)np.scrollLeft=sl;
  box.scrollTop=st;window.scrollTo(window.scrollX,sy);
+ updateLockUI();
 }
 
 function refreshPrintChart(){
@@ -1010,16 +1048,53 @@ async function downloadPDFPortrait(){
  }finally{f.remove()}
 }
 
+/* ---------- Lock / Unlock ---------- */
+function lockChart(){
+ if(!generated){alert("Generate the duty chart first.");return}
+ generated.locked=true;
+ renderDutyListChart();refreshPrintChart();
+ setMessage("generationMessage","<b>🔒 Duty chart locked.</b> Absent-teacher changes will not alter it until you unlock. Remember to click <b>Save Duty Chart</b> to keep it.","success");
+}
+function unlockChart(mode){
+ if(!generated||!generated.locked)return;
+ const prev=generated;
+ const msg=mode==="keep"
+  ?"Unlock and UPDATE?\n\nExisting duties will be kept. Only new absences / unassigned periods will be filled."
+  :"Unlock and REGENERATE ALL?\n\nThis will rebuild every duty from scratch, including any manual corrections.";
+ if(!confirm(msg))return;
+ prev.locked=false;
+ const ok=generateArrangement(mode==="keep"?prev:undefined);
+ if(!ok){prev.locked=true;generated=prev;renderDutyListChart();return}
+ if(mode==="keep")setMessage("generationMessage",`<b>Chart unlocked and updated (existing duties kept).</b> ${generated.required} required, ${generated.assigned} assigned, ${generated.unassigned} unassigned.<br>${freeStatusMsg()} Click <b>Lock Chart</b> / <b>Save</b> to lock it again.`,generated.unassigned?"warning":"success");
+}
+function updateLockUI(){
+ const box=document.getElementById("lockStatus"),btn=document.getElementById("lockBtn");
+ if(!box)return;
+ if(!generated){box.innerHTML="";if(btn)btn.style.display="none";return}
+ if(btn)btn.style.display=generated.locked?"none":"";
+ if(generated.locked){
+  const pending=generated.signature!==signature();
+  box.innerHTML=`<div class="lock-bar locked">🔒 LOCKED — this chart will not change.${pending?" <span>⚠ Day/absent teachers have changed since it was locked; these changes are NOT applied yet.</span>":""}
+   <button class="btn warning" onclick="unlockChart('keep')">🔓 Unlock & Update (keep existing duties)</button>
+   <button class="btn danger" onclick="unlockChart('regen')">🔓 Unlock & Regenerate All</button></div>`;
+ }else{
+  box.innerHTML=`<div class="lock-bar unlocked">🔓 Unlocked — the chart updates automatically when absences change. Click <b>Lock Chart</b> (or Save) to freeze it.</div>`;
+ }
+}
+
 /* ---------- save / load / history ---------- */
 function readHistory(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]")}catch(e){return[]}}
 function savePlan(){
  if(!generated){alert("Generate the duty chart first.");return}
  rebuildDutyCount();
+ const lt=document.getElementById("lockOnSaveToggle");
+ if(lt&&lt.checked)generated.locked=true;
  const h=readHistory();
- h.unshift({savedAt:new Date().toLocaleString("en-IN"),day:generated.day,date:generated.date,absence:generated.absence,results:generated.results,dutyCount:generated.dutyCount,required:generated.required,assigned:generated.assigned,unassigned:generated.unassigned,noDuty:generated.noDuty});
+ h.unshift({savedAt:new Date().toLocaleString("en-IN"),day:generated.day,date:generated.date,absence:generated.absence,results:generated.results,dutyCount:generated.dutyCount,required:generated.required,assigned:generated.assigned,unassigned:generated.unassigned,noDuty:generated.noDuty,locked:!!generated.locked});
  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(h.slice(0,5)))}catch(e){alert("Could not save in this browser.");return}
  renderHistory();
- setMessage("generationMessage","<b>Complete duty chart saved.</b> The latest 5 charts are kept.","success");
+ renderDutyListChart();refreshPrintChart();
+ setMessage("generationMessage","<b>Complete duty chart saved.</b> The latest 5 charts are kept."+(generated.locked?" The chart is now 🔒 locked.":""),"success");
 }
 function loadPlan(i){
  const x=readHistory()[i];
@@ -1034,7 +1109,7 @@ function loadPlan(i){
   document.querySelectorAll(cls).forEach(cb=>{if(key(cb.value)===key(a.name))cb.checked=true});
  });
  handleAbsenceSelection();
- generated={day:x.day,date:x.date||"",absence:x.absence||{},results:x.results||{},dutyCount:{},required:x.required||0,assigned:0,unassigned:0,noDuty:x.noDuty||0,signature:signature()};
+ generated={day:x.day,date:x.date||"",absence:x.absence||{},results:x.results||{},dutyCount:{},required:x.required||0,assigned:0,unassigned:0,noDuty:x.noDuty||0,signature:signature(),locked:!!x.locked};
  rebuildDutyCount();
  openTab("tab5");
  renderDutyListChart();refreshPrintChart();
@@ -1044,9 +1119,10 @@ function deletePlan(i){const h=readHistory();h.splice(i,1);localStorage.setItem(
 function renderHistory(){
  const box=document.getElementById("history"),h=readHistory();
  if(!h.length){box.innerHTML='<div class="muted">No saved duty charts.</div>';return}
- box.innerHTML=h.map((x,i)=>`<div class="check-item"><div><b>${i+1}. ${escapeHTML(x.day)} — ${escapeHTML(x.date||"")}</b><br><span class="small">Absent: ${Object.values(x.absence||{}).map(a=>escapeHTML(a.name)+" ("+escapeHTML(a.type)+")").join(", ")}<br>Required: ${x.required} | Assigned: ${x.assigned} | Unassigned: ${x.unassigned} | No Duty: ${x.noDuty}<br>Saved: ${escapeHTML(x.savedAt)}</span></div><div class="history-actions"><button class="btn primary" onclick="loadPlan(${i})">Load / Correct</button><button class="btn danger" onclick="deletePlan(${i})">Delete</button></div></div>`).join("");
+ box.innerHTML=h.map((x,i)=>`<div class="check-item"><div><b>${i+1}. ${x.locked?"🔒 ":""}${escapeHTML(x.day)} — ${escapeHTML(x.date||"")}</b><br><span class="small">Absent: ${Object.values(x.absence||{}).map(a=>escapeHTML(a.name)+" ("+escapeHTML(a.type)+")").join(", ")}<br>Required: ${x.required} | Assigned: ${x.assigned} | Unassigned: ${x.unassigned} | No Duty: ${x.noDuty}<br>Saved: ${escapeHTML(x.savedAt)}</span></div><div class="history-actions"><button class="btn primary" onclick="loadPlan(${i})">Load / Correct</button><button class="btn danger" onclick="deletePlan(${i})">Delete</button></div></div>`).join("");
 }
 function clearArrangement(){
+ if(generated&&generated.locked){alert("This duty chart is LOCKED. Unlock it before clearing.");return}
  generated=null;
  renderDutyListChart();refreshPrintChart();
  setMessage("generationMessage","Duty list cleared. Generate it again when ready.","warning");
@@ -1070,6 +1146,7 @@ try{applyTheme(localStorage.getItem(THEME_KEY)==="dark")}catch(e){}
  const t=new Date();
  document.getElementById("dateInput").value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
  renderHistory();
+ updateLockUI();
  if(typeof XLSX==="undefined")setMessage("uploadMessage","<b>Excel engine not found.</b> Check your internet connection and reload the page.","warning");
 })();
 </script>
