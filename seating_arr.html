@@ -3,4693 +3,531 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>School Seating Arrangement Generator</title>
-
 <style>
-*{
-    box-sizing:border-box;
-}
-
-body{
-    margin:0;
-    font-family:Arial,Helvetica,sans-serif;
-    background:#f4f6f9;
-    color:#172033;
-}
-
-header{
-    background:#172554;
-    color:white;
-    padding:20px;
-}
-
-header h1{
-    margin:0 0 6px;
-    font-size:24px;
-}
-
-header p{
-    margin:0;
-    color:#dbeafe;
-    font-size:13px;
-}
-
-nav{
-    background:white;
-    padding:12px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:7px;
-    border-bottom:1px solid #ddd;
-    position:sticky;
-    top:0;
-    z-index:10;
-}
-
-nav button{
-    border:1px solid #d5dbe5;
-    background:white;
-    padding:9px 14px;
-    border-radius:7px;
-    cursor:pointer;
-}
-
-nav button.active,
-button.primary{
-    background:#2563eb;
-    color:white;
-    border-color:#2563eb;
-}
-
-main{
-    max-width:1450px;
-    margin:auto;
-    padding:20px;
-}
-
-.tab{
-    display:none;
-}
-
-.tab.active{
-    display:block;
-}
-
-.card{
-    background:white;
-    border:1px solid #dce2ea;
-    border-radius:12px;
-    padding:18px;
-    margin-bottom:18px;
-    box-shadow:0 3px 15px rgba(0,0,0,.05);
-}
-
-h2,h3{
-    margin-top:0;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-    gap:12px;
-}
-
-label{
-    display:block;
-    font-size:12px;
-    font-weight:bold;
-    color:#64748b;
-    margin-bottom:5px;
-}
-
-input,
-select{
-    width:100%;
-    padding:9px 10px;
-    border:1px solid #cbd5e1;
-    border-radius:7px;
-    background:white;
-}
-
-button{
-    padding:9px 13px;
-    border:1px solid #d5dbe5;
-    border-radius:7px;
-    background:white;
-    cursor:pointer;
-}
-
-button:hover{
-    filter:brightness(.97);
-}
-
-button.danger{
-    background:#fee2e2;
-    color:#991b1b;
-    border-color:#fecaca;
-}
-
-button.success{
-    background:#dcfce7;
-    color:#166534;
-}
-
-.toolbar{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin:14px 0;
-}
-
-.tablewrap{
-    overflow:auto;
-    max-height:600px;
-    border:1px solid #dce2ea;
-    border-radius:8px;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:13px;
-}
-
-th,
-td{
-    border-bottom:1px solid #e5e7eb;
-    padding:8px;
-    text-align:left;
-    white-space:nowrap;
-}
-
-th{
-    background:#f8fafc;
-}
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-    gap:10px;
-    margin-bottom:18px;
-}
-
-.stat{
-    background:white;
-    border:1px solid #dce2ea;
-    border-radius:10px;
-    padding:14px;
-}
-
-.stat b{
-    display:block;
-    font-size:25px;
-    margin-top:5px;
-}
-
-.message{
-    padding:11px;
-    border-radius:8px;
-    margin:10px 0;
-}
-
-.info{
-    background:#dbeafe;
-    color:#1e40af;
-}
-
-.error{
-    background:#fee2e2;
-    color:#991b1b;
-}
-
-.successmsg{
-    background:#dcfce7;
-    color:#166534;
-}
-
-.warning{
-    background:#fef3c7;
-    color:#92400e;
-}
-
-.badge{
-    display:inline-block;
-    padding:4px 8px;
-    border-radius:20px;
-    font-size:11px;
-    font-weight:bold;
-}
-
-.ok{
-    background:#dcfce7;
-    color:#166534;
-}
-
-.bad{
-    background:#fee2e2;
-    color:#991b1b;
-}
-
-.roomcard{
-    border:1px solid #dce2ea;
-    border-radius:10px;
-    padding:15px;
-    margin-bottom:18px;
-    background:white;
-}
-
-.roomhead{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-}
-
-.seats{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(155px,1fr));
-    gap:7px;
-    margin-top:12px;
-}
-
-.seat{
-    border:1px solid #dce2ea;
-    border-radius:7px;
-    padding:9px;
-    background:#fafafa;
-}
-
-.seat strong{
-    display:block;
-    margin:3px 0;
-}
-
-.small{
-    color:#64748b;
-    font-size:11px;
-}
-
-.checkbox{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin:8px 0;
-}
-
-.checkbox input{
-    width:auto;
-}
-
-footer{
-    text-align:center;
-    padding:25px;
-    color:#64748b;
-    font-size:12px;
-}
-
-
-.summary-card,
-.history-card{margin-bottom:18px;}
-
-.summary-title-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:15px;
-    flex-wrap:wrap;
-}
-
-.muted{color:#64748b;font-size:12px;margin-top:4px;}
-.summary-count{
-    background:#eef2ff;
-    color:#3730a3;
-    border-radius:999px;
-    padding:6px 10px;
-    font-size:12px;
-    font-weight:700;
-    white-space:nowrap;
-}
-
-.class-summary-table{width:100%;border-collapse:collapse;margin-top:14px;}
-.class-summary-table th,.class-summary-table td{border:1px solid #dce2ea;padding:8px;text-align:left;font-size:12px;}
-.class-summary-table th{background:#f8fafc;}
-.summary-status{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;}
-.summary-status.complete{background:#dcfce7;color:#166534;}
-.summary-status.pending{background:#fef3c7;color:#92400e;}
-
-.saved-plan-list{display:grid;gap:9px;margin-top:14px;}
-.saved-plan-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid #dce2ea;border-radius:8px;background:#fafafa;}
-.saved-plan-meta{font-size:12px;color:#334155;margin-top:4px;}
-.compact-toolbar{margin:0;}
-.compact-toolbar button{padding:7px 10px;font-size:12px;}
-button.danger{color:#b91c1c;border-color:#fecaca;background:#fff1f2;}
-
-@media(max-width:700px){
-    .saved-plan-item{align-items:flex-start;flex-direction:column;}
-}
-
-/* PRINT - ONE EXAM ROOM PER PAGE */
-@page{
-    size:A4 landscape;
-    margin:8mm;
-}
-
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f9;color:#172033}
+header{background:#172554;color:#fff;padding:20px}
+header h1{margin:0 0 6px;font-size:24px}
+header p{margin:0;color:#dbeafe;font-size:13px}
+nav{background:#fff;padding:12px;display:flex;flex-wrap:wrap;gap:7px;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:10}
+nav button.active,button.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+main{max-width:1450px;margin:auto;padding:20px}
+.tab{display:none}.tab.active{display:block}
+.card{background:#fff;border:1px solid #dce2ea;border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:0 3px 15px rgba(0,0,0,.05)}
+h2,h3{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+label{display:block;font-size:12px;font-weight:bold;color:#64748b;margin-bottom:5px}
+input,select{width:100%;padding:9px 10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff}
+button{padding:9px 13px;border:1px solid #d5dbe5;border-radius:7px;background:#fff;cursor:pointer}
+button:hover{filter:brightness(.97)}
+button.danger{background:#fff1f2;color:#b91c1c;border-color:#fecaca}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.tablewrap{overflow:auto;max-height:600px;border:1px solid #dce2ea;border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid #e5e7eb;padding:8px;text-align:left;white-space:nowrap}
+th{background:#f8fafc}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid #dce2ea;border-radius:10px;padding:14px}
+.stat b{display:block;font-size:25px;margin-top:5px}
+.message{padding:11px;border-radius:8px;margin:10px 0}
+.info{background:#dbeafe;color:#1e40af}.error{background:#fee2e2;color:#991b1b}
+.successmsg{background:#dcfce7;color:#166534}.warning{background:#fef3c7;color:#92400e}
+.badge{display:inline-block;padding:4px 8px;border-radius:20px;font-size:11px;font-weight:bold}
+.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}
+.roomcard{border:1px solid #dce2ea;border-radius:10px;padding:15px;margin-bottom:18px;background:#fff}
+.roomhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:7px;margin-top:12px}
+.seat{border:1px solid #dce2ea;border-radius:7px;padding:9px;background:#fafafa}
+.seat strong{display:block;margin:3px 0}
+.small,.muted{color:#64748b;font-size:11px}
+.muted{font-size:12px;margin-top:4px}
+.checkbox{display:flex;align-items:center;gap:8px;margin:8px 0}
+.checkbox input{width:auto}
+footer{text-align:center;padding:25px;color:#64748b;font-size:12px}
+.title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;flex-wrap:wrap}
+.pill{background:#eef2ff;color:#3730a3;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.plan{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid #dce2ea;border-radius:8px;background:#fafafa;margin-top:9px}
+.plan .toolbar{margin:0}.plan button{padding:7px 10px;font-size:12px}
+.ctitle{font-size:13px;font-weight:600;color:#222;margin-top:3px}
+@page{size:A4 landscape;margin:8mm}
 @media print{
-
-    html,
-    body{
-        background:white !important;
-        width:100%;
-        margin:0;
-        padding:0;
-    }
-
-    body.print-arrangement #classWiseSummary,
-    body.print-arrangement #savedPlansSection,
-    body.print-arrangement nav,
-    body.print-arrangement header,
-    body.print-arrangement footer,
-    body.print-arrangement main > .tab:not(#arrangement),
-    body.print-arrangement #arrangement > .no-print{
-        display:none !important;
-    }
-
-    body.print-arrangement main{
-        max-width:none;
-        width:100%;
-        margin:0;
-        padding:0;
-    }
-
-    body.print-arrangement #arrangement{
-        display:block !important;
-        width:100%;
-        margin:0;
-        padding:0;
-    }
-
-    body.print-arrangement #arrangementOutput{
-        width:100%;
-        margin:0;
-        padding:0;
-    }
-
-    body.print-arrangement .roomcard{
-        width:100%;
-        margin:0;
-        padding:8mm;
-        border:1px solid #222;
-        border-radius:0;
-        box-shadow:none;
-        break-inside:avoid;
-        page-break-inside:avoid;
-    }
-
-    body.print-arrangement .roomcard.print-room-break{
-        break-after:page;
-        page-break-after:always;
-    }
-
-    body.print-arrangement .roomcard.print-last-room{
-        break-after:auto;
-        page-break-after:auto;
-    }
-
-    body.print-arrangement .roomhead{
-        border-bottom:1px solid #222;
-        padding-bottom:5px;
-        margin-bottom:8px;
-    }
-
-    body.print-arrangement .roomhead h2{
-        margin:0;
-        font-size:20px;
-    }
-
-    body.print-arrangement .original-class{
-        display:block;
-        margin-top:3px;
-        font-size:13px;
-        font-weight:600;
-        color:#222;
-    }
-
-    body.print-arrangement table{
-        font-size:11px;
-        margin-bottom:7px;
-    }
-
-    body.print-arrangement th,
-    body.print-arrangement td{
-        padding:4px 6px;
-        border:1px solid #999;
-    }
-
-    body.print-arrangement h3{
-        margin:7px 0 5px !important;
-        font-size:14px;
-    }
-
-    body.print-arrangement .seats{
-        grid-template-columns:repeat(6,1fr);
-        gap:4px;
-        margin-top:5px;
-    }
-
-    body.print-arrangement .seat{
-        padding:5px;
-        border:1px solid #999;
-        border-radius:2px;
-        font-size:10px;
-    }
-
-    body.print-arrangement .seat strong{
-        margin:2px 0;
-        font-size:11px;
-    }
-
-    body.print-arrangement .small{
-        font-size:9px;
-    }
-
-    body.print-arrangement .badge{
-        border:1px solid #222;
-        background:white !important;
-        color:#111 !important;
-    }
+html,body{background:#fff!important;margin:0;padding:0}
+body.printing nav,body.printing header,body.printing footer,body.printing .no-print,body.printing #classWiseSummary,body.printing main>.tab:not(#arrangement){display:none!important}
+body.printing main{max-width:none;padding:0;margin:0}
+body.printing #arrangement{display:block!important}
+body.printing .roomcard{margin:0;padding:8mm;border:1px solid #222;border-radius:0;box-shadow:none;break-inside:avoid;break-after:page}
+body.printing .roomcard:last-child{break-after:auto}
+body.printing .roomhead{border-bottom:1px solid #222;padding-bottom:5px;margin-bottom:8px}
+body.printing table{font-size:11px;margin-bottom:7px}
+body.printing th,body.printing td{padding:4px 6px;border:1px solid #999}
+body.printing .seats{grid-template-columns:repeat(6,1fr);gap:4px}
+body.printing .seat{padding:5px;border:1px solid #999;border-radius:2px;font-size:10px}
+body.printing .seat strong{font-size:11px;margin:2px 0}
+body.printing .badge{border:1px solid #222;background:#fff!important;color:#111!important}
 }
 </style>
 </head>
-
 <body>
-
-<header>
-    <h1>School Seating Arrangement Generator</h1>
-    <p>
-        Examination Seating • Mixed Classes • Roll Number Ranges •
-        Capacity Validation
-    </p>
-</header>
-
+<header><h1>School Seating Arrangement Generator</h1>
+<p>Examination Seating • Mixed Classes • Roll Number Ranges • Capacity Validation</p></header>
 <nav class="no-print">
-
-    <button class="active" data-tab="dashboard">
-        Dashboard
-    </button>
-
-    <button data-tab="classes">
-        Classes
-    </button>
-
-    <button data-tab="rooms">
-        Exam Rooms
-    </button>
-
-    <button data-tab="rules">
-        Seating Rules
-    </button>
-
-    <button data-tab="generate">
-        Generate
-    </button>
-
-    <button data-tab="arrangement">
-        Arrangement
-    </button>
-
-    <button data-tab="validation">
-        Validation
-    </button>
-
+<button class="active" data-tab="dashboard">Dashboard</button>
+<button data-tab="classes">Classes</button>
+<button data-tab="rooms">Exam Rooms</button>
+<button data-tab="rules">Seating Rules</button>
+<button data-tab="generate">Generate</button>
+<button data-tab="arrangement">Arrangement</button>
+<button data-tab="validation">Validation</button>
 </nav>
-
-
 <main>
-
-<!-- =========================================================
-     DASHBOARD
-========================================================= -->
-
 <section id="dashboard" class="tab active">
-
-<div class="card">
-
-    <h2>Exam Setup</h2>
-
-    <div class="grid">
-
-        <div>
-            <label>Exam Name</label>
-            <input
-                id="examName"
-                value="Half Yearly Examination">
-        </div>
-
-        <div>
-            <label>Academic Session</label>
-            <input
-                id="session"
-                value="2026-27">
-        </div>
-
-        <div>
-            <label>Exam Date</label>
-            <input
-                id="examDate"
-                type="date">
-        </div>
-
-        <div>
-            <label>Exam Time</label>
-            <input
-                id="examTime"
-                value="9:00 AM - 12:00 PM">
-        </div>
-
-    </div>
-
-    <div class="toolbar">
-
-        <button
-            class="primary"
-            onclick="saveSetup()">
-            Save Setup
-        </button>
-
-        <button
-            onclick="loadSample()">
-            Restore Sample Data
-        </button>
-
-        <button
-            class="danger"
-            onclick="clearAll()">
-            Clear All Data
-        </button>
-
-    </div>
-
-</div>
-
-
-<div
-    class="stats"
-    id="dashboardStats">
-</div>
-
-
-<div class="card">
-
-<h3>Important Logic</h3>
-
-<ol>
-
-<li>
-A class's normal classroom capacity is automatically based on
-its total students.
-</li>
-
-<li>
-Example: Class 5-A has 32 students, therefore its normal
-classroom capacity is 32.
-</li>
-
-<li>
-Exam rooms have their own physical capacity.
-</li>
-
-<li>
-Several classes can be mixed in one examination room.
-</li>
-
-<li>
-Students are allocated using continuous roll-number ranges.
-</li>
-
-<li>
-A student cannot be allocated twice.
-</li>
-
-<li>
-A student cannot be skipped.
-</li>
-
-<li>
-An examination room cannot exceed its capacity.
-</li>
-
-</ol>
-
-</div>
-
-</section>
-
-<section id="savedPlansSection" class="no-print">
-    <div id="savedPlans"></div>
-</section>
-
-
-<!-- =========================================================
-     CLASS MASTER
-========================================================= -->
-
-<section id="classes" class="tab">
-
-<div class="card">
-
-<h2>Class Master</h2>
-
-<div class="toolbar">
-
-<button
-    class="primary"
-    onclick="addClass()">
-    + Add Class
-</button>
-
-<button
-    onclick="importClasses()">
-    Import CSV
-</button>
-
-<button
-    onclick="exportClasses()">
-    Export CSV
-</button>
-
-<input
-    id="classFile"
-    type="file"
-    accept=".csv,.txt"
-    hidden>
-
-</div>
-
-
-<div class="tablewrap">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Class</th>
-<th>Section</th>
-<th>Students</th>
-<th>Roll From</th>
-<th>Roll To</th>
-<th>Normal Room</th>
-<th>Room Capacity</th>
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-<tbody id="classTable">
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</section>
-
-
-<!-- =========================================================
-     EXAM ROOM MASTER
-========================================================= -->
-
-<section id="rooms" class="tab">
-
-<div class="card">
-
-<h2>Exam Room Master</h2>
-
-<div class="toolbar">
-
-<button
-    class="primary"
-    onclick="addRoom()">
-    + Add Exam Room
-</button>
-
-<button
-    onclick="exportRooms()">
-    Export CSV
-</button>
-
-</div>
-
-
-<div class="tablewrap">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Exam Room</th>
-<th>Capacity</th>
-<th>Available</th>
-<th>Block</th>
-<th>Floor</th>
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-<tbody id="roomTable">
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</section>
-
-
-<!-- =========================================================
-     RULES
-========================================================= -->
-
-<section id="rules" class="tab">
-
-<div class="card settings">
-
-<h2>Seating Rules</h2>
-
+<div class="card"><h2>Exam Setup</h2>
 <div class="grid">
-
-<div>
-
-<label>
-Minimum Classes Per Exam Room
-</label>
-
-<input
-    id="minClasses"
-    type="number"
-    min="1"
-    value="2">
-
+<div><label>Exam Name</label><input id="examName"></div>
+<div><label>Academic Session</label><input id="session"></div>
+<div><label>Exam Date</label><input id="examDate" type="date"></div>
+<div><label>Exam Time</label><input id="examTime"></div>
 </div>
+<div class="toolbar">
+<button class="primary" onclick="saveSetup(true)">Save Setup</button>
+<button onclick="loadSample()">Restore Sample Data</button>
+<button class="danger" onclick="clearAll()">Clear All Data</button>
+</div></div>
+<div class="stats" id="dashboardStats"></div>
+<div class="card"><h3>How it works</h3><ol>
+<li>A class's normal classroom capacity equals its strength.</li>
+<li>Exam rooms have their own physical capacity; several classes are mixed in one room.</li>
+<li>Each class is split across rooms in continuous roll-number ranges, in proportion to class size.</li>
+<li>Same-class students are never seated next to each other (unless one class fills more than half a room).</li>
+<li>No student is skipped or repeated, and no room exceeds capacity.</li></ol></div>
+<div id="savedPlans" class="no-print"></div>
+</section>
 
+<section id="classes" class="tab"><div class="card"><h2>Class Master</h2>
+<div class="toolbar">
+<button class="primary" onclick="addClass()">+ Add Class</button>
+<button onclick="document.getElementById('classFile').click()">Import CSV</button>
+<button onclick="exportClasses()">Export CSV</button>
+<input id="classFile" type="file" accept=".csv,.txt" hidden></div>
+<div class="tablewrap"><table><thead><tr><th>Class</th><th>Section</th><th>Students</th><th>Roll From</th><th>Roll To</th><th>Normal Room</th><th>Room Capacity</th><th>Action</th></tr></thead>
+<tbody id="classTable"></tbody></table></div></div></section>
 
-<div>
+<section id="rooms" class="tab"><div class="card"><h2>Exam Room Master</h2>
+<div class="toolbar"><button class="primary" onclick="addRoom()">+ Add Exam Room</button>
+<button onclick="exportRooms()">Export CSV</button></div>
+<div class="tablewrap"><table><thead><tr><th>Exam Room</th><th>Capacity</th><th>Available</th><th>Block</th><th>Floor</th><th>Action</th></tr></thead>
+<tbody id="roomTable"></tbody></table></div></div></section>
 
-<label>
-Preferred Classes Per Room
-</label>
-
-<input
-    id="preferredClasses"
-    type="number"
-    min="1"
-    value="4">
-
+<section id="rules" class="tab"><div class="card"><h2>Seating Rules</h2>
+<div class="grid">
+<div><label>Minimum Classes Per Exam Room</label><input id="minClasses" type="number" min="1"></div>
+<div><label>Preferred Classes Per Room</label><input id="preferredClasses" type="number" min="1"></div>
+<div><label>Maximum Classes Per Room</label><input id="maxClasses" type="number" min="1"></div>
+<div><label>Maximum % of One Class</label><input id="maxClassPercent" type="number" min="1" max="100"></div>
+<div><label>Minimum Students Per Class In A Room</label><input id="targetBlock" type="number" min="1"></div>
 </div>
-
-
-<div>
-
-<label>
-Maximum Classes Per Room
-</label>
-
-<input
-    id="maxClasses"
-    type="number"
-    min="1"
-    value="5">
-
-</div>
-
-
-<div>
-
-<label>
-Maximum % of One Class
-</label>
-
-<input
-    id="maxClassPercent"
-    type="number"
-    min="1"
-    max="100"
-    value="60">
-
-</div>
-
-
-<div>
-
-<label>
-Preferred Students From Each Class
-</label>
-
-<input
-    id="targetBlock"
-    type="number"
-    min="1"
-    value="8">
-
-</div>
-
-</div>
-
-
 <div style="margin-top:15px">
-
-<label class="checkbox">
-
-<input
-    id="mixClasses"
-    type="checkbox"
-    checked>
-
-Mix Different Classes
-
-</label>
-
-
-<label class="checkbox">
-
-<input
-    id="continuousRoll"
-    type="checkbox"
-    checked>
-
-Keep Roll Numbers Continuous
-
-</label>
-
-
-<label class="checkbox">
-
-<input
-    id="avoidSame"
-    type="checkbox"
-    checked>
-
-Avoid Same-Class Neighbours
-
-</label>
-
-
-<label class="checkbox">
-
-<input
-    id="fillRooms"
-    type="checkbox"
-    checked>
-
-Prefer Full Rooms
-
-</label>
-
-
-<label class="checkbox">
-
-<input
-    id="allowPartial"
-    type="checkbox"
-    checked>
-
-Allow Partial Class Groups
-
-</label>
-
+<label class="checkbox"><input id="mixClasses" type="checkbox">Mix Different Classes</label>
+<label class="checkbox"><input id="avoidSame" type="checkbox">Avoid Same-Class Neighbours</label>
+<label class="checkbox"><input id="fillRooms" type="checkbox">Prefer Full Rooms (off = spread students over all rooms)</label>
 </div>
+<div class="toolbar"><button class="primary" onclick="saveRules(true)">Save Rules</button>
+<button onclick="resetRules()">Reset Rules</button></div></div></section>
 
-
-<div class="toolbar">
-
-<button
-    class="primary"
-    onclick="saveRules()">
-    Save Rules
-</button>
-
-<button
-    onclick="resetRules()">
-    Reset Rules
-</button>
-
-</div>
-
-</div>
-
-</section>
-
-
-<!-- =========================================================
-     GENERATE
-========================================================= -->
-
-<section id="generate" class="tab">
-
-<div class="card">
-
-<h2>Generate Seating Arrangement</h2>
-
-<div
-    id="generateMessage"
-    class="message info">
-
-Ready to generate.
-
-</div>
-
-
-<div
-    class="stats"
-    id="preStats">
-</div>
-
-
-<div class="toolbar">
-
-<button
-    class="primary"
-    onclick="generateArrangement()">
-
-Generate Automatically
-
-</button>
-
-
-<button
-    onclick="showTab('arrangement')">
-
-Open Current Arrangement
-
-</button>
-
-</div>
-
-</div>
-
-
-<div class="card">
-
-<h3>Automatic Logic</h3>
-
-<p>
-
-The software first checks whether total available examination
-room capacity is sufficient.
-
-Then it divides each class into continuous roll-number ranges,
-mixes classes inside rooms, respects room capacity, and creates
-a physical seat sequence.
-
-</p>
-
-</div>
-
-</section>
-
-
-<!-- =========================================================
-     ARRANGEMENT
-========================================================= -->
+<section id="generate" class="tab"><div class="card"><h2>Generate Seating Arrangement</h2>
+<div id="generateMessage" class="message info">Ready to generate.</div>
+<div class="stats" id="preStats"></div>
+<div class="toolbar"><button class="primary" onclick="generateArrangement()">Generate Automatically</button>
+<button onclick="showTab('arrangement')">Open Current Arrangement</button></div></div></section>
 
 <section id="arrangement" class="tab">
-
-<div class="card no-print">
-
-<h2>
-Room-wise Seating Arrangement
-</h2>
-
-<div class="toolbar">
-
-<button
-    class="primary"
-    onclick="printSeatingArrangement()">
-
-Print / Save PDF
-
-</button>
-
-
-<button
-    onclick="exportArrangementCSV()">
-
-Export CSV
-
-</button>
-
-
-<button
-    onclick="exportJSON()">
-
-Backup JSON
-
-</button>
-
-</div>
-
-</div>
-
-
+<div class="card no-print"><h2>Room-wise Seating Arrangement</h2>
+<div class="toolbar"><button class="primary" onclick="printSeatingArrangement()">Print / Save PDF</button>
+<button onclick="exportArrangementCSV()">Export CSV</button>
+<button onclick="exportJSON()">Backup JSON</button></div></div>
 <div id="classWiseSummary"></div>
+<div id="arrangementOutput"></div></section>
 
-<div id="arrangementOutput">
-</div>
-
-</section>
-
-
-<!-- =========================================================
-     VALIDATION
-========================================================= -->
-
-<section id="validation" class="tab">
-
-<div class="card">
-
-<h2>
-Validation Report
-</h2>
-
-<div id="validationOutput">
-</div>
-
-</div>
-
-</section>
-
+<section id="validation" class="tab"><div class="card"><h2>Validation Report</h2>
+<div id="validationOutput"></div></div></section>
 </main>
-
-
-<footer>
-
-School Seating Arrangement Generator
-
-</footer>
-
-
-
+<footer>School Seating Arrangement Generator</footer>
 <script>
-
-/* =========================================================
-   DATABASE
-========================================================= */
-
-const STORAGE_KEY =
-    "school_seating_arrangement_v2";
-
-
-let db = {
-
-    setup:{
-
-        examName:
-            "Half Yearly Examination",
-
-        session:
-            "2026-27",
-
-        examDate:
-            "",
-
-        examTime:
-            "9:00 AM - 12:00 PM"
-
-    },
-
-    classes:[],
-
-    rooms:[],
-
-    rules:{
-
-        minClasses:2,
-
-        preferredClasses:4,
-
-        maxClasses:5,
-
-        maxClassPercent:60,
-
-        targetBlock:8,
-
-        mixClasses:true,
-
-        continuousRoll:true,
-
-        avoidSame:true,
-
-        fillRooms:true,
-
-        allowPartial:true
-
-    },
-
-    arrangement:[],
-
-    history:[]
-
-};
-
-
-
-/* =========================================================
-   SAMPLE CLASS DATA
-   Based on the supplied seating arrangement
-========================================================= */
-
-const sampleClasses = [
-
-    ["III","A",27,1,27,1],
-
-    ["III","B",25,1,25,2],
-
-    ["IV","A",39,1,39,3],
-
-    ["V","A",32,1,32,4],
-
-    ["V","B",33,1,33,5],
-
-    ["VI","A",23,1,23,6],
-
-    ["VI","B",21,1,21,7],
-
-    ["VII","A",41,1,41,8],
-
-    ["VIII","A",23,1,23,9],
-
-    ["VIII","B",19,1,19,10],
-
-    ["IX","A",35,1,35,11],
-
-    ["X","A",33,1,33,12],
-
-    ["XI","ARTS",10,1,10,13],
-
-    ["XI","COM",14,1,14,14],
-
-    ["XI","PCM",11,1,11,15],
-
-    ["XI","PCB",5,1,5,16],
-
-    ["XII","ARTS",11,1,11,17],
-
-    ["XII","COM",15,1,15,18],
-
-    ["XII","PCM",12,1,12,19],
-
-    ["XII","PCB",6,1,6,20]
-
-];
-
-
-/* =========================================================
-   SAMPLE EXAM ROOMS
-========================================================= */
-
-const sampleRoomCapacities = [
-
-    27,
-    25,
-    39,
-    32,
-    33,
-    23,
-    21,
-    41,
-    23,
-    19,
-    35,
-    33,
-    10,
-    14,
-    11,
-    5,
-    11,
-    15,
-    12,
-    6
-
-];
-
-
-/* =========================================================
-   BASIC FUNCTIONS
-========================================================= */
-
-function uid(){
-
-    return Math.random()
-        .toString(36)
-        .substring(2,10);
-
-}
-
-
-function escapeHTML(value){
-
-    return String(value ?? "")
-        .replace(/[&<>"']/g,function(char){
-
-            const map={
-
-                "&":"&amp;",
-                "<":"&lt;",
-                ">":"&gt;",
-                '"':"&quot;",
-                "'":"&#39;"
-
-            };
-
-            return map[char];
-
-        });
-
-}
-
-
-function saveDatabase(){
-
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(db)
-    );
-
-}
-
-
+/* ===== DATA ===== */
+const STORAGE_KEY="school_seating_arrangement_v2";
+const DEFAULT_RULES={minClasses:2,preferredClasses:4,maxClasses:5,maxClassPercent:60,targetBlock:8,mixClasses:true,continuousRoll:true,avoidSame:true,fillRooms:true,allowPartial:true};
+const NUM_RULES=["minClasses","preferredClasses","maxClasses","maxClassPercent","targetBlock"];
+const BOOL_RULES=["mixClasses","avoidSame","fillRooms"];
+let db={setup:{examName:"Half Yearly Examination",session:"2026-27",examDate:"",examTime:"9:00 AM - 12:00 PM"},classes:[],rooms:[],rules:{...DEFAULT_RULES},arrangement:[],warnings:[],history:[]};
+const sampleClasses=[["III","A",27,1],["III","B",25,2],["IV","A",39,3],["V","A",32,4],["V","B",33,5],["VI","A",23,6],["VI","B",21,7],["VII","A",41,8],["VIII","A",23,9],["VIII","B",19,10],["IX","A",35,11],["X","A",33,12],["XI","ARTS",10,13],["XI","COM",14,14],["XI","PCM",11,15],["XI","PCB",5,16],["XII","ARTS",11,17],["XII","COM",15,18],["XII","PCM",12,19],["XII","PCB",6,20]];
+const sampleRooms=[27,25,39,32,33,23,21,41,23,19,35,33,10,14,11,5,11,15,12,6];
+const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).substring(2,10);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const classLabel=c=>c.className+"-"+c.section;
+const totalStudents=()=>db.classes.reduce((s,c)=>s+Number(c.total||0),0);
+const availSeats=()=>db.rooms.filter(r=>r.available).reduce((s,r)=>s+Number(r.capacity||0),0);
+function saveDatabase(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(db));}catch(e){console.error(e);}}
 function loadDatabase(){
-
-    try{
-
-        const saved =
-            localStorage.getItem(STORAGE_KEY);
-
-        if(saved){
-
-            const oldData =
-                JSON.parse(saved);
-
-            db = {
-
-                ...db,
-
-                ...oldData,
-
-                rules:{
-
-                    ...db.rules,
-
-                    ...(oldData.rules || {})
-
-                }
-
-            };
-
-        }
-
-    }
-    catch(error){
-
-        console.error(error);
-
-    }
-
-
-    if(!Array.isArray(db.history)){
-        db.history=[];
-    }
-
-    if(!db.classes.length){
-
-        loadSample(false);
-
-    }
-
-
-    renderAll();
-
+  try{const s=localStorage.getItem(STORAGE_KEY);if(s){const o=JSON.parse(s);db={...db,...o,rules:{...DEFAULT_RULES,...(o.rules||{})}};}}catch(e){console.error(e);}
+  if(!Array.isArray(db.history))db.history=[];
+  if(!Array.isArray(db.warnings))db.warnings=[];
+  if(!db.classes.length)loadSample(false);
+  renderAll();
 }
-
-
-/* =========================================================
-   SAMPLE DATA
-========================================================= */
-
-function loadSample(saveIt=true){
-
-    db.classes =
-        sampleClasses.map(function(item){
-
-            return{
-
-                id:uid(),
-
-                className:item[0],
-
-                section:item[1],
-
-                total:item[2],
-
-                from:item[3],
-
-                to:item[4],
-
-                normalRoom:item[5],
-
-                /*
-                   IMPORTANT:
-                   Normal classroom capacity =
-                   class strength
-                */
-
-                roomCapacity:item[2]
-
-            };
-
-        });
-
-
-    db.rooms =
-        sampleRoomCapacities.map(function(capacity,index){
-
-            return{
-
-                id:uid(),
-
-                name:String(index+1),
-
-                capacity:capacity,
-
-                available:true,
-
-                block:"",
-
-                floor:""
-
-            };
-
-        });
-
-
-    db.arrangement=[];
-
-
-    if(saveIt){
-
-        saveDatabase();
-
-    }
-
-
-    renderAll();
-
-    showTab("dashboard");
-
+function loadSample(save=true){
+  db.classes=sampleClasses.map(i=>({id:uid(),className:i[0],section:i[1],total:i[2],from:1,to:i[2],normalRoom:String(i[3]),roomCapacity:i[2]}));
+  db.rooms=sampleRooms.map((c,i)=>({id:uid(),name:String(i+1),capacity:c,available:true,block:"",floor:""}));
+  db.arrangement=[];db.warnings=[];
+  if(save)saveDatabase();
+  renderAll();showTab("dashboard");
 }
-
-
-/* =========================================================
-   CLEAR
-========================================================= */
-
 function clearAll(){
-
-    if(!confirm(
-        "Clear all saved data?"
-    )){
-
-        return;
-
-    }
-
-
-    localStorage.removeItem(
-        STORAGE_KEY
-    );
-
-
-    db={
-
-        setup:{
-
-            examName:"",
-
-            session:"",
-
-            examDate:"",
-
-            examTime:""
-
-        },
-
-        classes:[],
-
-        rooms:[],
-
-        rules:{
-
-            minClasses:2,
-
-            preferredClasses:4,
-
-            maxClasses:5,
-
-            maxClassPercent:60,
-
-            targetBlock:8,
-
-            mixClasses:true,
-
-            continuousRoll:true,
-
-            avoidSame:true,
-
-            fillRooms:true,
-
-            allowPartial:true
-
-        },
-
-        arrangement:[],
-
-        history:[]
-
-    };
-
-
-    renderAll();
-
+  if(!confirm("Clear all saved data?"))return;
+  localStorage.removeItem(STORAGE_KEY);
+  db={setup:{examName:"",session:"",examDate:"",examTime:""},classes:[],rooms:[],rules:{...DEFAULT_RULES},arrangement:[],warnings:[],history:[]};
+  renderAll();
 }
 
-
-/* =========================================================
-   TABS
-========================================================= */
-
-function showTab(tabId){
-
-    document
-        .querySelectorAll(".tab")
-        .forEach(function(tab){
-
-            tab.classList.remove("active");
-
-        });
-
-
-    document
-        .querySelectorAll("nav button")
-        .forEach(function(button){
-
-            button.classList.remove("active");
-
-        });
-
-
-    document
-        .getElementById(tabId)
-        .classList.add("active");
-
-
-    const button =
-        document.querySelector(
-            `nav button[data-tab="${tabId}"]`
-        );
-
-
-    if(button){
-
-        button.classList.add("active");
-
-    }
-
-
-    if(tabId==="dashboard")
-        renderDashboard();
-
-    if(tabId==="generate")
-        renderPreStats();
-
-    if(tabId==="arrangement")
-        renderArrangement();
-
-    if(tabId==="validation")
-        renderValidation();
-
+/* ===== TABS ===== */
+function showTab(id){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+  $(id).classList.add("active");
+  const b=document.querySelector(`nav button[data-tab="${id}"]`);if(b)b.classList.add("active");
+  if(id==="dashboard")renderDashboard();
+  if(id==="generate")renderPreStats();
+  if(id==="arrangement")renderArrangement();
+  if(id==="validation")renderValidation();
 }
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
 
-
-document
-    .querySelectorAll("nav button")
-    .forEach(function(button){
-
-        button.addEventListener(
-            "click",
-            function(){
-
-                showTab(
-                    button.dataset.tab
-                );
-
-            }
-        );
-
-    });
-
-
-/* =========================================================
-   DASHBOARD
-========================================================= */
-
-function saveSetup(){
-
-    db.setup={
-
-        examName:
-            document.getElementById(
-                "examName"
-            ).value,
-
-        session:
-            document.getElementById(
-                "session"
-            ).value,
-
-        examDate:
-            document.getElementById(
-                "examDate"
-            ).value,
-
-        examTime:
-            document.getElementById(
-                "examTime"
-            ).value
-
-    };
-
-
-    saveDatabase();
-
-    alert(
-        "Exam setup saved."
-    );
-
+/* ===== DASHBOARD ===== */
+const stat=(l,v)=>`<div class="stat">${esc(l)}<b>${esc(v)}</b></div>`;
+function saveSetup(show){
+  db.setup={examName:$("examName").value,session:$("session").value,examDate:$("examDate").value,examTime:$("examTime").value};
+  saveDatabase();if(show)alert("Exam setup saved.");
 }
-
-
 function renderDashboard(){
-
-    document.getElementById(
-        "examName"
-    ).value =
-        db.setup.examName || "";
-
-
-    document.getElementById(
-        "session"
-    ).value =
-        db.setup.session || "";
-
-
-    document.getElementById(
-        "examDate"
-    ).value =
-        db.setup.examDate || "";
-
-
-    document.getElementById(
-        "examTime"
-    ).value =
-        db.setup.examTime || "";
-
-
-    const students =
-        db.classes.reduce(
-            function(total,item){
-
-                return total +
-                    Number(item.total || 0);
-
-            },
-            0
-        );
-
-
-    const seats =
-        db.rooms
-            .filter(room=>room.available)
-            .reduce(
-                function(total,room){
-
-                    return total +
-                        Number(room.capacity || 0);
-
-                },
-                0
-            );
-
-
-    document.getElementById(
-        "dashboardStats"
-    ).innerHTML =
-
-        stat("Classes",db.classes.length) +
-
-        stat("Students",students) +
-
-        stat(
-            "Exam Rooms",
-            db.rooms.filter(
-                room=>room.available
-            ).length
-        ) +
-
-        stat("Available Seats",seats) +
-
-        stat(
-            "Surplus / Deficit",
-            seats-students
-        );
-
+  ["examName","session","examDate","examTime"].forEach(k=>$(k).value=db.setup[k]||"");
+  const st=totalStudents(),se=availSeats();
+  $("dashboardStats").innerHTML=stat("Classes",db.classes.length)+stat("Students",st)+stat("Exam Rooms",db.rooms.filter(r=>r.available).length)+stat("Available Seats",se)+stat("Surplus / Deficit",se-st);
 }
 
-
-/* =========================================================
-   STAT CARD
-========================================================= */
-
-function stat(label,value){
-
-    return `
-
-        <div class="stat">
-
-            ${escapeHTML(label)}
-
-            <b>
-                ${escapeHTML(value)}
-            </b>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =========================================================
-   CLASS MASTER
-========================================================= */
-
-function classLabel(classObject){
-
-    return (
-        classObject.className +
-        "-" +
-        classObject.section
-    );
-
-}
-
-
+/* ===== CLASSES ===== */
+const cin=(i,k,v,t)=>`<td><input ${t?`type="number" min="0"`:""} value="${esc(v)}" onchange="updateClass(${i},'${k}',this.value)"></td>`;
 function renderClasses(){
-
-    const table =
-        document.getElementById(
-            "classTable"
-        );
-
-
-    table.innerHTML =
-        db.classes.map(
-            function(classObject,index){
-
-                return `
-
-<tr>
-
-<td>
-
-<input
-    value="${escapeHTML(
-        classObject.className
-    )}"
-    onchange="
-        updateClass(
-            ${index},
-            'className',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    value="${escapeHTML(
-        classObject.section
-    )}"
-    onchange="
-        updateClass(
-            ${index},
-            'section',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    type="number"
-    min="0"
-    value="${classObject.total}"
-    onchange="
-        updateClass(
-            ${index},
-            'total',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    type="number"
-    value="${classObject.from}"
-    onchange="
-        updateClass(
-            ${index},
-            'from',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    type="number"
-    value="${classObject.to}"
-    onchange="
-        updateClass(
-            ${index},
-            'to',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    value="${escapeHTML(
-        classObject.normalRoom
-    )}"
-    onchange="
-        updateClass(
-            ${index},
-            'normalRoom',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    type="number"
-    value="${classObject.roomCapacity}"
-    onchange="
-        updateClass(
-            ${index},
-            'roomCapacity',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<button
-    class="danger"
-    onclick="
-        deleteClass(${index})
-    ">
-
-Delete
-
-</button>
-
-</td>
-
-</tr>
-
-`;
-
-            }
-        )
-        .join("");
-
+  $("classTable").innerHTML=db.classes.map((c,i)=>"<tr>"+cin(i,"className",c.className)+cin(i,"section",c.section)+cin(i,"total",c.total,1)+cin(i,"from",c.from,1)+cin(i,"to",c.to,1)+cin(i,"normalRoom",c.normalRoom)+cin(i,"roomCapacity",c.roomCapacity,1)+`<td><button class="danger" onclick="deleteClass(${i})">Delete</button></td></tr>`).join("");
 }
-
-
-/*
-    IMPORTANT LOGIC
-
-    If total students changes and the room capacity
-    was previously equal to the old total, automatically
-    update normal classroom capacity too.
-*/
-
-function updateClass(index,key,value){
-
-    const item =
-        db.classes[index];
-
-
-    if(key==="className" ||
-       key==="section" ||
-       key==="normalRoom"){
-
-        item[key]=value;
-
-    }
-    else{
-
-        const oldTotal =
-            Number(item.total);
-
-        const oldRoomCapacity =
-            Number(item.roomCapacity);
-
-
-        item[key]=Number(value);
-
-
-        if(
-            key==="total" &&
-            oldRoomCapacity===oldTotal
-        ){
-
-            item.roomCapacity =
-                Number(value);
-
-        }
-
-    }
-
-
-    db.arrangement=[];
-
-    saveDatabase();
-
-    renderClasses();
-
-    renderDashboard();
-
+function updateClass(i,key,value){
+  const it=db.classes[i];
+  if(["className","section","normalRoom"].includes(key))it[key]=value;
+  else{
+    const oldT=Number(it.total),oldC=Number(it.roomCapacity);
+    it[key]=Number(value);
+    if(key==="total"&&oldC===oldT)it.roomCapacity=Number(value);
+    if(key==="to")it.total=Math.max(0,Number(it.to)-Number(it.from)+1);
+    if(key==="to"&&oldC===oldT)it.roomCapacity=it.total;
+  }
+  it.from=Number(it.from)||1;
+  it.to=it.from+Number(it.total||0)-1; /* roll range always matches strength */
+  db.arrangement=[];saveDatabase();renderClasses();renderDashboard();
 }
-
-
-/* =========================================================
-   ADD CLASS
-========================================================= */
-
-function addClass(){
-
-    db.classes.push({
-
-        id:uid(),
-
-        className:"New",
-
-        section:"A",
-
-        total:0,
-
-        from:1,
-
-        to:0,
-
-        normalRoom:"",
-
-        roomCapacity:0
-
-    });
-
-
-    saveDatabase();
-
-    renderClasses();
-
+function addClass(){db.classes.push({id:uid(),className:"New",section:"A",total:0,from:1,to:0,normalRoom:"",roomCapacity:0});saveDatabase();renderClasses();}
+function deleteClass(i){if(!confirm("Delete this class?"))return;db.classes.splice(i,1);db.arrangement=[];saveDatabase();renderAll();}
+const csvq=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+function parseCSVLine(line){
+  const out=[];let cur="",q=false;
+  for(let i=0;i<line.length;i++){const ch=line[i];
+    if(q){if(ch==='"'&&line[i+1]==='"'){cur+='"';i++;}else if(ch==='"')q=false;else cur+=ch;}
+    else if(ch==='"')q=true;else if(ch===","){out.push(cur.trim());cur="";}else cur+=ch;}
+  out.push(cur.trim());return out;
 }
-
-
-/* =========================================================
-   DELETE CLASS
-========================================================= */
-
-function deleteClass(index){
-
-    if(
-        !confirm(
-            "Delete this class?"
-        )
-    ){
-
-        return;
-
-    }
-
-
-    db.classes.splice(
-        index,
-        1
-    );
-
-
-    db.arrangement=[];
-
-    saveDatabase();
-
-    renderAll();
-
-}
-
-
-/* =========================================================
-   EXPORT CLASSES
-========================================================= */
-
 function exportClasses(){
-
-    let csv =
-        "Class,Section,Students,Roll From,Roll To,Normal Room,Room Capacity\n";
-
-
-    db.classes.forEach(function(item){
-
-        csv += [
-
-            item.className,
-
-            item.section,
-
-            item.total,
-
-            item.from,
-
-            item.to,
-
-            item.normalRoom,
-
-            item.roomCapacity
-
-        ].join(",") + "\n";
-
+  let csv="Class,Section,Students,Roll From,Roll To,Normal Room,Room Capacity\n";
+  db.classes.forEach(c=>csv+=[c.className,c.section,c.total,c.from,c.to,c.normalRoom,c.roomCapacity].map(csvq).join(",")+"\n");
+  downloadFile("classes.csv",csv);
+}
+$("classFile").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    db.classes=r.result.split(/\r?\n/).filter(l=>l.trim()).slice(1).map(l=>{
+      const p=parseCSVLine(l),total=Number(p[2])||0,from=Number(p[3])||1;
+      return{id:uid(),className:p[0]||"",section:p[1]||"",total,from,to:from+total-1,normalRoom:p[5]||"",roomCapacity:Number(p[6])||total};
     });
-
-
-    downloadFile(
-        "classes.csv",
-        csv
-    );
-
-}
-
-
-/* =========================================================
-   IMPORT CLASSES
-========================================================= */
-
-function importClasses(){
-
-    document
-        .getElementById("classFile")
-        .click();
-
-}
-
-
-document
-    .getElementById("classFile")
-    .addEventListener(
-        "change",
-        function(event){
-
-            const file =
-                event.target.files[0];
-
-            if(!file){
-
-                return;
-
-            }
-
-
-            const reader =
-                new FileReader();
-
-
-            reader.onload =
-                function(){
-
-                    const lines =
-                        reader.result
-                        .split(/\r?\n/)
-                        .filter(Boolean);
-
-
-                    db.classes =
-                        lines
-                        .slice(1)
-                        .map(function(line){
-
-                            const parts =
-                                line
-                                .split(",")
-                                .map(
-                                    x=>x.trim()
-                                );
-
-
-                            return{
-
-                                id:uid(),
-
-                                className:
-                                    parts[0],
-
-                                section:
-                                    parts[1],
-
-                                total:
-                                    Number(parts[2]),
-
-                                from:
-                                    Number(parts[3]) || 1,
-
-                                to:
-                                    Number(parts[4]) ||
-                                    Number(parts[2]),
-
-                                normalRoom:
-                                    parts[5] || "",
-
-                                roomCapacity:
-                                    Number(parts[6]) ||
-                                    Number(parts[2])
-
-                            };
-
-                        });
-
-
-                    db.arrangement=[];
-
-                    saveDatabase();
-
-                    renderAll();
-
-                };
-
-
-            reader.readAsText(file);
-
-        }
-    );
-
-
-/* =========================================================
-   ROOM MASTER
-========================================================= */
-
-function renderRooms(){
-
-    const table =
-        document.getElementById(
-            "roomTable"
-        );
-
-
-    table.innerHTML =
-        db.rooms.map(
-            function(room,index){
-
-                return `
-
-<tr>
-
-<td>
-
-<input
-    value="${escapeHTML(
-        room.name
-    )}"
-    onchange="
-        updateRoom(
-            ${index},
-            'name',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    type="number"
-    min="0"
-    value="${room.capacity}"
-    onchange="
-        updateRoom(
-            ${index},
-            'capacity',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    type="checkbox"
-    ${room.available ? "checked" : ""}
-    onchange="
-        updateRoom(
-            ${index},
-            'available',
-            this.checked
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    value="${escapeHTML(
-        room.block || ""
-    )}"
-    onchange="
-        updateRoom(
-            ${index},
-            'block',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<input
-    value="${escapeHTML(
-        room.floor || ""
-    )}"
-    onchange="
-        updateRoom(
-            ${index},
-            'floor',
-            this.value
-        )
-    "
->
-
-</td>
-
-
-<td>
-
-<button
-    class="danger"
-    onclick="
-        deleteRoom(${index})
-    ">
-
-Delete
-
-</button>
-
-</td>
-
-</tr>
-
-`;
-
-            }
-        )
-        .join("");
-
-}
-
-
-/* =========================================================
-   UPDATE ROOM
-========================================================= */
-
-function updateRoom(index,key,value){
-
-    db.rooms[index][key]=value;
-
-    db.arrangement=[];
-
-    saveDatabase();
-
-    renderRooms();
-
-    renderDashboard();
-
-}
-
-
-/* =========================================================
-   ADD ROOM
-========================================================= */
-
-function addRoom(){
-
-    db.rooms.push({
-
-        id:uid(),
-
-        name:
-            String(
-                db.rooms.length+1
-            ),
-
-        capacity:30,
-
-        available:true,
-
-        block:"",
-
-        floor:""
-
-    });
-
-
-    saveDatabase();
-
-    renderRooms();
-
-}
-
-
-/* =========================================================
-   DELETE ROOM
-========================================================= */
-
-function deleteRoom(index){
-
-    if(
-        !confirm(
-            "Delete this examination room?"
-        )
-    ){
-
-        return;
-
-    }
-
-
-    db.rooms.splice(
-        index,
-        1
-    );
-
-
-    db.arrangement=[];
-
-    saveDatabase();
-
-    renderAll();
-
-}
-
-
-/* =========================================================
-   EXPORT ROOMS
-========================================================= */
-
-function exportRooms(){
-
-    let csv =
-        "Room,Capacity,Available,Block,Floor\n";
-
-
-    db.rooms.forEach(function(room){
-
-        csv += [
-
-            room.name,
-
-            room.capacity,
-
-            room.available
-                ? "Yes"
-                : "No",
-
-            room.block,
-
-            room.floor
-
-        ].join(",") + "\n";
-
-    });
-
-
-    downloadFile(
-        "exam_rooms.csv",
-        csv
-    );
-
-}
-
-
-/* =========================================================
-   RULES
-========================================================= */
-
-function renderRules(){
-
-    const numberRules=[
-
-        "minClasses",
-
-        "preferredClasses",
-
-        "maxClasses",
-
-        "maxClassPercent",
-
-        "targetBlock"
-
-    ];
-
-
-    numberRules.forEach(function(key){
-
-        document.getElementById(
-            key
-        ).value =
-            db.rules[key];
-
-    });
-
-
-    const booleanRules=[
-
-        "mixClasses",
-
-        "continuousRoll",
-
-        "avoidSame",
-
-        "fillRooms",
-
-        "allowPartial"
-
-    ];
-
-
-    booleanRules.forEach(function(key){
-
-        document.getElementById(
-            key
-        ).checked =
-            db.rules[key];
-
-    });
-
-}
-
-
-/* =========================================================
-   SAVE RULES
-========================================================= */
-
-function saveRules(){
-
-    [
-
-        "minClasses",
-
-        "preferredClasses",
-
-        "maxClasses",
-
-        "maxClassPercent",
-
-        "targetBlock"
-
-    ].forEach(function(key){
-
-        db.rules[key] =
-            Number(
-                document.getElementById(
-                    key
-                ).value
-            );
-
-    });
-
-
-    [
-
-        "mixClasses",
-
-        "continuousRoll",
-
-        "avoidSame",
-
-        "fillRooms",
-
-        "allowPartial"
-
-    ].forEach(function(key){
-
-        db.rules[key] =
-            document.getElementById(
-                key
-            ).checked;
-
-    });
-
-
-    saveDatabase();
-
-    alert(
-        "Seating rules saved."
-    );
-
-}
-
-
-/* =========================================================
-   RESET RULES
-========================================================= */
-
-function resetRules(){
-
-    db.rules={
-
-        minClasses:2,
-
-        preferredClasses:4,
-
-        maxClasses:5,
-
-        maxClassPercent:60,
-
-        targetBlock:8,
-
-        mixClasses:true,
-
-        continuousRoll:true,
-
-        avoidSame:true,
-
-        fillRooms:true,
-
-        allowPartial:true
-
-    };
-
-
-    saveDatabase();
-
-    renderRules();
-
-}
-
-
-/* =========================================================
-   PRE-GENERATION STATISTICS
-========================================================= */
-
-function renderPreStats(){
-
-    const students =
-        totalStudents();
-
-
-    const seats =
-        db.rooms
-        .filter(room=>room.available)
-        .reduce(
-            (sum,room)=>
-                sum +
-                Number(room.capacity),
-            0
-        );
-
-
-    document.getElementById(
-        "preStats"
-    ).innerHTML =
-
-        stat(
-            "Total Students",
-            students
-        ) +
-
-        stat(
-            "Available Seats",
-            seats
-        ) +
-
-        stat(
-            "Surplus / Deficit",
-            seats-students
-        );
-
-}
-
-
-/* =========================================================
-   TOTAL STUDENTS
-========================================================= */
-
-function totalStudents(){
-
-    return db.classes.reduce(
-        function(total,item){
-
-            return total +
-                Number(item.total || 0);
-
-        },
-        0
-    );
-
-}
-
-
-/* =========================================================
-   GENERATE ARRANGEMENT
-========================================================= */
-
-function generateArrangement(){
-
-    saveSetup();
-
-
-    if(
-        !db.classes.length
-    ){
-
-        return showMessage(
-            "generateMessage",
-            "Please add classes first.",
-            "error"
-        );
-
-    }
-
-
-    const availableRooms =
-        db.rooms.filter(
-            room=>room.available
-        );
-
-
-    if(
-        !availableRooms.length
-    ){
-
-        return showMessage(
-            "generateMessage",
-            "Please add available examination rooms.",
-            "error"
-        );
-
-    }
-
-
-    const requiredStudents =
-        totalStudents();
-
-
-    const totalSeats =
-        availableRooms.reduce(
-            (sum,room)=>
-                sum +
-                Number(room.capacity),
-            0
-        );
-
-
-    if(
-        totalSeats <
-        requiredStudents
-    ){
-
-        return showMessage(
-            "generateMessage",
-
-            "Not enough examination seats. " +
-
-            "Required: " +
-            requiredStudents +
-
-            " | Available: " +
-            totalSeats +
-
-            " | Deficit: " +
-            (
-                requiredStudents-totalSeats
-            ),
-
-            "error"
-        );
-
-    }
-
-
-    /*
-        STATE
-
-        Every class gets its own roll pointer.
-
-        Example:
-
-        Class 5-A
-        nextRoll = 1
-
-        After 1-8:
-
-        nextRoll = 9
-
-        Then next room starts:
-
-        9-16
-    */
-
-    const state =
-        db.classes.map(
-            function(item){
-
-                return{
-
-                    classObject:item,
-
-                    remaining:
-                        Number(item.total),
-
-                    nextRoll:
-                        Number(item.from || 1),
-
-                    endRoll:
-                        Number(
-                            item.to ||
-                            item.total
-                        ),
-
-                    allocated:0
-
-                };
-
-            }
-        );
-
-
-    /*
-        Larger exam rooms first.
-    */
-
-    const rooms =
-        availableRooms
-        .slice()
-        .sort(
-            (a,b)=>
-                Number(b.capacity) -
-                Number(a.capacity)
-        );
-
-
-    const result=[];
-
-
-    /*
-        PROCESS EACH ROOM
-    */
-
-    for(
-        const room of rooms
-    ){
-
-        if(
-            state.every(
-                s=>s.remaining<=0
-            )
-        ){
-
-            break;
-
-        }
-
-
-        const capacity =
-            Number(room.capacity);
-
-
-        let used=0;
-
-        const allocations=[];
-
-
-        /*
-            FIRST PHASE
-
-            Try to put different classes
-            into the room.
-
-            Example:
-
-            5-A 1-8
-            6-A 1-8
-            7-A 1-8
-            8-A 1-8
-
-            = 32
-        */
-
-        while(
-
-            used < capacity &&
-
-            allocations.length <
-            Math.max(
-                1,
-                Number(
-                    db.rules.maxClasses
-                )
-            )
-
-        ){
-
-            let candidates =
-                state.filter(
-                    function(s){
-
-                        return (
-
-                            s.remaining > 0 &&
-
-                            !allocations.some(
-                                a=>
-                                    a.classId ===
-                                    s.classObject.id
-                            )
-
-                        );
-
-                    }
-                );
-
-
-            if(
-                !candidates.length
-            ){
-
-                break;
-
-            }
-
-
-            let best=null;
-
-            let bestScore=
-                -Infinity;
-
-
-            for(
-                const candidate
-                of candidates
-            ){
-
-                let take =
-                    Math.min(
-
-                        candidate.remaining,
-
-                        Number(
-                            db.rules.targetBlock
-                        ),
-
-                        capacity-used
-
-                    );
-
-
-                if(
-                    take<=0
-                ){
-
-                    continue;
-
-                }
-
-
-                /*
-                    MAXIMUM CLASS %
-                */
-
-                const maximumAllowed =
-                    Math.floor(
-                        capacity *
-                        Number(
-                            db.rules.maxClassPercent
-                        ) /
-                        100
-                    );
-
-
-                if(
-                    take >
-                    maximumAllowed &&
-                    allocations.length>0
-                ){
-
-                    take =
-                        Math.min(
-                            take,
-                            maximumAllowed
-                        );
-
-                }
-
-
-                if(
-                    take<=0
-                ){
-
-                    continue;
-
-                }
-
-
-                const projected =
-                    used+take;
-
-
-                let score=0;
-
-
-                /*
-                    EXACT ROOM FILL
-                    gets a very high score.
-                */
-
-                if(
-                    projected===capacity
-                ){
-
-                    score += 100000;
-
-                }
-
-
-                /*
-                    Prefer more students.
-                */
-
-                score +=
-                    take*100;
-
-
-                /*
-                    Prefer good utilization.
-                */
-
-                if(
-                    db.rules.fillRooms
-                ){
-
-                    score +=
-                        (
-                            projected /
-                            capacity
-                        ) *
-                        1000;
-
-                }
-
-
-                /*
-                    Preferred number
-                    of classes.
-                */
-
-                if(
-                    allocations.length+1 ===
-                    Number(
-                        db.rules.preferredClasses
-                    )
-                ){
-
-                    score += 3000;
-
-                }
-
-
-                /*
-                    Prefer classes with
-                    more remaining students.
-                */
-
-                score +=
-                    Math.min(
-                        candidate.remaining,
-                        100
-                    );
-
-
-                /*
-                    Mixing classes.
-                */
-
-                if(
-                    db.rules.mixClasses
-                ){
-
-                    score +=
-                        allocations.length *
-                        100;
-
-                }
-
-
-                if(
-                    score >
-                    bestScore
-                ){
-
-                    bestScore=score;
-
-                    best={
-                        candidate,
-                        take
-                    };
-
-                }
-
-            }
-
-
-            if(!best){
-
-                break;
-
-            }
-
-
-            const candidate =
-                best.candidate;
-
-
-            const take =
-                best.take;
-
-
-            const from =
-                candidate.nextRoll;
-
-
-            const to =
-                from +
-                take -
-                1;
-
-
-            allocations.push({
-
-                classId:
-                    candidate.classObject.id,
-
-                className:
-                    candidate.classObject.className,
-
-                section:
-                    candidate.classObject.section,
-
-                from:from,
-
-                to:to,
-
-                count:take
-
-            });
-
-
-            candidate.nextRoll +=
-                take;
-
-
-            candidate.remaining -=
-                take;
-
-
-            candidate.allocated +=
-                take;
-
-
-            used +=
-                take;
-
-        }
-
-
-        /*
-            SECOND PHASE
-
-            Fill remaining seats with
-            another class.
-        */
-
-        if(
-            used<capacity
-        ){
-
-            let remainingSpace =
-                capacity-used;
-
-
-            const candidates =
-                state.filter(
-                    s=>s.remaining>0
-                );
-
-
-            for(
-                const candidate
-                of candidates
-            ){
-
-                if(
-                    allocations.some(
-                        a=>
-                            a.classId ===
-                            candidate.classObject.id
-                    )
-                ){
-
-                    continue;
-
-                }
-
-
-                if(
-                    allocations.length >=
-                    Number(
-                        db.rules.maxClasses
-                    )
-                ){
-
-                    break;
-
-                }
-
-
-                let take =
-                    Math.min(
-                        candidate.remaining,
-                        remainingSpace
-                    );
-
-
-                if(
-                    take<=0
-                ){
-
-                    continue;
-
-                }
-
-
-                allocations.push({
-
-                    classId:
-                        candidate.classObject.id,
-
-                    className:
-                        candidate.classObject.className,
-
-                    section:
-                        candidate.classObject.section,
-
-                    from:
-                        candidate.nextRoll,
-
-                    to:
-                        candidate.nextRoll +
-                        take -
-                        1,
-
-                    count:take
-
-                });
-
-
-                candidate.nextRoll +=
-                    take;
-
-
-                candidate.remaining -=
-                    take;
-
-
-                candidate.allocated +=
-                    take;
-
-
-                used +=
-                    take;
-
-
-                remainingSpace -=
-                    take;
-
-
-                if(
-                    remainingSpace<=0
-                ){
-
-                    break;
-
-                }
-
-            }
-
-        }
-
-
-        /*
-            THIRD PHASE
-
-            If there is still empty space,
-            extend an already selected
-            class where possible.
-        */
-
-        if(
-            used<capacity
-        ){
-
-            for(
-                const allocation
-                of allocations
-            ){
-
-                const candidate =
-                    state.find(
-                        s=>
-                            s.classObject.id ===
-                            allocation.classId
-                    );
-
-
-                if(
-                    !candidate ||
-                    candidate.remaining<=0
-                ){
-
-                    continue;
-
-                }
-
-
-                const take =
-                    Math.min(
-                        candidate.remaining,
-                        capacity-used
-                    );
-
-
-                if(
-                    take>0
-                ){
-
-                    allocation.to +=
-                        take;
-
-                    allocation.count +=
-                        take;
-
-
-                    candidate.nextRoll +=
-                        take;
-
-                    candidate.remaining -=
-                        take;
-
-                    candidate.allocated +=
-                        take;
-
-                    used +=
-                        take;
-
-                }
-
-
-                if(
-                    used===capacity
-                ){
-
-                    break;
-
-                }
-
-            }
-
-        }
-
-
-        if(
-            allocations.length
-        ){
-
-            result.push({
-
-                roomId:
-                    room.id,
-
-                roomName:
-                    room.name,
-
-                capacity:
-                    capacity,
-
-                allocations:
-                    allocations,
-
-                seats:[]
-
-            });
-
-        }
-
-    }
-
-
-    /*
-        CHECK WHETHER EVERY STUDENT
-        WAS ALLOCATED.
-    */
-
-    const unallocated =
-        state.reduce(
-            (sum,s)=>
-                sum+s.remaining,
-            0
-        );
-
-
-    if(
-        unallocated>0
-    ){
-
-        db.arrangement =
-            result;
-
-        saveDatabase();
-
-        renderArrangement();
-
-        renderValidation();
-
-
-        return showMessage(
-
-            "generateMessage",
-
-            unallocated +
-            " student(s) could not be allocated. " +
-            "Increase available examination room capacity " +
-            "or change the seating rules.",
-
-            "error"
-
-        );
-
-    }
-
-
-    /*
-        CREATE PHYSICAL SEAT ORDER
-    */
-
-    result.forEach(
-        function(room){
-
-            const groups =
-                room.allocations.map(
-                    function(allocation){
-
-                        return{
-
-                            id:
-                                allocation.classId,
-
-                            label:
-                                allocation.className +
-                                "-" +
-                                allocation.section,
-
-                            rolls:
-                                Array.from(
-                                    {
-                                        length:
-                                            allocation.count
-                                    },
-                                    function(_,index){
-
-                                        return (
-                                            allocation.from +
-                                            index
-                                        );
-
-                                    }
-                                )
-
-                        };
-
-                    }
-                );
-
-
-            const seats=[];
-
-
-            /*
-                INTERLEAVE DIFFERENT CLASSES
-
-                Example:
-
-                5-A 1
-                6-A 1
-                7-A 1
-                8-A 1
-
-                then
-
-                5-A 2
-                6-A 2
-                7-A 2
-                8-A 2
-            */
-
-            if(
-                db.rules.avoidSame &&
-                groups.length>1
-            ){
-
-                const longest =
-                    Math.max(
-                        ...groups.map(
-                            g=>g.rolls.length
-                        )
-                    );
-
-
-                for(
-                    let i=0;
-                    i<longest;
-                    i++
-                ){
-
-                    groups.forEach(
-                        function(group){
-
-                            if(
-                                group.rolls[i] !==
-                                undefined
-                            ){
-
-                                seats.push({
-
-                                    classId:
-                                        group.id,
-
-                                    label:
-                                        group.label,
-
-                                    roll:
-                                        group.rolls[i]
-
-                                });
-
-                            }
-
-                        }
-                    );
-
-                }
-
-            }
-
-            else{
-
-                room.allocations
-                    .forEach(
-                        function(allocation){
-
-                            for(
-                                let roll=
-                                    allocation.from;
-
-                                roll<=
-                                    allocation.to;
-
-                                roll++
-                            ){
-
-                                seats.push({
-
-                                    classId:
-                                        allocation.classId,
-
-                                    label:
-                                        allocation.className +
-                                        "-" +
-                                        allocation.section,
-
-                                    roll:
-                                        roll
-
-                                });
-
-                            }
-
-                        }
-                    );
-
-            }
-
-
-            room.seats =
-                seats;
-
-        }
-    );
-
-
-    db.arrangement =
-        result;
-
-    saveSeatingPlanToHistory();
-
-    saveDatabase();
-
-    renderArrangement();
-
-    renderValidation();
-
-
-    showTab(
-        "arrangement"
-    );
-
-
-    showMessage(
-
-        "generateMessage",
-
-        "Arrangement generated successfully. Please check Validation before printing.",
-
-        "successmsg"
-
-    );
-
-}
-
-
-/* =========================================================
-   SAVED PLAN HISTORY + CLASS-WISE SUMMARY
-========================================================= */
-
-function getClassWiseSummary(arrangement=db.arrangement, classes=db.classes){
-
-    const summary={};
-
-    classes.forEach(function(c){
-        summary[c.id]={
-            classId:c.id,
-            label:classLabel(c),
-            originalRoom:c.normalRoom ?? "",
-            total:Number(c.total)||0,
-            allocated:0,
-            rooms:[]
-        };
-    });
-
-    arrangement.forEach(function(room){
-        room.allocations.forEach(function(a){
-            if(!summary[a.classId]){
-                summary[a.classId]={
-                    classId:a.classId,
-                    label:(a.className||"")+"-"+(a.section||""),
-                    originalRoom:"",
-                    total:0,
-                    allocated:0,
-                    rooms:[]
-                };
-            }
-
-            summary[a.classId].allocated += Number(a.count)||0;
-
-            if(!summary[a.classId].rooms.includes(String(room.roomName))){
-                summary[a.classId].rooms.push(String(room.roomName));
-            }
-        });
-    });
-
-    return Object.values(summary);
-}
-
-function saveSeatingPlanToHistory(){
-
-    if(!db.arrangement.length) return;
-
-    const snapshot={
-        id:uid(),
-        savedAt:new Date().toISOString(),
-        setup:JSON.parse(JSON.stringify(db.setup)),
-        classes:JSON.parse(JSON.stringify(db.classes)),
-        rooms:JSON.parse(JSON.stringify(db.rooms)),
-        arrangement:JSON.parse(JSON.stringify(db.arrangement))
-    };
-
-    if(!Array.isArray(db.history)) db.history=[];
-
-    db.history.unshift(snapshot);
-    db.history=db.history.slice(0,5);
-}
-
-function restoreSavedPlan(index){
-
-    const plan=db.history && db.history[index];
-
-    if(!plan) return;
-
-    db.setup=JSON.parse(JSON.stringify(plan.setup||db.setup));
-    db.classes=JSON.parse(JSON.stringify(plan.classes||db.classes));
-    db.rooms=JSON.parse(JSON.stringify(plan.rooms||db.rooms));
-    db.arrangement=JSON.parse(JSON.stringify(plan.arrangement||[]));
-
-    saveDatabase();
-    renderAll();
-    showTab("arrangement");
-
-    showMessage(
-        "generateMessage",
-        "Saved seating plan restored successfully.",
-        "successmsg"
-    );
-}
-
-function deleteSavedPlan(index){
-
-    if(!db.history || !db.history[index]) return;
-
-    if(!confirm("Delete this saved seating plan?")) return;
-
-    db.history.splice(index,1);
-    saveDatabase();
-    renderDashboard();
-}
-
-function renderClassWiseSummary(){
-
-    const el=document.getElementById("classWiseSummary");
-    if(!el) return;
-
-    if(!db.arrangement.length){
-        el.innerHTML="";
-        return;
-    }
-
-    const rows=getClassWiseSummary();
-
-    el.innerHTML=`
-        <div class="card summary-card">
-            <div class="summary-title-row">
-                <div>
-                    <h2>Class-wise Seating Summary</h2>
-                    <p class="muted">Students allocated from each original class and the examination rooms used.</p>
-                </div>
-                <span class="summary-count">${rows.length} Classes</span>
-            </div>
-            <table class="class-summary-table">
-                <thead>
-                    <tr>
-                        <th>Class</th>
-                        <th>Original Class Room</th>
-                        <th>Total Students</th>
-                        <th>Allocated</th>
-                        <th>Exam Room(s)</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rows.map(function(r){
-                        const complete=Number(r.allocated)===Number(r.total);
-                        return `<tr>
-                            <td><b>${escapeHTML(r.label)}</b></td>
-                            <td>${escapeHTML(r.originalRoom || "Not Assigned")}</td>
-                            <td>${r.total}</td>
-                            <td>${r.allocated}</td>
-                            <td>${r.rooms.length ? r.rooms.map(escapeHTML).join(", ") : "—"}</td>
-                            <td><span class="summary-status ${complete?'complete':'pending'}">${complete?'Complete':'Pending'}</span></td>
-                        </tr>`;
-                    }).join("")}
-                </tbody>
-            </table>
-        </div>
-    `;
-}
-
-function renderSavedPlans(){
-
-    const el=document.getElementById("savedPlans");
-    if(!el) return;
-
-    const plans=Array.isArray(db.history)?db.history:[];
-
-    if(!plans.length){
-        el.innerHTML=`
-            <div class="card history-card">
-                <h2>Last 5 Saved Seating Plans</h2>
-                <div class="message info">No saved seating plans yet. Every newly generated plan will be saved here automatically.</div>
-            </div>`;
-        return;
-    }
-
-    el.innerHTML=`
-        <div class="card history-card">
-            <div class="summary-title-row">
-                <div>
-                    <h2>Last 5 Saved Seating Plans</h2>
-                    <p class="muted">The five most recently generated seating arrangements are retained automatically.</p>
-                </div>
-                <span class="summary-count">${plans.length}/5 Saved</span>
-            </div>
-            <div class="saved-plan-list">
-                ${plans.map(function(plan,index){
-                    const rooms=(plan.arrangement||[]).length;
-                    const students=(plan.arrangement||[]).reduce(function(total,room){
-                        return total + (room.allocations||[]).reduce(function(t,a){return t+(Number(a.count)||0);},0);
-                    },0);
-                    const date=new Date(plan.savedAt);
-                    const dateText=isNaN(date.getTime()) ? "Unknown date" : date.toLocaleString();
-                    return `<div class="saved-plan-item">
-                        <div>
-                            <b>${escapeHTML(plan.setup?.examName || "Seating Plan")}</b>
-                            <div class="muted">${escapeHTML(plan.setup?.session || "")} • ${escapeHTML(plan.setup?.examDate || "Date not set")} • Saved ${escapeHTML(dateText)}</div>
-                            <div class="saved-plan-meta">${rooms} Exam Rooms • ${students} Students</div>
-                        </div>
-                        <div class="toolbar compact-toolbar">
-                            <button onclick="restoreSavedPlan(${index})">Open</button>
-                            <button class="danger" onclick="deleteSavedPlan(${index})">Delete</button>
-                        </div>
-                    </div>`;
-                }).join("")}
-            </div>
-        </div>
-    `;
-}
-
-/* =========================================================
-   PRINT + ORIGINAL CLASS HELPERS
-========================================================= */
-
-function getOriginalClassNames(room){
-
-    const names =
-        db.classes
-        .filter(function(classObject){
-
-            return String(classObject.normalRoom ?? "")
-                .trim()
-                .toLowerCase() ===
-                String(room.roomName ?? "")
-                .trim()
-                .toLowerCase();
-
-        })
-        .map(function(classObject){
-
-            return classLabel(classObject);
-
-        });
-
-    return names.length
-        ? names.join(", ")
-        : "Not Assigned";
-}
-
-
-function printSeatingArrangement(){
-
-    if(!db.arrangement.length){
-
-        alert("Please generate the seating arrangement first.");
-
-        return;
-
-    }
-
-    document.body.classList.add("print-arrangement");
-
-    setTimeout(function(){
-
-        window.print();
-
-    },50);
-
-}
-
-
-window.addEventListener("afterprint", function(){
-
-    document.body.classList.remove("print-arrangement");
-
+    db.arrangement=[];saveDatabase();renderAll();e.target.value="";
+  };
+  r.readAsText(f);
 });
 
+/* ===== ROOMS ===== */
+const rin=(i,k,v,t)=>`<td><input ${t?`type="number" min="0"`:""} value="${esc(v)}" onchange="updateRoom(${i},'${k}',this.value)"></td>`;
+function renderRooms(){
+  $("roomTable").innerHTML=db.rooms.map((r,i)=>"<tr>"+rin(i,"name",r.name)+rin(i,"capacity",r.capacity,1)+`<td><input type="checkbox" ${r.available?"checked":""} onchange="updateRoom(${i},'available',this.checked)"></td>`+rin(i,"block",r.block||"")+rin(i,"floor",r.floor||"")+`<td><button class="danger" onclick="deleteRoom(${i})">Delete</button></td></tr>`).join("");
+}
+function updateRoom(i,key,value){db.rooms[i][key]=key==="capacity"?Number(value):value;db.arrangement=[];saveDatabase();renderRooms();renderDashboard();}
+function addRoom(){db.rooms.push({id:uid(),name:String(db.rooms.length+1),capacity:30,available:true,block:"",floor:""});saveDatabase();renderRooms();}
+function deleteRoom(i){if(!confirm("Delete this examination room?"))return;db.rooms.splice(i,1);db.arrangement=[];saveDatabase();renderAll();}
+function exportRooms(){
+  let csv="Room,Capacity,Available,Block,Floor\n";
+  db.rooms.forEach(r=>csv+=[r.name,r.capacity,r.available?"Yes":"No",r.block,r.floor].map(csvq).join(",")+"\n");
+  downloadFile("exam_rooms.csv",csv);
+}
 
-/* =========================================================
-   ARRANGEMENT DISPLAY
-========================================================= */
+/* ===== RULES ===== */
+function renderRules(){NUM_RULES.forEach(k=>$(k).value=db.rules[k]);BOOL_RULES.forEach(k=>$(k).checked=!!db.rules[k]);}
+function saveRules(show){
+  NUM_RULES.forEach(k=>db.rules[k]=Number($(k).value));
+  BOOL_RULES.forEach(k=>db.rules[k]=$(k).checked);
+  saveDatabase();if(show)alert("Seating rules saved.");
+}
+function resetRules(){db.rules={...DEFAULT_RULES};saveDatabase();renderRules();}
+function renderPreStats(){const s=totalStudents(),q=availSeats();$("preStats").innerHTML=stat("Total Students",s)+stat("Available Seats",q)+stat("Surplus / Deficit",q-s);}
 
-function renderArrangement(){
 
-    const output =
-        document.getElementById(
-            "arrangementOutput"
-        );
+function distributeSeats(L,w,caps){
+  const a=w.map(()=>0);let left=L;
+  while(left>0){
+    const act=[];w.forEach((_,i)=>{if(a[i]<caps[i])act.push(i);});
+    if(!act.length)break;
+    const sw=act.reduce((s,i)=>s+w[i],0),base=left,fr=[];let given=0;
+    act.forEach(i=>{const sh=base*w[i]/sw,g=Math.min(caps[i]-a[i],Math.floor(sh));a[i]+=g;given+=g;fr.push([sh-Math.floor(sh),i]);});
+    left-=given;
+    fr.sort((x,y)=>y[0]-x[0]);
+    for(const [,i] of fr){if(left>0&&a[i]<caps[i]){a[i]++;left--;}}
+  }
+  return a;
+}
 
+function orderSeats(groups,avoid){
+  const seats=[],L=groups.reduce((s,g)=>s+g.count,0);
+  const g=groups.map(x=>({...x,left:x.count,next:x.from,last:-1}));
+  if(!avoid||g.length<2){g.forEach(x=>{for(let i=0;i<x.count;i++)seats.push({classId:x.classId,label:x.label,className:x.className,section:x.section,roll:x.from+i});});return seats;}
+  let prev=-1;
+  for(let t=0;t<L;t++){
+    let best=-1;
+    g.forEach((x,i)=>{
+      if(x.left<=0)return;
+      if(best<0){best=i;return;}
+      const b=g[best],ip=i===prev,bp=best===prev;
+      if(bp&&!ip){best=i;return;}
+      if(ip&&!bp)return;
+      if(x.left>b.left||(x.left===b.left&&x.last<b.last))best=i;
+    });
+    const x=g[best];
+    seats.push({classId:x.classId,label:x.label,className:x.className,section:x.section,roll:x.next});
+    x.next++;x.left--;x.last=t;prev=best;
+  }
+  return seats;
+}
 
-    if(
-        !db.arrangement.length
-    ){
-
-        output.innerHTML = `
-
-            <div class="card">
-
-                <div class="message info">
-
-                    No seating arrangement generated yet.
-
-                </div>
-
-            </div>
-
-        `;
-
-        return;
-
+function buildArrangement(classes,rooms,rules){
+  const warnings=[],N=classes.reduce((s,c)=>s+Number(c.total||0),0);
+  const avail=rooms.filter(r=>r.available&&Number(r.capacity)>0).map(r=>({room:r,cap:Number(r.capacity)}));
+  const loads=new Map();let left=N;
+  if(rules.fillRooms){
+    avail.slice().sort((a,b)=>b.cap-a.cap).forEach(x=>{const l=Math.min(x.cap,left);loads.set(x,l);left-=l;});
+  }else{
+    const seats=avail.reduce((s,x)=>s+x.cap,0),fr=[];
+    avail.forEach(x=>{const id=x.cap*N/seats;loads.set(x,Math.floor(id));left-=Math.floor(id);fr.push([id-Math.floor(id),x]);});
+    fr.sort((a,b)=>b[0]-a[0]);
+    for(const [,x] of fr){if(left>0&&loads.get(x)<x.cap){loads.set(x,loads.get(x)+1);left--;}}
+  }
+  const st=classes.map((c,i)=>({c,i,rem:Number(c.total||0),next:Number(c.from)||1}));
+  const minC=Math.max(1,+rules.minClasses||1),maxC=Math.max(minC,+rules.maxClasses||minC),
+        prefC=Math.min(maxC,Math.max(minC,+rules.preferredClasses||minC)),
+        pct=Math.min(100,Math.max(1,+rules.maxClassPercent||100)),blk=Math.max(1,+rules.targetBlock||1);
+  const out=[];
+  const done=new Set();
+  avail.forEach(x=>{
+    const L=loads.get(x);if(!L)return;
+    done.add(x);
+    let alloc=[];
+    const live=st.filter(s=>s.rem>0);
+    if(!live.length)return;
+    if(!rules.mixClasses){
+      let need=L;
+      live.sort((a,b)=>(a.rem===a.c.total)-(b.rem===b.c.total)||a.i-b.i);
+      for(const s of live){if(need<=0)break;const q=Math.min(s.rem,need);alloc.push([s,q]);need-=q;}
+    }else{
+      let k=Math.min(prefC,Math.max(minC,Math.floor(L/blk)));
+      k=Math.max(1,Math.min(k,live.length));
+      /* classes that must be finished here, or later rooms cannot hold all remaining classes */
+      const roomsLeft=avail.filter(y=>loads.get(y)>0&&!done.has(y)).length+1;
+      const m=Math.max(0,live.length-maxC*(roomsLeft-1));
+      const forced=[];let fs=0;
+      live.slice().sort((a,b)=>a.rem-b.rem||a.i-b.i).forEach(s=>{if(forced.length<m&&forced.length<maxC&&fs+s.rem<=L){forced.push(s);fs+=s.rem;}});
+      const rest=live.filter(s=>!forced.includes(s)).sort((a,b)=>b.rem-a.rem||a.i-b.i);
+      let pc=Math.max(1,Math.floor(L*pct/100)),ch,caps,relaxed=false;
+      for(;;){
+        ch=forced.concat(rest.slice(0,Math.max(0,k-forced.length)));
+        caps=ch.map(s=>forced.includes(s)?s.rem:Math.min(s.rem,ch.length>1?pc:L));
+        if(caps.reduce((a,b)=>a+b,0)>=L)break;
+        if(k<Math.min(maxC,live.length)&&ch.length<live.length)k++;
+        else if(pc<L){pc=L;relaxed=true;}
+        else if(ch.length<live.length){k++;relaxed=true;}
+        else break;
+      }
+      if(relaxed)warnings.push("Room "+x.room.name+": class limits had to be relaxed to seat everyone.");
+      const fi=ch.map(s=>forced.includes(s));
+      const rest2=ch.map((s,j)=>j).filter(j=>!fi[j]);
+      const q=ch.map((s,j)=>fi[j]?s.rem:0);
+      const L2=L-q.reduce((a,b)=>a+b,0);
+      const qr=distributeSeats(L2,rest2.map(j=>ch[j].rem),rest2.map(j=>caps[j]));
+      rest2.forEach((j,n)=>{q[j]=qr[n];});
+      ch.forEach((s,j)=>{if(q[j]>0)alloc.push([s,q[j]]);});
     }
-
-
-    renderClassWiseSummary();
-
-    output.innerHTML =
-        db.arrangement
-        .map(
-            function(room,roomIndex){
-
-                const allocated =
-                    room.allocations.reduce(
-                        (sum,item)=>
-                            sum+item.count,
-                        0
-                    );
-
-
-                return `
-
-<div class="card roomcard ${
-    roomIndex < db.arrangement.length - 1
-        ? "print-room-break"
-        : "print-last-room"
-}">
-
-
-<div class="roomhead">
-
-<div>
-<h2>
-Exam Room ${escapeHTML(room.roomName)}
-</h2>
-
-<div class="original-class">
-Original Class: ${escapeHTML(getOriginalClassNames(room))}
-</div>
-</div>
-
-
-<span class="badge ${
-    allocated <= room.capacity
-        ? "ok"
-        : "bad"
-}">
-
-${allocated}
-/
-${room.capacity}
-
-Seats
-
-</span>
-
-</div>
-
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>
-Class
-</th>
-
-<th>
-Roll From
-</th>
-
-<th>
-Roll To
-</th>
-
-<th>
-Students
-</th>
-
-</tr>
-
-</thead>
-
-
-<tbody>
-
-${
-    room.allocations
-    .map(
-        function(a){
-
-            return `
-
-<tr>
-
-<td>
-
-<b>
-
-${escapeHTML(
-    a.className
-)}
--
-${escapeHTML(
-    a.section
-)}
-
-</b>
-
-</td>
-
-<td>
-${a.from}
-</td>
-
-<td>
-${a.to}
-</td>
-
-<td>
-${a.count}
-</td>
-
-</tr>
-
-`;
-
-        }
-    )
-    .join("")
+    alloc.sort((a,b)=>a[0].i-b[0].i);
+    const allocations=alloc.map(([s,q])=>{
+      const a={classId:s.c.id,className:s.c.className,section:s.c.section,from:s.next,to:s.next+q-1,count:q};
+      s.next+=q;s.rem-=q;return a;});
+    const seats=orderSeats(allocations.map(a=>({classId:a.classId,label:a.className+"-"+a.section,className:a.className,section:a.section,from:a.from,count:a.count})),rules.avoidSame);
+    out.push({roomId:x.room.id,roomName:x.room.name,capacity:x.cap,allocations,seats,_idx:rooms.indexOf(x.room)});
+  });
+  out.sort((a,b)=>a._idx-b._idx);
+  out.forEach(r=>delete r._idx);
+  const un=st.reduce((s,x)=>s+x.rem,0);
+  if(un>0)warnings.push(un+" student(s) could not be allocated.");
+  out.forEach(r=>{
+    const n=r.allocations.length,tot=r.allocations.reduce((s,a)=>s+a.count,0);
+    if(n>maxC)warnings.push("Room "+r.roomName+": "+n+" classes (max "+maxC+").");
+    if(n>1&&r.allocations.some(a=>a.count*100>tot*pct+0.001))warnings.push("Room "+r.roomName+": one class exceeds "+pct+"% of the room.");
+  });
+  return{arrangement:out,warnings};
 }
 
-</tbody>
-
-</table>
-
-
-<h3 style="margin-top:18px">
-
-Physical Seat Map
-
-</h3>
-
-
-<div class="seats">
-
-${
-    room.seats
-    .map(
-        function(seat,index){
-
-            return `
-
-<div class="seat">
-
-<span class="small">
-
-Seat ${index+1}
-
-</span>
-
-
-<strong>
-
-${escapeHTML(
-    seat.label
-)}
-
-</strong>
-
-
-<span>
-
-Roll No.
-${seat.roll}
-
-</span>
-
-</div>
-
-`;
-
-        }
-    )
-    .join("")
+function countAdjacent(room){let n=0;for(let i=1;i<room.seats.length;i++)if(room.seats[i].classId===room.seats[i-1].classId)n++;return n;}
+/* ===== GENERATE ===== */
+function showMessage(id,text,type){const e=$(id);e.className="message "+type;e.textContent=text;}
+function generateArrangement(){
+  saveSetup(false);
+  if(!db.classes.length)return showMessage("generateMessage","Please add classes first.","error");
+  const rooms=db.rooms.map(r=>({...r,capacity:Number(r.capacity)}));
+  const seats=availSeats(),need=totalStudents();
+  if(!seats)return showMessage("generateMessage","Please add available examination rooms.","error");
+  if(seats<need)return showMessage("generateMessage","Not enough examination seats. Required: "+need+" | Available: "+seats+" | Deficit: "+(need-seats),"error");
+  const res=buildArrangement(db.classes,rooms,db.rules);
+  db.arrangement=res.arrangement;db.warnings=res.warnings;
+  saveSeatingPlanToHistory();saveDatabase();
+  renderAll();showTab("arrangement");
+  showMessage("generateMessage",res.warnings.length?"Generated with "+res.warnings.length+" warning(s). See Validation.":"Arrangement generated successfully. Please check Validation before printing.",res.warnings.length?"warning":"successmsg");
 }
 
-</div>
-
-
-</div>
-
-`;
-
-            }
-        )
-        .join("");
-
+/* ===== HISTORY + SUMMARY ===== */
+const clone=o=>JSON.parse(JSON.stringify(o));
+function saveSeatingPlanToHistory(){
+  if(!db.arrangement.length)return;
+  db.history.unshift({id:uid(),savedAt:new Date().toISOString(),setup:clone(db.setup),classes:clone(db.classes),rooms:clone(db.rooms),arrangement:clone(db.arrangement),warnings:clone(db.warnings||[])});
+  db.history=db.history.slice(0,5);
+}
+function restoreSavedPlan(i){
+  const p=db.history[i];if(!p)return;
+  db.setup=clone(p.setup);db.classes=clone(p.classes);db.rooms=clone(p.rooms);db.arrangement=clone(p.arrangement);db.warnings=clone(p.warnings||[]);
+  saveDatabase();renderAll();showTab("arrangement");
+}
+function deleteSavedPlan(i){if(!db.history[i]||!confirm("Delete this saved seating plan?"))return;db.history.splice(i,1);saveDatabase();renderSavedPlans();}
+function getClassWiseSummary(){
+  const m={};
+  db.classes.forEach(c=>m[c.id]={label:classLabel(c),originalRoom:c.normalRoom??"",total:Number(c.total)||0,allocated:0,rooms:[]});
+  db.arrangement.forEach(r=>r.allocations.forEach(a=>{
+    const s=m[a.classId]||(m[a.classId]={label:a.className+"-"+a.section,originalRoom:"",total:0,allocated:0,rooms:[]});
+    s.allocated+=Number(a.count)||0;
+    if(!s.rooms.includes(String(r.roomName)))s.rooms.push(String(r.roomName));
+  }));
+  return Object.values(m);
+}
+function renderClassWiseSummary(){
+  const el=$("classWiseSummary");
+  if(!db.arrangement.length){el.innerHTML="";return;}
+  const rows=getClassWiseSummary();
+  el.innerHTML=`<div class="card"><div class="title-row"><div><h2>Class-wise Seating Summary</h2><p class="muted">Students allocated from each original class and the examination rooms used.</p></div><span class="pill">${rows.length} Classes</span></div>
+  <table><thead><tr><th>Class</th><th>Original Class Room</th><th>Total Students</th><th>Allocated</th><th>Exam Room(s)</th><th>Status</th></tr></thead><tbody>
+  ${rows.map(r=>{const ok=r.allocated===r.total;return`<tr><td><b>${esc(r.label)}</b></td><td>${esc(r.originalRoom||"Not Assigned")}</td><td>${r.total}</td><td>${r.allocated}</td><td>${r.rooms.length?r.rooms.map(esc).join(", "):"—"}</td><td><span class="badge ${ok?"ok":"bad"}">${ok?"Complete":"Pending"}</span></td></tr>`;}).join("")}
+  </tbody></table></div>`;
+}
+function renderSavedPlans(){
+  const p=db.history;
+  $("savedPlans").innerHTML=`<div class="card"><div class="title-row"><div><h2>Last 5 Saved Seating Plans</h2><p class="muted">Every newly generated plan is saved here automatically.</p></div><span class="pill">${p.length}/5 Saved</span></div>`+
+  (p.length?p.map((pl,i)=>{
+    const rooms=(pl.arrangement||[]).length,st=(pl.arrangement||[]).reduce((t,r)=>t+r.allocations.reduce((a,x)=>a+(Number(x.count)||0),0),0);
+    const d=new Date(pl.savedAt),dt=isNaN(d)?"Unknown date":d.toLocaleString();
+    return`<div class="plan"><div><b>${esc(pl.setup?.examName||"Seating Plan")}</b><div class="muted">${esc(pl.setup?.session||"")} • ${esc(pl.setup?.examDate||"Date not set")} • Saved ${esc(dt)}</div><div class="muted">${rooms} Exam Rooms • ${st} Students</div></div><div class="toolbar"><button onclick="restoreSavedPlan(${i})">Open</button><button class="danger" onclick="deleteSavedPlan(${i})">Delete</button></div></div>`;}).join("")
+  :`<div class="message info">No saved seating plans yet.</div>`)+"</div>";
 }
 
+/* ===== PRINT + ARRANGEMENT ===== */
+function getOriginalClassNames(room){
+  const n=s=>String(s??"").toLowerCase().replace(/^room\s*/,"").replace(/\s+/g," ").trim();
+  const names=db.classes.filter(c=>n(c.normalRoom)&&n(c.normalRoom)===n(room.roomName)).map(classLabel);
+  return names.length?names.join(", "):"Not Assigned";
+}
+function printSeatingArrangement(){
+  if(!db.arrangement.length)return alert("Please generate the seating arrangement first.");
+  document.body.classList.add("printing");
+  setTimeout(()=>window.print(),50);
+}
+window.addEventListener("afterprint",()=>document.body.classList.remove("printing"));
+function renderArrangement(){
+  const out=$("arrangementOutput");
+  if(!db.arrangement.length){$("classWiseSummary").innerHTML="";out.innerHTML=`<div class="card"><div class="message info">No seating arrangement generated yet.</div></div>`;return;}
+  renderClassWiseSummary();
+  const s=db.setup,line=[s.examName,s.session,s.examDate,s.examTime].filter(Boolean).map(esc).join(" • ");
+  out.innerHTML=db.arrangement.map(room=>{
+    const tot=room.allocations.reduce((a,x)=>a+x.count,0);
+    return`<div class="card roomcard"><div class="roomhead"><div><h2>Exam Room ${esc(room.roomName)}</h2>
+    <div class="ctitle">${line}</div><div class="ctitle">Original Class: ${esc(getOriginalClassNames(room))}</div></div>
+    <span class="badge ${tot<=room.capacity?"ok":"bad"}">${tot} / ${room.capacity} Seats</span></div>
+    <table><thead><tr><th>Class</th><th>Roll From</th><th>Roll To</th><th>Students</th></tr></thead><tbody>
+    ${room.allocations.map(a=>`<tr><td><b>${esc(a.className)}-${esc(a.section)}</b></td><td>${a.from}</td><td>${a.to}</td><td>${a.count}</td></tr>`).join("")}</tbody></table>
+    <h3 style="margin-top:18px">Physical Seat Map</h3><div class="seats">
+    ${room.seats.map((s,i)=>`<div class="seat"><span class="small">Seat ${i+1}</span><strong>${esc(s.label)}</strong><span>Roll No. ${s.roll}</span></div>`).join("")}</div></div>`;
+  }).join("");
+}
 
-/* =========================================================
-   VALIDATION
-========================================================= */
-
+/* ===== VALIDATION ===== */
 function renderValidation(){
-
-    const total =
-        totalStudents();
-
-
-    let allocated=0;
-
-
-    const roomProblems=[];
-
-    const duplicateStudents=[];
-
-    const seen =
-        new Set();
-
-
-    const classAllocation={};
-
-
-    db.arrangement.forEach(
-        function(room){
-
-            const roomTotal =
-                room.allocations.reduce(
-                    (sum,a)=>
-                        sum+a.count,
-                    0
-                );
-
-
-            allocated +=
-                roomTotal;
-
-
-            if(
-                roomTotal >
-                room.capacity
-            ){
-
-                roomProblems.push(
-
-                    room.roomName +
-                    ": " +
-                    roomTotal +
-                    "/" +
-                    room.capacity
-
-                );
-
-            }
-
-
-            room.allocations.forEach(
-                function(a){
-
-                    classAllocation[
-                        a.classId
-                    ] =
-                        (
-                            classAllocation[
-                                a.classId
-                            ] ||
-                            0
-                        ) +
-                        a.count;
-
-
-                    for(
-                        let roll=a.from;
-                        roll<=a.to;
-                        roll++
-                    ){
-
-                        const key =
-                            a.classId +
-                            "|" +
-                            roll;
-
-
-                        if(
-                            seen.has(key)
-                        ){
-
-                            duplicateStudents.push(
-                                key
-                            );
-
-                        }
-
-
-                        seen.add(key);
-
-                    }
-
-                }
-            );
-
-        }
-    );
-
-
-    const classProblems=[];
-
-
-    db.classes.forEach(
-        function(classObject){
-
-            const got =
-                classAllocation[
-                    classObject.id
-                ] || 0;
-
-
-            if(
-                got !==
-                Number(classObject.total)
-            ){
-
-                classProblems.push({
-
-                    name:
-                        classLabel(
-                            classObject
-                        ),
-
-                    required:
-                        classObject.total,
-
-                    allocated:
-                        got
-
-                });
-
-            }
-
-        }
-    );
-
-
-    const unallocated =
-        total-allocated;
-
-
-    const valid =
-        allocated===total &&
-        classProblems.length===0 &&
-        duplicateStudents.length===0 &&
-        roomProblems.length===0;
-
-
-    document.getElementById(
-        "validationOutput"
-    ).innerHTML = `
-
-
-<div class="stats">
-
-${stat(
-    "Required Students",
-    total
-)}
-
-
-${stat(
-    "Allocated",
-    allocated
-)}
-
-
-${stat(
-    "Unallocated",
-    unallocated
-)}
-
-
-${stat(
-    "Duplicates",
-    duplicateStudents.length
-)}
-
-
-${stat(
-    "Room Problems",
-    roomProblems.length
-)}
-
-</div>
-
-
-<div class="message ${
-    valid
-        ? "successmsg"
-        : "error"
-}">
-
-${
-    valid
-
-        ?
-
-        "✓ VALID — Every student is allocated exactly once and no examination room exceeds capacity."
-
-        :
-
-        "✗ VALIDATION FAILED — Please check the problems below."
-
+  const total=totalStudents();let allocated=0;
+  const roomProblems=[],dups=[],seen=new Set(),got={},adj=[];
+  db.arrangement.forEach(room=>{
+    const rt=room.allocations.reduce((s,a)=>s+a.count,0);allocated+=rt;
+    if(rt>room.capacity)roomProblems.push(room.roomName+": "+rt+"/"+room.capacity);
+    const n=countAdjacent(room);if(n)adj.push([room.roomName,n]);
+    room.allocations.forEach(a=>{
+      got[a.classId]=(got[a.classId]||0)+a.count;
+      for(let r=a.from;r<=a.to;r++){const k=a.classId+"|"+r;if(seen.has(k))dups.push(k);seen.add(k);}
+    });
+  });
+  const classProblems=db.classes.filter(c=>(got[c.id]||0)!==Number(c.total));
+  const valid=db.arrangement.length>0&&allocated===total&&!classProblems.length&&!dups.length&&!roomProblems.length;
+  const w=db.warnings||[];
+  $("validationOutput").innerHTML=`<div class="stats">${stat("Required Students",total)}${stat("Allocated",allocated)}${stat("Unallocated",total-allocated)}${stat("Duplicates",dups.length)}${stat("Room Problems",roomProblems.length)}${stat("Same-class Neighbours",adj.reduce((s,x)=>s+x[1],0))}</div>
+  <div class="message ${valid?"successmsg":"error"}">${valid?"✓ VALID — Every student is allocated exactly once and no examination room exceeds capacity.":"✗ VALIDATION FAILED — generate an arrangement or check the problems below."}</div>
+  ${db.arrangement.length?`<div class="message ${adj.length?"warning":"successmsg"}">${adj.length?"Same-class neighbours: "+adj.map(x=>"Room "+esc(x[0])+" ("+x[1]+")").join(", ")+" — this happens only when one class fills more than half a room.":"✓ No two students of the same class sit next to each other."}</div>`:""}
+  ${w.length?`<div class="message warning"><b>Rule warnings</b><ul>${w.map(x=>"<li>"+esc(x)+"</li>").join("")}</ul></div>`:""}
+  ${roomProblems.length?`<div class="card"><h3>Room Capacity Problems</h3><ul>${roomProblems.map(p=>"<li>"+esc(p)+"</li>").join("")}</ul></div>`:""}
+  <div class="card"><h3>Class Allocation Summary</h3><table><thead><tr><th>Class</th><th>Required</th><th>Allocated</th><th>Status</th></tr></thead><tbody>
+  ${db.classes.map(c=>{const g=got[c.id]||0,ok=g===Number(c.total);return`<tr><td>${esc(classLabel(c))}</td><td>${c.total}</td><td>${g}</td><td><span class="badge ${ok?"ok":"bad"}">${ok?"Complete":"Problem"}</span></td></tr>`;}).join("")}</tbody></table></div>`;
 }
 
-</div>
-
-
-${
-    classProblems.length
-
-    ?
-
-    `
-
-<div class="card">
-
-<h3>
-Class Allocation Problems
-</h3>
-
-<ul>
-
-${
-    classProblems
-    .map(
-        p=>
-            `<li>
-                ${escapeHTML(p.name)}
-                :
-                ${p.allocated}
-                /
-                ${p.required}
-            </li>`
-    )
-    .join("")
-}
-
-</ul>
-
-</div>
-
-`
-
-    :
-
-    ""
-
-}
-
-
-${
-    duplicateStudents.length
-
-    ?
-
-    `
-
-<div class="card">
-
-<h3>
-Duplicate Students
-</h3>
-
-<p>
-
-${duplicateStudents
-    .map(escapeHTML)
-    .join(", ")}
-
-</p>
-
-</div>
-
-`
-
-    :
-
-    ""
-
-}
-
-
-${
-    roomProblems.length
-
-    ?
-
-    `
-
-<div class="card">
-
-<h3>
-Room Capacity Problems
-</h3>
-
-<ul>
-
-${
-    roomProblems
-    .map(
-        problem=>
-            `<li>
-                ${escapeHTML(problem)}
-            </li>`
-    )
-    .join("")
-}
-
-</ul>
-
-</div>
-
-`
-
-    :
-
-    ""
-
-}
-
-
-<div class="card">
-
-<h3>
-Class Allocation Summary
-</h3>
-
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>
-Class
-</th>
-
-<th>
-Required
-</th>
-
-<th>
-Allocated
-</th>
-
-<th>
-Status
-</th>
-
-</tr>
-
-</thead>
-
-
-<tbody>
-
-${
-    db.classes
-    .map(
-        function(c){
-
-            const got =
-                classAllocation[
-                    c.id
-                ] || 0;
-
-
-            const complete =
-                got ===
-                Number(c.total);
-
-
-            return `
-
-<tr>
-
-<td>
-
-${escapeHTML(
-    classLabel(c)
-)}
-
-</td>
-
-<td>
-
-${c.total}
-
-</td>
-
-<td>
-
-${got}
-
-</td>
-
-<td>
-
-<span class="badge ${
-    complete
-        ? "ok"
-        : "bad"
-}">
-
-${
-    complete
-        ? "Complete"
-        : "Problem"
-}
-
-</span>
-
-</td>
-
-</tr>
-
-`;
-
-        }
-    )
-    .join("")
-}
-
-</tbody>
-
-</table>
-
-</div>
-
-`;
-
-}
-
-
-/* =========================================================
-   EXPORT ARRANGEMENT
-========================================================= */
-
+/* ===== EXPORT ===== */
 function exportArrangementCSV(){
-
-    let csv =
-        "Exam Room,Class,Section,Roll From,Roll To,Students,Seat,Roll No\n";
-
-
-    db.arrangement.forEach(
-        function(room){
-
-            room.seats.forEach(
-                function(seat,index){
-
-                    const allocation =
-                        room.allocations.find(
-                            a=>
-                                a.classId ===
-                                seat.classId
-                        );
-
-
-                    csv += [
-
-                        room.roomName,
-
-                        seat.label
-                            .split("-")
-                            .slice(0,-1)
-                            .join("-"),
-
-                        seat.label
-                            .split("-")
-                            .slice(-1)[0],
-
-                        allocation
-                            ? allocation.from
-                            : "",
-
-                        allocation
-                            ? allocation.to
-                            : "",
-
-                        allocation
-                            ? allocation.count
-                            : "",
-
-                        index+1,
-
-                        seat.roll
-
-                    ].join(",") +
-                    "\n";
-
-                }
-            );
-
-        }
-    );
-
-
-    downloadFile(
-        "seating_arrangement.csv",
-        csv
-    );
-
+  let csv="Exam Room,Class,Section,Roll From,Roll To,Students,Seat,Roll No\n";
+  db.arrangement.forEach(room=>room.seats.forEach((s,i)=>{
+    const a=room.allocations.find(x=>x.classId===s.classId)||{};
+    csv+=[room.roomName,s.className??s.label,s.section??"",a.from,a.to,a.count,i+1,s.roll].map(csvq).join(",")+"\n";
+  }));
+  downloadFile("seating_arrangement.csv",csv);
 }
-
-
-/* =========================================================
-   JSON BACKUP
-========================================================= */
-
-function exportJSON(){
-
-    downloadFile(
-
-        "seating_arrangement_backup.json",
-
-        JSON.stringify(
-            db,
-            null,
-            2
-        )
-
-    );
-
+function exportJSON(){downloadFile("seating_arrangement_backup.json",JSON.stringify(db,null,2));}
+function downloadFile(name,content){
+  const url=URL.createObjectURL(new Blob(["\ufeff"+content],{type:"text/plain;charset=utf-8"}));
+  const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-
-
-/* =========================================================
-   DOWNLOAD
-========================================================= */
-
-function downloadFile(
-    filename,
-    content
-){
-
-    const blob =
-        new Blob(
-            [content],
-            {
-                type:
-                    "text/plain;charset=utf-8"
-            }
-        );
-
-
-    const url =
-        URL.createObjectURL(
-            blob
-        );
-
-
-    const link =
-        document.createElement(
-            "a"
-        );
-
-
-    link.href=url;
-
-    link.download=filename;
-
-    document.body.appendChild(
-        link
-    );
-
-    link.click();
-
-    document.body.removeChild(
-        link
-    );
-
-
-    setTimeout(
-        function(){
-
-            URL.revokeObjectURL(
-                url
-            );
-
-        },
-        1000
-    );
-
-}
-
-
-/* =========================================================
-   MESSAGE
-========================================================= */
-
-function showMessage(
-    elementId,
-    text,
-    type
-){
-
-    const element =
-        document.getElementById(
-            elementId
-        );
-
-
-    element.className =
-        "message " +
-        type;
-
-
-    element.textContent =
-        text;
-
-}
-
-
-/* =========================================================
-   RENDER EVERYTHING
-========================================================= */
-
-function renderAll(){
-
-    renderDashboard();
-    renderSavedPlans();
-
-    renderClasses();
-
-    renderRooms();
-
-    renderRules();
-
-    renderPreStats();
-
-    renderArrangement();
-
-    renderValidation();
-
-}
-
-
-/* =========================================================
-   START APPLICATION
-========================================================= */
-
+function renderAll(){renderDashboard();renderSavedPlans();renderClasses();renderRooms();renderRules();renderPreStats();renderArrangement();renderValidation();}
 loadDatabase();
-
 </script>
-
 </body>
 </html>
