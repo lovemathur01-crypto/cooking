@@ -346,7 +346,7 @@ Expected columns: <b>Teacher Name, Day, 1st IP, 2nd IP, 3rd IP, 4th IP, Lunch Br
 
 <div class="card">
 <h2>$ set --flags exam,extra</h2>
-<div class="info">Select the teacher and tick the IPs. In those IPs the teacher is busy, so <b>the teacher gets a column in the Duty Chart and a substitute is arranged for their class</b> (the teacher is orange in the chart). <b>If their class in that IP is X or XII, no substitute is needed.</b> Free and Lunch IPs also need no substitute. Busy teachers are never given a substitution duty in their own busy IPs, but can take duties in their other free IPs. A teacher can be added to both Examination Duty and Extra Class. Adding the same teacher again updates their IPs.</div>
+<div class="info">Select the teacher and tick the IPs. In those IPs the teacher is busy, so <b>the teacher gets a column in the Duty Chart and a substitute is arranged for their class</b> (the teacher is orange in the chart). <b>If their class in that IP is X or XII, no substitute is needed.</b> Free and Lunch IPs also need no substitute. Busy teachers are never given a substitution duty in their own busy IPs, but can take duties in their other free IPs. <b>In an IP where someone is on Examination Duty, teachers who are not on exam duty and have class X or XII become free and are eligible for substitution.</b> A teacher can be added to both Examination Duty and Extra Class. Adding the same teacher again updates their IPs.</div>
 <div class="busy-grid">
 <div class="absent-panel exam-panel">
 <h3>Examination Duty</h3><p class="small muted">Select teacher and IPs (1st to 5th)</p>
@@ -686,6 +686,22 @@ function busyP(t,p){
 function busySig(){
  return Object.keys(BUSY_TYPES).map(ty=>Object.keys(busy[ty]).sort().map(k=>k+":"+busy[ty][k].periods.join(",")));
 }
+/* IPs in which at least one (present) teacher is on Examination Duty */
+function examPeriodSet(day){
+ const s=new Set();
+ Object.values(busy.exam).forEach(e=>{if(timetable[day]&&timetable[day][e.name])e.periods.forEach(p=>s.add(p))});
+ return s;
+}
+/* Effective free: really free, OR teaching class X/XII during an exam IP (and not busy themselves) */
+function effFree(day,t,p){
+ const row=(timetable[day]||{})[t];
+ if(!row||busyP(t,p))return false;
+ const v=row[p];
+ if(isFree(v))return true;
+ if(isNA(v))return false;
+ const pi=PERIODS.indexOf(p);
+ return pi>=0&&isExemptClass(v)&&examPeriodSet(day).has(pi);
+}
 function buildBusyForms(){
  Object.keys(BUSY_TYPES).forEach(ty=>{
   document.getElementById(ty+"IPs").innerHTML=BUSY_TYPES[ty].range.map(i=>`<label class="ip-check"><input type="checkbox" class="busy-ip-${ty}" value="${i}"> ${escapeHTML(PERIODS[i])}</label>`).join("");
@@ -736,11 +752,12 @@ function busyNotesHTML(day,absent){
   const items=Object.keys(busy[ty]).filter(k=>!absent.has(k)).map(k=>busy[ty][k]).filter(e=>timetable[day]&&timetable[day][e.name]);
   if(items.length)lines.push(`<b>${BUSY_TYPES[ty].label}:</b> `+items.map(e=>`${escapeHTML(e.name)} (${e.periods.map(ipLabel).join(", ")})`).join("; "));
  });
+ if(examPeriodSet(day).size)lines.push("<i>* Teachers not on Examination Duty whose class is X / XII in an exam IP are free and eligible for substitution in that IP.</i>");
  return lines.length?`<div class="busy-note">${lines.join("<br>")}<br><i>In these IPs they are not given substitution duty; their own classes are covered in the chart above (X &amp; XII need no substitute).</i></div>`:"";
 }
 
 /* ---------- live free-IP calculation ---------- */
-function totalFree(day,t){const row=timetable[day][t]||{};return PERIODS.filter(p=>isFree(row[p])&&!busyP(t,p)).length}
+function totalFree(day,t){return PERIODS.filter(p=>effFree(day,t,p)).length}
 function dutiesOf(t){
  const out=[];
  if(!generated)return out;
@@ -782,7 +799,7 @@ function optimizeAssignments(){
   if(r&&r.fixed&&r.substitute){const k=key(r.substitute);(fixedBy[k]=fixedBy[k]||[]).push(p)}
  }));
  teachers.forEach(t=>{free[t]=totalFree(day,t)-(fixedBy[key(t)]||[]).length;held[t]=[]});
- slots.forEach(s=>{s.elig=teachers.filter(t=>isFree(timetable[day][t][s.p])&&!busyP(t,s.p)&&!(fixedBy[key(t)]||[]).includes(s.p))});
+ slots.forEach(s=>{s.elig=teachers.filter(t=>effFree(day,t,s.p)&&!(fixedBy[key(t)]||[]).includes(s.p))});
  const assign=(s,t)=>{if(s.teacher)held[s.teacher]=held[s.teacher].filter(x=>x!==s);s.teacher=t;held[t].push(s)};
  const order=s=>s.elig.slice().sort((x,y)=>held[x].length-held[y].length||free[y]-free[x]||x.localeCompare(y));
  function tryAssign(s,vis){
@@ -817,7 +834,7 @@ function findSubstitute(day,pi,absentSet,usedThisPeriod,dutyCount){
  Object.keys(data).forEach(t=>{
   if(absentSet.has(key(t))||usedThisPeriod.has(key(t)))return;
   const v=data[t][PERIODS[pi]];
-  if(!isFree(v)||isNA(v)||busyP(t,PERIODS[pi]))return;
+  if(!effFree(day,t,PERIODS[pi]))return;
   const duties=dutyCount[key(t)]||0;
   c.push({t,after:totalFree(day,t)-duties-1,duties});
  });
@@ -887,7 +904,7 @@ function generateArrangement(prev){
     if(!pr||pr.status!=="assigned"||!r||r.status!=="unassigned")return;
     const t=pr.substitute,k=key(t);
     if(absence[k])return;
-    if(!pr.custom){const row=timetable[day]?.[t];if(!row||!isFree(row[p])||busyP(t,p))return}
+    if(!pr.custom){const row=timetable[day]?.[t];if(!row||!effFree(day,t,p))return}
     const clash=Object.keys(results).some(a=>a!==an&&results[a][p].status==="assigned"&&key(results[a][p].substitute)===k);
     if(clash)return;
     r.status="assigned";r.substitute=t;if(pr.custom)r.custom=true;r.fixed=true;
@@ -910,7 +927,7 @@ function chartDutyOptions(absName,pi){
  Object.keys(timetable[generated.day]||{}).forEach(t=>{
   if(absent.has(key(t)))return;
   const row=timetable[generated.day][t]||{};
-  if(!isFree(row[period])||busyP(t,period))return;
+  if(!effFree(generated.day,t,period))return;
   const d=dutiesOf(t),isCur=key(t)===key(current);
   if(!isCur&&d.some(x=>x.period===period))return;
   const leftNow=totalFree(generated.day,t)-d.length;
@@ -960,7 +977,7 @@ function ensurePeriodUnique(absName,pi,teacher){
  const k=key(teacher);
  if(Object.keys(generated.absence).some(a=>a===k))return false;
  const row=timetable[generated.day]?.[teacher];
- if(!row||!isFree(row[PERIODS[pi]])||busyP(teacher,PERIODS[pi]))return false;
+ if(!row||!effFree(generated.day,teacher,PERIODS[pi]))return false;
  for(const a of Object.keys(generated.results)){
   if(a===absName)continue;
   const x=generated.results[a][PERIODS[pi]];
@@ -1012,11 +1029,11 @@ function buildSummaryTable(day,absent){
   let h=`<table class="sum-table"><thead><tr><th>#</th><th>Teacher's Name</th><th style="text-align:center">Free Left</th><th>Free Periods Left</th><th>Duties / Exam / Extra</th></tr></thead><tbody>`;
   list.forEach((t,i)=>{
    const row=timetable[day][t]||{};
-   const free=PERIODS.filter(p=>isFree(row[p])&&!busyP(t,p));
+   const free=PERIODS.filter(p=>effFree(day,t,p));
    const duties=dutiesOf(t),dset=new Set(duties.map(d=>d.period));
    const left=free.filter(p=>!dset.has(p));
    const cls=(duties.length?"has-duty ":"")+(free.length===0?"nofree":left.length===0?"zero-left":"");
-   const leftHtml=left.length?left.map(p=>`<span class="fp">${escapeHTML(p.replace(" IP",""))}</span>`).join(""):`<span class="none-txt">None</span>`;
+   const leftHtml=left.length?left.map(p=>`<span class="fp">${escapeHTML(p.replace(" IP",""))}${isFree(row[p])?"":"*"}</span>`).join(""):`<span class="none-txt">None</span>`;
    const dutyHtml=duties.map(d=>`<span class="duty-txt">${escapeHTML(d.period.replace(" IP",""))} for ${escapeHTML(d.absent)}</span>`).join("");
    const busyHtml=Object.keys(BUSY_TYPES).filter(ty=>busy[ty][key(t)]).map(ty=>`<span class="busy-txt">${BUSY_TYPES[ty].short}: ${busy[ty][key(t)].periods.map(ipLabel).join(", ")}</span>`).join("");
    const cellHtml=(dutyHtml||busyHtml)?dutyHtml+busyHtml:`<span class="none-txt">—</span>`;
