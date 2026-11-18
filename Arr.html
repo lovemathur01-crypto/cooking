@@ -282,6 +282,21 @@ body.term .lock-bar.locked{border:2px solid #fff}
 body.term .lock-bar.unlocked{border:1px dashed #777}
 body.term .duty-chart-wrap{border:1px solid #fff;border-radius:0}
 }
+
+/* ---------- Scrollable chart (many absent teachers) ---------- */
+.duty-chart-wrap,#printChartContent{overflow:auto;max-height:80vh;-webkit-overflow-scrolling:touch}
+.duty-chart-wrap .generated-duty-paper,#printChartContent .generated-duty-paper{overflow:visible}
+.duty-chart-wrap::-webkit-scrollbar,#printChartContent::-webkit-scrollbar{width:14px;height:14px;background:#e5e7eb}
+.duty-chart-wrap::-webkit-scrollbar-thumb,#printChartContent::-webkit-scrollbar-thumb{background:#17375e;border:2px solid #e5e7eb;border-radius:8px}
+body.term .duty-chart-wrap::-webkit-scrollbar,body.term #printChartContent::-webkit-scrollbar{background:#e5e7eb}
+body.term .duty-chart-wrap::-webkit-scrollbar-thumb,body.term #printChartContent::-webkit-scrollbar-thumb{background:#17375e;border:2px solid #e5e7eb}
+.duty-chart-wrap .duty-grid thead th,#printChartContent .duty-grid thead th{position:sticky;top:0;z-index:3}
+.duty-chart-wrap .duty-grid .ip-col,#printChartContent .duty-grid .ip-col{position:sticky;left:0;z-index:2}
+.duty-chart-wrap .duty-grid thead .ip-col,#printChartContent .duty-grid thead .ip-col{z-index:4}
+@media print{
+ .duty-chart-wrap,#printChartContent{overflow:visible!important;max-height:none!important}
+ .duty-chart-wrap .duty-grid thead th,.duty-chart-wrap .duty-grid .ip-col,#printChartContent .duty-grid thead th,#printChartContent .duty-grid .ip-col{position:static}
+}
 </style>
 </head>
 <body class="term">
@@ -300,6 +315,7 @@ body.term .duty-chart-wrap{border:1px solid #fff;border-radius:0}
 <button class="tab-btn" data-tab="tab5" onclick="openTab('tab5')">[5] exec</button>
 <button class="tab-btn" data-tab="tab6" onclick="openTab('tab6')">[6] out</button>
 <button class="tab-btn" data-tab="tab7" onclick="openTab('tab7')">[7] cache</button>
+<button class="tab-btn" data-tab="tab8" onclick="openTab('tab8')">[8] transfer</button>
 </div>
 
 <section id="tab1" class="tab active">
@@ -403,9 +419,10 @@ Expected columns: <b>Teacher Name, Day, 1st IP, 2nd IP, 3rd IP, 4th IP, Lunch Br
 <label class="auto-toggle"><input type="checkbox" id="autoGenerateToggle" checked> auto-run when [5] is opened</label>
 <div id="generationMessage" class="info" style="margin-top:12px">stdout: waiting for params. Opening [5] triggers auto-run.</div>
 <label class="auto-toggle"><input type="checkbox" id="lockOnSaveToggle" checked> auto-lock on save</label>
+<div class="grid" style="max-width:260px;margin-top:10px"><div><label>PDF margin</label><select id="pdfMargin"><option value="4" selected>Narrow (4 mm)</option><option value="8">Normal (8 mm)</option><option value="12">Wide (12 mm)</option><option value="0">None (0 mm)</option></select></div></div>
 <div id="lockStatus"></div>
 </div>
-<div class="card"><div id="dutyListChart" class="duty-chart-wrap"><div class="muted" style="padding:12px">stdout: (empty)</div></div></div>
+<div class="card"><div class="small muted no-print" style="margin-bottom:6px">&harr; Many columns? Scroll sideways / down inside the chart box. The IP column and teacher headings stay fixed.</div><div id="dutyListChart" class="duty-chart-wrap"><div class="muted" style="padding:12px">stdout: (empty)</div></div></div>
 </section>
 
 <section id="tab6" class="tab">
@@ -416,6 +433,24 @@ Expected columns: <b>Teacher Name, Day, 1st IP, 2nd IP, 3rd IP, 4th IP, Lunch Br
 
 <section id="tab7" class="tab">
 <div class="card"><h2>$ ls -t cache | head -5</h2><div class="info">Last <b>5 snapshots</b> are cached in this browser. Load one, correct it in Tab 5, and save it again.</div><div id="history"></div></div>
+</section>
+
+<section id="tab8" class="tab">
+<div class="card">
+<h2>$ transfer --between-computers</h2>
+<div class="info"><b>Why this is needed:</b> saved snapshots (Tab 7) live only inside the browser of one computer. To continue on another computer, export a file here, carry it across, and import it there.<br><br>
+<b>Computer 1:</b> make the chart in Tab 5 &rarr; come here &rarr; click <b>export current chart</b> &rarr; a <code>.json</code> file downloads.<br>
+<b>Move the file</b> to Computer 2 (pen drive, email, WhatsApp, Google Drive).<br>
+<b>Computer 2:</b> open this same HTML page &rarr; come here &rarr; click <b>import file...</b> &rarr; choose the file. The chart opens in Tab 5, ready to correct, lock, print, PDF or save again.</div>
+<div id="transferStatus" class="info"></div>
+</div>
+<div class="card"><h2>$ export</h2>
+<label class="auto-toggle"><input type="checkbox" id="includeTimetable" checked> include the timetable inside the file (Computer 2 then does not need the Excel)</label>
+<div class="actions"><button class="btn success" onclick="exportArrangement(false)">export current chart</button><button class="btn light" onclick="exportArrangement(true)">export all saved snapshots</button></div>
+<div id="exportMessage" class="info" style="margin-top:14px">Nothing exported yet.</div></div>
+<div class="card"><h2>$ import</h2>
+<div class="actions"><button class="btn purple" onclick="document.getElementById('transferFile').click()">import file...</button><input id="transferFile" type="file" accept=".json,application/json" onchange="importTransferFile(event)"></div>
+<div id="transferMessage" class="info" style="margin-top:14px">No file imported yet.</div></div>
 </section>
 </div>
 
@@ -471,6 +506,7 @@ function openTab(id){
  if(id==="tab5")setTimeout(()=>generateDutyListAutomatically(false),0);
  if(id==="tab6")refreshPrintChart();
  if(id==="tab7")renderHistory();
+ if(id==="tab8")renderTransferInfo();
 }
 
 /* ---------- Excel ---------- */
@@ -1087,10 +1123,10 @@ function renderDutyListChart(){
  const box=document.getElementById("dutyListChart");
  if(!generated){box.innerHTML='<div class="muted" style="padding:12px">stdout: (empty)</div>';updateLockUI();return}
  const oldPaper=box.querySelector(".generated-duty-paper");
- const sl=oldPaper?oldPaper.scrollLeft:0,st=box.scrollTop,sy=window.scrollY;
+ const sl=box.scrollLeft,st=box.scrollTop,sy=window.scrollY;
  box.innerHTML=buildChartHTML(true);
  const np=box.querySelector(".generated-duty-paper");
- if(np)np.scrollLeft=sl;
+ box.scrollLeft=sl;
  box.scrollTop=st;window.scrollTo(window.scrollX,sy);
  updateLockUI();
 }
@@ -1188,7 +1224,7 @@ const PDF_EXTRA_CSS=`
 .fp{font-size:10px}.teacher-note{font-size:10.5px;margin-top:10px}
 .busy-note{font-size:10.5px;margin-top:8px}
 .free-summary-title{font-size:14px}.live-banner{font-size:11px}
-.pg{padding:14px;background:#fff}
+.pg{padding:3px;background:#fff}
 `;
 function makeExportFrame(mode){
  return new Promise(resolve=>{
@@ -1196,7 +1232,7 @@ function makeExportFrame(mode){
   f.setAttribute("style","position:fixed;left:-14000px;top:0;width:1600px;height:4000px;border:0");
   document.body.appendChild(f);
   const n=chartCols().length;
-  const w=mode==="pdf"?800:Math.max(1085,100+n*150);
+  const w=mode==="pdf"?Math.max(800,90+n*105):Math.max(1085,100+n*150);
   const css=PRINT_CSS+`#sheet{width:${w}px;zoom:1!important;background:#fff}.duty-grid{min-width:0!important}`+(mode==="pdf"?PDF_EXTRA_CSS:"");
   const d=f.contentWindow.document;
   d.open();
@@ -1257,7 +1293,7 @@ async function downloadPDFPortrait(){
   const doc=f.contentWindow.document;
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-  const PW=210,PH=297,M=8,maxW=PW-2*M,maxH=PH-2*M;
+  const PW=210,PH=297,mv=document.getElementById("pdfMargin"),M=mv?Number(mv.value):4,maxW=PW-2*M,maxH=PH-2*M;
   const ids=["page1","page2"];
   for(let i=0;i<ids.length;i++){
    const el=doc.getElementById(ids[i]);
@@ -1325,8 +1361,8 @@ function savePlan(){
  renderDutyListChart();refreshPrintChart();
  setMessage("generationMessage","<b>Snapshot saved.</b> Last 5 are kept."+(generated.locked?" The chart is now [locked] locked.":""),"success");
 }
-function loadPlan(i){
- const x=readHistory()[i];
+function loadPlan(i){applyPlan(readHistory()[i])}
+function applyPlan(x){
  if(!x){alert("Saved chart not found.");return}
  if(!timetable[x.day]){alert("Please upload the same timetable Excel first so this saved chart can be loaded.");return}
  document.getElementById("daySelect").value=x.day;
@@ -1359,6 +1395,76 @@ function clearArrangement(){
  generated=null;
  renderDutyListChart();refreshPrintChart();
  setMessage("generationMessage","Output cleared. Run again when ready.","warning");
+}
+
+/* ---------- Transfer between computers ---------- */
+function renderTransferInfo(){
+ const box=document.getElementById("transferStatus");if(!box)return;
+ box.innerHTML=`<b>Current chart:</b> ${generated?escapeHTML(generated.day)+(generated.date?" — "+escapeHTML(generated.date):""):"none generated yet"}<br><b>Timetable loaded:</b> ${importedRows.length?importedRows.length+" row(s)":"no"}<br><b>Saved snapshots in this browser:</b> ${readHistory().length}`;
+}
+function snapshotNow(){
+ rebuildDutyCount();
+ return{savedAt:new Date().toLocaleString("en-IN"),day:generated.day,date:generated.date,absence:generated.absence,results:generated.results,dutyCount:generated.dutyCount,required:generated.required,assigned:generated.assigned,unassigned:generated.unassigned,noDuty:generated.noDuty,locked:!!generated.locked,busy:JSON.parse(JSON.stringify(busy)),busyCols:generated.busyCols||{}};
+}
+function exportArrangement(all){
+ const pack={app:"sched_engine",version:1,exportedAt:new Date().toISOString(),timetableRows:(document.getElementById("includeTimetable").checked&&importedRows.length)?importedRows:null};
+ let name;
+ if(all){
+  const h=readHistory();
+  if(!h.length){setMessage("exportMessage","<b>No saved snapshots.</b> Click <b>save</b> in Tab 5 first.","warning");return}
+  pack.history=h;
+  const t=new Date();
+  name=`arrangements_backup_${String(t.getDate()).padStart(2,"0")}-${String(t.getMonth()+1).padStart(2,"0")}-${t.getFullYear()}.json`;
+ }else{
+  if(!generated){setMessage("exportMessage","<b>No chart yet.</b> Generate one in Tab 5 first.","warning");return}
+  pack.plan=snapshotNow();
+  name=dutyFileBase().replace(/^export_/,"arrangement_")+".json";
+ }
+ saveBlob(new Blob([JSON.stringify(pack)],{type:"application/json"}),name);
+ setMessage("exportMessage",`<b>Downloaded:</b> ${escapeHTML(name)}${pack.timetableRows?" (timetable included)":" (timetable NOT included — upload the same Excel on the other computer first)"}`,"success");
+}
+function loadTimetableRows(rows,src){
+ importedRows=rows;generated=null;
+ buildValidation();buildTimetable();updateKPIs();renderValidation();renderPreview();
+ document.getElementById("detectedStructure").innerHTML=`<b>Source:</b> transfer file ${escapeHTML(src)}<br><b>Rows imported:</b> ${rows.length}`;
+ setMessage("uploadMessage",`<b>Timetable restored from transfer file.</b> ${rows.length} teacher/day row(s).`,validation.errors.length?"warning":"success");
+}
+function importTransferFile(event){
+ const file=event.target.files&&event.target.files[0];
+ if(!file)return;
+ event.target.value="";
+ const reader=new FileReader();
+ reader.onerror=()=>setMessage("transferMessage","Could not read the selected file.","error");
+ reader.onload=function(e){
+  const out=[];
+  try{
+   const d=JSON.parse(e.target.result);
+   if(!d||d.app!=="sched_engine")throw new Error("This file was not exported from this tool.");
+   if(Array.isArray(d.timetableRows)&&d.timetableRows.length&&d.timetableRows.every(r=>r&&typeof r==="object")){
+    if(!importedRows.length||confirm("The file contains a timetable. Replace the timetable currently loaded on this computer with it?")){
+     loadTimetableRows(d.timetableRows,file.name);out.push("timetable restored");
+    }
+   }
+   if(Array.isArray(d.history)&&d.history.length){
+    const cur=readHistory(),seen=new Set(cur.map(x=>x.savedAt+"|"+x.day));
+    const add=d.history.filter(x=>x&&x.day&&x.results&&!seen.has(x.savedAt+"|"+x.day));
+    localStorage.setItem(STORAGE_KEY,JSON.stringify([...add,...cur].slice(0,5)));
+    renderHistory();out.push(add.length+" snapshot(s) added to Tab 7 (cache keeps the latest 5)");
+   }
+   if(d.plan){
+    if(!d.plan.day||!d.plan.results)throw new Error("The chart inside the file is incomplete.");
+    if(!timetable[d.plan.day])throw new Error("The timetable for "+d.plan.day+" is not loaded on this computer. Upload the same Excel in Tab 1, then import again.");
+    applyPlan(d.plan);out.push("chart opened in Tab 5");
+   }
+   if(!out.length)throw new Error("The file contained nothing to import.");
+   setMessage("transferMessage","<b>Imported:</b> "+out.map(escapeHTML).join("; ")+".","success");
+   renderTransferInfo();
+  }catch(err){
+   console.error(err);
+   setMessage("transferMessage","<b>Import failed:</b><br>"+escapeHTML(err.message||String(err)),"error");
+  }
+ };
+ reader.readAsText(file);
 }
 
 /* ---------- dark mode (web only) ---------- */
